@@ -10,7 +10,7 @@
 
 ## 目前 ship 狀態 (2026-06-06)
 
-最後 ship: spec 07 草稿 + Honza 2008 SAV RLE 格式整合 + 3 張原版視覺 reference
+最後 ship: spec 07 §7.1 Team B 接通 — `civ_rle_decode/encode` + golden HAM*.SAV decode 通過 (107 KB / 6.7x ratio)
 
 | Milestone | 範圍 | 狀態 | 證據 |
 |---|---|---|---|
@@ -71,7 +71,7 @@
 |---|---|---|---|
 | Renderer | `godpal/gr/gr_pic/gr_port/shape` | palette 模型、CvPc LZW、blit | tile blending 邊界規則；14/199 CvPc 仍 LZW variant fail |
 | Loader (Mac shim) | `mac/resmgr` | RSC parser + 5 個 archive | 436 個 `GLOBALLOCK` call site 個別語義 |
-| 存讀檔 | `load.c` | 50% — RLE 算法 spec 07 §7.1 完整 (Honza 2008) | §7.2 SAV 解壓後 city/unit/civ 表 byte layout 未抽 |
+| 存讀檔 | `load.c` | 60% — RLE 算法 + Team B 接通 (`save/rle.{h,c}`, ctest golden HAM1000B.SAV decode 16011 → 107194 byte 6.7x ratio) | §7.2 SAV 解壓後 city/unit/civ 表 byte layout 未抽 (Honza 2008 也沒抽通) |
 | Dialog system | `dialogs.c` | 100% (spec 04) | — |
 | 視窗 proc | `wdwmap/wdwsmmap/wdwstat/windows` | dispatch table 骨架 (7/22 + 7/9 + 7/9) | 個別 message handler 待補 |
 | AI / 外交 | location 不確定 | 5% | 只確認 `FUN_10e8_2d46` 是 "AI 策略表 init"，其他演算法未抽 |

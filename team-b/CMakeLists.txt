@@ -45,6 +45,7 @@ set(CIV_CORE_SOURCES
     src/world/world.c
     src/world/turn.c
     src/world/unit.c
+    src/save/rle.c
     src/text/big5.c
     src/text/utf8.c
     src/text/glyph_cache.c

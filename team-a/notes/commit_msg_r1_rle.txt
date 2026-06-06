@@ -1,0 +1,77 @@
+R1: Team B 接通 spec 07 §7.1 — civ_rle_decode/encode + 真實 HAM*.SAV golden
+
+使用者選 1>2>3>4>5 五步 sequence 第一步: Team B 實作 spec 07 §7.3 介面契約
++ 對真實 CIV.SAV 驗證. 本 round 完成這件.
+
+# 交付
+
+  src/save/rle.h                介面契約 (對齊 spec 07 §7.3):
+                                  civ_rle_decode(src, src_len, dst, dst_cap)
+                                  civ_rle_encode(src, src_len, dst, dst_cap)
+
+  src/save/rle.c                實作:
+                                  decode: c<0x80 run mode / c>=0x80 literal
+                                  encode: greedy run/literal split,
+                                          count 範圍 1..127 (避 0 no-op)
+
+  CMakeLists.txt                加 src/save/rle.c 進 civ_core
+
+  tests/test_rle.c              6 子測:
+                                  1. 全零 1024 byte (壓出 18 byte, 0.02x)
+                                  2. 全唯一 256 byte (壓出 259, 1.01x)
+                                  3. 邊界 run count=127
+                                  4. 邊界 literal count=127
+                                  5. random 8 KB round-trip
+                                  6. golden HAM*.SAV decode + re-encode
+
+  tests/CMakeLists.txt          加 test_rle
+
+# golden 結果 (HAM1000B.SAV, 真實 1993 Civ Windows 存檔)
+
+  Original SAV size       16011 byte
+  Decompressed size      107194 byte (6.70× ratio)
+  Re-encode size          16126 byte (vs orig 16011, 我們大 0.7%)
+  Round-trip              byte-perfect (memcmp 通過)
+
+  我們 encoder 略大 0.7% 表示 Civ 原版 encoder 用稍微更 aggressive 的
+  策略 (e.g. 把短 literal 黏進長 block 省 header). 不影響功能.
+
+# 驗證
+
+  cmake build         38/38 zero warning
+  ctest with data:    16/16 PASS (新 test_rle)
+
+# 算法細節
+
+  decode 是 straight-forward (~30 行 C). encode 是 greedy:
+    - count_run(p): 看 p[0..] 連續同值 byte 數 (cap 127)
+    - 若 run >= 2: 出 [run] [byte]
+    - 否則: 累積 literal 直到遇到 run >= 2 或 cap 127
+
+  邊界 case 處理:
+    - 全零 1024: 8 個 [127][0] + 1 個 [8][0] = 8×2 + 2 = 18 byte ✓
+    - 全唯一 256: 2 個 [0xFF][127 bytes] + 1 個 [0x82][2 bytes] = 259 byte ✓
+    - count 0 視為 no-op (decoder 容忍), encoder 不產生
+
+# 對齊 spec 07 §7.1
+
+  Honza Havlicek 2008 demonstrator 的 RLE_decode/encode 我們完全等價實作.
+  Honza 的 encoder 用 find_run() / find_block() FILE-based 流式, 我們改
+  buffer-based 方便 ctest. 演算法等價.
+
+# RE 覆蓋變化
+
+  存讀檔: 50% → 60%
+    - spec 07 §7.1 RLE 算法 ship (Honza credit)
+    - Team B `save/rle.{h,c}` 接通
+    - golden 16 KB SAV decode 通過 → 證明我們的算法是 byte-exact correct
+  剩 §7.2 SAV 解壓後內部 layout (下個 round R2)
+
+# 下一步 (R2 = 1>2>3>4>5 第二步)
+
+  Team A SAV §7.2 byte dump 分析:
+    1. 跑 rle_decode 對 3 個 HAM*.SAV 各 dump 解壓後 ~107 KB
+    2. 比對 3 個 dump 找 fixed offset (turn 數 / world seed / map data)
+    3. 找出 player/city/unit 表的 record size + 數量
+    4. 寫進 spec 07 §7.2
+EOF

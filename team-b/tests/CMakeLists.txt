@@ -90,3 +90,8 @@ add_executable(test_unit_combat test_unit_combat.c)
 target_link_libraries(test_unit_combat PRIVATE civ_core)
 add_test(NAME unit_combat COMMAND test_unit_combat)
 set_tests_properties(unit_combat PROPERTIES TIMEOUT 10)
+
+add_executable(test_rle test_rle.c)
+target_link_libraries(test_rle PRIVATE civ_core)
+add_test(NAME rle COMMAND test_rle)
+set_tests_properties(rle PROPERTIES TIMEOUT 10)
