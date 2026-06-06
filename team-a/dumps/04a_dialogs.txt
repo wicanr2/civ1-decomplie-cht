@@ -1,0 +1,224 @@
+找到 24 個 RT_DIALOG resource
+
+=== Dialog ID 129 (0x80400080, 305×120 dlg units)
+  caption: ''
+  class:   'CIVDIALOG'
+  controls: 0 / 0
+
+=== Dialog ID 130 (0x80400080, 512×320 dlg units)
+  caption: ''
+  class:   'CIVDIALOG'
+  controls: 2 / 2
+    [ 0] Button     id=  101  @ (420,279)  68× 22  text='確'  (Big5)
+    [ 1] Button     id=  102  @ (310,279)  68× 22  text='結束'  (Big5)
+
+=== Dialog ID 131 (0x80400080, 300×282 dlg units)
+  caption: ''
+  class:   'CIVDIALOG'
+  controls: 4 / 4
+    [ 0] Button     id=  101  @ (208,210)  85× 24  text='前往城市  '  (Big5)
+    [ 1] Button     id=  102  @ (208,252)  85× 24  text='取消  '  (Big5)
+    [ 2] ListBox    id=  103  @ ( 10, 30) 180×242  text=''
+    [ 3] Static     id=  106  @ ( 10, 10) 246× 16  text='選擇要尋找的城市:   '  (Big5)
+
+=== Dialog ID 133 (0x80400080, 142×52 dlg units)
+  caption: ''
+  class:   'CIVDIALOG'
+  controls: 5 / 5
+    [ 0] Button     id=  101  @ ( 52, 36)  40× 10  text='先存檔    '  (Big5)
+    [ 1] Button     id=  103  @ (100, 36)  40× 10  text='取消  '  (Big5)
+    [ 2] Button     id=  102  @ (  4, 36)  40× 10  text='開啟     '  (Big5)
+    [ 3] Static     id=65535  @ ( 32,  8)  80×  8  text='您確定要             '  (Big5)
+    [ 4] Static     id=65535  @ ( 32, 20)  80×  8  text='開啟存檔嗎?          '  (Big5)
+
+=== Dialog ID 135 (0x80400080, 480×87 dlg units)
+  caption: ''
+  class:   'CIVDIALOG'
+  controls: 3 / 3
+    [ 0] Button     id=  101  @ (410, 60)  58× 20  text='確'  (Big5)
+    [ 1] RandomUser id=  102  @ ( 10, 30) 460× 25  text=''
+    [ 2] RandomUser id=  103  @ ( 10,  0) 460× 30  text=''
+
+=== Dialog ID 136 (0x80400080, 80×84 dlg units)
+  caption: ''
+  class:   'CIVDIALOG'
+  controls: 3 / 3
+    [ 0] Button     id=  101  @ ( 10, 56)  60× 20  text='確'  (Big5)
+    [ 1] RandomUser id=  103  @ ( 10, 10)  60× 15  text=''
+    [ 2] RandomUser id=  104  @ ( 30, 29)  20× 18  text=''
+
+=== Dialog ID 137 (0x80400080, 242×142 dlg units)
+  caption: ''
+  class:   'CIVDIALOG'
+  controls: 4 / 4
+    [ 0] Button     id=  101  @ (170,105)  58× 25  text='確'  (Big5)
+    [ 1] Button     id=  102  @ ( 90,105)  62× 25  text='上一頁 '  (Big5)
+    [ 2] Edit       id=  103  @ ( 10, 60) 217× 31  text=''
+    [ 3] Static     id=  104  @ ( 10, 10) 219× 41  text=''
+
+=== Dialog ID 138 (0x804000c0, 205×120 dlg units)
+  caption: ''
+  class:   'CIVDIALOG'
+  font:    size=12 face='CIVTIMES12'
+  controls: 1 / 1
+    [ 0] Button     id=  101  @ (179,109)  23×  8  text='確'  (Big5)
+
+=== Dialog ID 139 (0x80400080, 96×47 dlg units)
+  caption: ''
+  class:   'CIVDIALOG'
+  controls: 3 / 3
+    [ 0] Button     id=  101  @ ( 41, 17)  46× 22  text='確'  (Big5)
+    [ 1] RandomUser id=  103  @ ( 10, 10)  78×  1  text=''
+    [ 2] RandomUser id=  104  @ ( 10, 13)  20× 18  text=''
+
+=== Dialog ID 140 (0x80400080, 324×200 dlg units)
+  caption: ''
+  class:   'CIVDIALOG'
+  controls: 5 / 5
+    [ 0] Button     id=  101  @ (256,170)  58× 20  text='確'  (Big5)
+    [ 1] Button     id=  102  @ (256,140)  58× 20  text='取消  '  (Big5)
+    [ 2] Button     id=  103  @ (256, 80)  58× 20  text='說明'  (Big5)
+    [ 3] ListBox    id=  104  @ ( 10, 30) 234×162  text=''
+    [ 4] Static     id=  106  @ ( 10, 10) 272× 16  text='在此城建造甚麼?        '  (Big5)
+
+=== Dialog ID 141 (0x80400080, 270×41 dlg units)
+  caption: ''
+  class:   'CIVDIALOG'
+  controls: 1 / 1
+    [ 0] Button     id=  101  @ (205, 10)  57× 20  text='確'  (Big5)
+
+=== Dialog ID 142 (0x80400080, 512×320 dlg units)
+  caption: ''
+  class:   'CIVDIALOG'
+  controls: 3 / 3
+    [ 0] Button     id=  101  @ (408,288)  45× 20  text='確'  (Big5)
+    [ 1] RandomUser id=  103  @ ( 56,224) 400× 32  text=''
+    [ 2] RandomUser id=  104  @ ( 60,258)  20× 12  text=''
+
+=== Dialog ID 143 (0x80400080, 512×320 dlg units)
+  caption: ''
+  class:   'CIVDIALOG'
+  controls: 18 / 18
+    [ 0] Button     id=  101  @ (444,264)  64× 20  text='確'  (Big5)
+    [ 1] Button     id=  102  @ (444,296)  64× 20  text='取消  '  (Big5)
+    [ 2] Region     id=  803  @ (  4,  3)  85× 75  text=''
+    [ 3] Region     id=  804  @ ( 92,  3)  85× 75  text=''
+    [ 4] Region     id=  805  @ (180,  3)  85× 75  text=''
+    [ 5] Region     id=  807  @ (  4, 81)  85× 75  text=''
+    [ 6] Region     id=  808  @ ( 92, 81)  85× 75  text=''
+    [ 7] Region     id=  809  @ (180, 81)  85× 75  text=''
+    [ 8] Region     id=  811  @ (  4,159)  85× 75  text=''
+    [ 9] Region     id=  812  @ ( 92,159)  85× 75  text=''
+    [10] Region     id=  813  @ (180,159)  85× 75  text=''
+    [11] Region     id=  815  @ (  4,237)  85× 75  text=''
+    [12] Region     id=  816  @ ( 92,237)  85× 75  text=''
+    [13] Region     id=  817  @ (180,237)  85× 75  text=''
+    [14] Region     id=  806  @ (276, 13) 156× 55  text=''
+    [15] Region     id=  810  @ (276, 92) 156× 55  text=''
+    [16] Region     id=  814  @ (276,170) 156× 55  text=''
+    [17] Region     id=  818  @ (276,249) 156× 55  text=''
+
+=== Dialog ID 144 (0x80400080, 512×320 dlg units)
+  caption: ''
+  class:   'CIVDIALOG'
+  controls: 4 / 4
+    [ 0] Button     id=  101  @ (370,255)  70× 22  text='確'  (Big5)
+    [ 1] Button     id=  102  @ (370,228)  70× 22  text='上一頁 '  (Big5)
+    [ 2] RandomUser id=  103  @ (258, 34) 190× 20  text=''
+    [ 3] RandomUser id=  104  @ (262, 56)  20× 18  text=''
+
+=== Dialog ID 145 (0x80400080, 142×86 dlg units)
+  caption: ''
+  class:   'CIVDIALOG'
+  controls: 4 / 4
+    [ 0] Button     id=  101  @ ( 72, 56)  60× 20  text='確'  (Big5)
+    [ 1] Button     id=  102  @ ( 72, 30)  60× 20  text='說明'  (Big5)
+    [ 2] RandomUser id=  103  @ ( 10, 10) 122× 15  text=''
+    [ 3] RandomUser id=  104  @ ( 30, 29)  20× 18  text=''
+
+=== Dialog ID 146 (0x80400080, 512×320 dlg units)
+  caption: ''
+  class:   'CIVDIALOG'
+  controls: 2 / 2
+    [ 0] RandomUser id=  101  @ (112,  4) 288× 40  text=''
+    [ 1] RandomUser id=  102  @ (191, 85) 175×132  text=''
+
+=== Dialog ID 147 (0x80400080, 512×320 dlg units)
+  caption: ''
+  class:   'CIVDIALOG'
+  controls: 2 / 2
+    [ 0] RandomUser id=  101  @ (138, 39) 269× 30  text=''
+    [ 1] RandomUser id=  102  @ (133, 69) 279×126  text=''
+
+=== Dialog ID 148 (0x80400080, 512×320 dlg units)
+  caption: ''
+  class:   'CIVDIALOG'
+  controls: 0 / 0
+
+=== Dialog ID 149 (0x80400080, 512×320 dlg units)
+  caption: ''
+  class:   'CIVDIALOG'
+  controls: 3 / 3
+    [ 0] Button     id=  101  @ (454,292)  50× 20  text='確'  (Big5)
+    [ 1] RandomUser id=  103  @ ( 15, 96) 482× 20  text=''
+    [ 2] RandomUser id=  104  @ (200,120)  20× 16  text=''
+
+=== Dialog ID 150 (0x80400080, 120×36 dlg units)
+  caption: ''
+  class:   'CIVDIALOG'
+  controls: 2 / 2
+    [ 0] Static     id=65535  @ ( 26,  3)  91× 29  text='請插入磁片 ^0 (含檔案 ^1)。                      '  (Big5)
+    [ 1] Static     id=65535  @ (  3,  8)  17× 19  text=''
+
+=== Dialog ID 151 (0x80800000, 512×320 dlg units)
+  caption: ''
+  class:   'CIVDIALOG'
+  controls: 0 / 0
+
+=== Dialog ID 666 (0x80400080, 300×150 dlg units)
+  caption: ''
+  class:   'CIVDIALOG'
+  controls: 2 / 2
+    [ 0] Static     id=  103  @ (  0, 10) 300× 35  text='轉換 Civilization 圖檔中       '  (Big5)
+    [ 1] Button     id=  102  @ (100,105) 100× 30  text='中止 '  (Big5)
+
+=== Dialog ID 999 (0x80400080, 256×160 dlg units)
+  caption: ''
+  class:   'CIVDIALOG'
+  controls: 11 / 11
+    [ 0] Button     id=  101  @ (220,145)  24×  8  text='確'  (Big5)
+    [ 1] RandomUser id=  800  @ ( 27,106) 200× 16  text=''
+    [ 2] RandomUser id=  801  @ ( 25,130)  10×  9  text=''
+    [ 3] Button     id=  106  @ ( 25,145)  22×  8  text='前頁< '  (Big5)
+    [ 4] Button     id=  106  @ ( 55,145)  22×  8  text='後頁> '  (Big5)
+    [ 5] Button     id=  108  @ ( 25,130)  22×  8  text='政府'  (Big5)
+    [ 6] Button     id=  107  @ ( 55,130)  22×  8  text='君主'  (Big5)
+    [ 7] Button     id=  105  @ (100,145)  24×  8  text='威脅  '  (Big5)
+    [ 8] Button     id=  104  @ (130,145)  24×  8  text='害怕  '  (Big5)
+    [ 9] Button     id=  103  @ (160,145)  24×  8  text='無趣 '  (Big5)
+    [10] Button     id=  102  @ (190,145)  24×  8  text='取消  '  (Big5)
+
+=== Dialog ID 2000 (0x80400080, 198×117 dlg units)
+  caption: ''
+  class:   'CIVDIALOG'
+  controls: 20 / 20
+    [ 0] Button     id=  101  @ (135, 95)  35× 14  text='確'  (Big5)
+    [ 1] Button     id=  102  @ (135, 76)  35× 14  text='上一頁 '  (Big5)
+    [ 2] RandomHorzBump id=  300  @ (  0, 66) 198×  1  text=''
+    [ 3] RandomVertBump id=  350  @ (100, 66)   1× 51  text=''
+    [ 4] RandomStatic id=  400  @ ( 50, 20) 100×  8  text='This is a test of the 3d stuff'
+    [ 5] RandomStatic id=  401  @ ( 50, 30) 100×  8  text='We will see what it looks like.'
+    [ 6] Edit       id=  103  @ ( 75, 40)  48× 12  text=''
+    [ 7] RandomStatic id=  402  @ ( 88, 54)  23×  8  text='NAME'
+    [ 8] RandomRadio id=  500  @ ( 10, 75)  45× 10  text='Button 1'
+    [ 9] RandomRadio id=  501  @ ( 10, 85)  45× 10  text='Button 2'
+    [10] RandomRadio id=  502  @ ( 10, 95)  45× 10  text='Button 3'
+    [11] RandomRectangle id=  850  @ (  5, 70)  55× 40  text=''
+    [12] RandomCheck id=  600  @ (  3,  5)  64×  8  text='The'
+    [13] RandomCheck id=  600  @ (  3, 14)  64×  8  text='check'
+    [14] RandomCheck id=  601  @ (  3, 23)  40×  8  text='Is in'
+    [15] RandomCheck id=  602  @ (  3, 32)  40×  8  text='the mail'
+    [16] RandomCheck id=  603  @ (  3, 40)  40×  8  text='ha!ha!'
+    [17] RandomHorzMeter id=  700  @ (  7, 52)  56× 12  text=''
+    [18] RandomFrame id=  800  @ (126, 73)  52× 39  text=''
+    [19] RandomRectangle id=  851  @ (154,  5)  37× 54  text=''

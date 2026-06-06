@@ -1,0 +1,85 @@
+Spec 04: 24 RT_DIALOG 全解 + RANDOM* widget family 揭穿
+
+# 工具
+
+  team-a/tools/ne_dialog_dump.py
+    Win16 NE RT_DIALOG parser
+    - 從 NE resource table 抽 type 0x8005
+    - 解 DLGTEMPLATE (style / cdit / x,y,cx,cy / menu / class /
+                     caption / 可選 font)
+    - 解 DLGITEMTEMPLATE (14 byte header + 變長 class / text /
+                         cb_data)
+    - item.class 用 0x80-0x85 單 byte ordinal (Win16 慣例)
+    - CLI --id N 單一 / --json 機器讀
+  team-a/dumps/04a_dialogs.txt   人讀
+  team-a/dumps/04b_dialogs.json  Team B 消化用
+
+# 重大發現
+
+24 個 dialog 全用自製類別 CIVDIALOG, 由 CIVDIALOGPROC @ 1098:1838
+(spec 02 §2.2.5) 統一 paint + dispatch。
+caption 全為空 - 標題由 paint handler 自繪。
+Track A 的 Big5 patched captions 全部正確顯示: 確 / 結束 / 取消 /
+前往城市 / 先存檔 / 上一頁 / 中止 等。
+Dialog 138 顯式設 CIVTIMES12 字型 (CIVFONTS.FON 內 21 個
+RT_FONT 之一)。
+
+# 特殊 dialog ID 用途揭曉
+
+  #666 (300x150)  載入 progress
+                  「轉換 Civilization 圖檔中」+ 中止鈕
+  #999 (256x160)  **外交對話框** 11 個 control:
+                  前頁< / 後頁> / 政府 / 君主 / 威脅 / 害怕 /
+                  無趣 / 取消 / 確
+                  揭穿 1993 Civ1 外交系統 UI 設計
+  #2000 (198x117) **UI widget 展示測試** 20 個 control
+                  「This is a test of the 3d stuff」開發期留下的
+                  英文占位字
+  #150 (120x36)   古早多磁片「請插入磁片 ^0 (含檔案 ^1)」
+                  ^0/^1 是 sprintf 樣板
+
+# RANDOM* widget family 完整揭穿
+
+Dialog 2000 是廢棄 / 未刪的 UI showcase, 含 9 個自製類別:
+
+  RandomRadio       -> RANDOMRADIOPROC @ 1058:06ab (spec 02 §2.2.9)
+  RandomStatic      -> RANDOMSTATICPROC @ 1058:081a (spec 02 §2.2.10)
+  RandomUser        -> RANDOMUSERPROC @ 1058:0921 (spec 02 §2.2.11)
+                       retail dialog 最常用 -
+                       #135/#136/#139/#146/#147/#149/#999 都用到
+  RandomCheck
+  RandomHorzBump
+  RandomVertBump
+  RandomHorzMeter
+  RandomFrame
+  RandomRectangle
+
+spec 02 推測時沒列後 6 個 - 現在揭穿。Team B M4+ 寫 dialog 系統時
+要實作這 9 個 widget 變體。
+
+# 待解 (spec 04b)
+
+WinMain §2.1.2 D 段 5 個 FUN_1190_0000(0xAB/0xB1/0xBE/0xCB/0xD8)
+的 ID (171/177/190/203/216) 不在 24 個 RT_DIALOG 範圍 - 推測是
+Mac .RSC 內的 Mac 風格 dialog template (DLOG type 或自製 type)。
+M4 startup wizard 載入前必須解。
+
+# spec 04 文件
+
+  team-a/specs/04_dialogs_and_controls.md
+    7 個 section:
+      §4.1 Win16 DLGTEMPLATE 格式 (公開, clean-room safe)
+      §4.2 24 個 RT_DIALOG 索引表
+      §4.3 Dialog 999 外交對話框詳解
+      §4.4 Dialog 2000 + RANDOM* family
+      §4.5 5 個 startup dialog ID 待解
+      §4.6 Team B SDL2 整合介面契約
+      §4.7 下一步 (spec 05+)
+
+PHASE_LOG 對應紀錄。
+
+# 不需執行 #2 (game data tables) 與 #3 (STR# / TEXT) 還沒
+
+依使用者「1 > 2 > 3 依序」指示, #1 (spec 04 RT_DIALOG walk) 完成
+ship。#2 (spec 05 game data tables walk WinMain E 段 7 個 FUN_*)
+與 #3 (STR# / TEXT i18n catalog) 接著做。

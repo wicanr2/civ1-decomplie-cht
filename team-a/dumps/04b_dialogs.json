@@ -1,0 +1,1383 @@
+找到 24 個 RT_DIALOG resource
+{
+  "129": {
+    "style": 2151678080,
+    "n_items_claimed": 0,
+    "n_items_parsed": 0,
+    "x": 148,
+    "y": 120,
+    "cx": 305,
+    "cy": 120,
+    "menu": "",
+    "class": "CIVDIALOG",
+    "caption": "",
+    "font": null,
+    "items": []
+  },
+  "130": {
+    "style": 2151678080,
+    "n_items_claimed": 2,
+    "n_items_parsed": 2,
+    "x": 64,
+    "y": 66,
+    "cx": 512,
+    "cy": 320,
+    "menu": "",
+    "class": "CIVDIALOG",
+    "caption": "",
+    "font": null,
+    "items": [
+      {
+        "x": 420,
+        "y": 279,
+        "cx": 68,
+        "cy": 22,
+        "id": 101,
+        "style": 1342242817,
+        "class": "Button",
+        "text": "½T"
+      },
+      {
+        "x": 310,
+        "y": 279,
+        "cx": 68,
+        "cy": 22,
+        "id": 102,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "µ²§ô"
+      }
+    ]
+  },
+  "131": {
+    "style": 2151678080,
+    "n_items_claimed": 4,
+    "n_items_parsed": 4,
+    "x": 170,
+    "y": 79,
+    "cx": 300,
+    "cy": 282,
+    "menu": "",
+    "class": "CIVDIALOG",
+    "caption": "",
+    "font": null,
+    "items": [
+      {
+        "x": 208,
+        "y": 210,
+        "cx": 85,
+        "cy": 24,
+        "id": 101,
+        "style": 1342242817,
+        "class": "Button",
+        "text": "«e©¹«°¥«  "
+      },
+      {
+        "x": 208,
+        "y": 252,
+        "cx": 85,
+        "cy": 24,
+        "id": 102,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "¨ú®ø  "
+      },
+      {
+        "x": 10,
+        "y": 30,
+        "cx": 180,
+        "cy": 242,
+        "id": 103,
+        "style": 1352663041,
+        "class": "ListBox",
+        "text": ""
+      },
+      {
+        "x": 10,
+        "y": 10,
+        "cx": 246,
+        "cy": 16,
+        "id": 106,
+        "style": 1342308352,
+        "class": "Static",
+        "text": "¿ï¾Ü­n´M§äªº«°¥«:   "
+      }
+    ]
+  },
+  "133": {
+    "style": 2151678080,
+    "n_items_claimed": 5,
+    "n_items_parsed": 5,
+    "x": 59,
+    "y": 49,
+    "cx": 142,
+    "cy": 52,
+    "menu": "",
+    "class": "CIVDIALOG",
+    "caption": "",
+    "font": null,
+    "items": [
+      {
+        "x": 52,
+        "y": 36,
+        "cx": 40,
+        "cy": 10,
+        "id": 101,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "¥ý¦sÀÉ    "
+      },
+      {
+        "x": 100,
+        "y": 36,
+        "cx": 40,
+        "cy": 10,
+        "id": 103,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "¨ú®ø  "
+      },
+      {
+        "x": 4,
+        "y": 36,
+        "cx": 40,
+        "cy": 10,
+        "id": 102,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "¶}±Ò     "
+      },
+      {
+        "x": 32,
+        "y": 8,
+        "cx": 80,
+        "cy": 8,
+        "id": 65535,
+        "style": 1342308353,
+        "class": "Static",
+        "text": "±z½T©w­n             "
+      },
+      {
+        "x": 32,
+        "y": 20,
+        "cx": 80,
+        "cy": 8,
+        "id": 65535,
+        "style": 1342308353,
+        "class": "Static",
+        "text": "¶}±Ò¦sÀÉ¶Ü?          "
+      }
+    ]
+  },
+  "135": {
+    "style": 2151678080,
+    "n_items_claimed": 3,
+    "n_items_parsed": 3,
+    "x": 14,
+    "y": 32,
+    "cx": 480,
+    "cy": 87,
+    "menu": "",
+    "class": "CIVDIALOG",
+    "caption": "",
+    "font": null,
+    "items": [
+      {
+        "x": 410,
+        "y": 60,
+        "cx": 58,
+        "cy": 20,
+        "id": 101,
+        "style": 1342242817,
+        "class": "Button",
+        "text": "½T"
+      },
+      {
+        "x": 10,
+        "y": 30,
+        "cx": 460,
+        "cy": 25,
+        "id": 102,
+        "style": 1342177280,
+        "class": "RandomUser",
+        "text": ""
+      },
+      {
+        "x": 10,
+        "y": 0,
+        "cx": 460,
+        "cy": 30,
+        "id": 103,
+        "style": 1342177280,
+        "class": "RandomUser",
+        "text": ""
+      }
+    ]
+  },
+  "136": {
+    "style": 2151678080,
+    "n_items_claimed": 3,
+    "n_items_parsed": 3,
+    "x": 188,
+    "y": 32,
+    "cx": 80,
+    "cy": 84,
+    "menu": "",
+    "class": "CIVDIALOG",
+    "caption": "",
+    "font": null,
+    "items": [
+      {
+        "x": 10,
+        "y": 56,
+        "cx": 60,
+        "cy": 20,
+        "id": 101,
+        "style": 1342242817,
+        "class": "Button",
+        "text": "½T"
+      },
+      {
+        "x": 10,
+        "y": 10,
+        "cx": 60,
+        "cy": 15,
+        "id": 103,
+        "style": 1342177280,
+        "class": "RandomUser",
+        "text": ""
+      },
+      {
+        "x": 30,
+        "y": 29,
+        "cx": 20,
+        "cy": 18,
+        "id": 104,
+        "style": 1342177280,
+        "class": "RandomUser",
+        "text": ""
+      }
+    ]
+  },
+  "137": {
+    "style": 2151678080,
+    "n_items_claimed": 4,
+    "n_items_parsed": 4,
+    "x": 136,
+    "y": 60,
+    "cx": 242,
+    "cy": 142,
+    "menu": "",
+    "class": "CIVDIALOG",
+    "caption": "",
+    "font": null,
+    "items": [
+      {
+        "x": 170,
+        "y": 105,
+        "cx": 58,
+        "cy": 25,
+        "id": 101,
+        "style": 1342242817,
+        "class": "Button",
+        "text": "½T"
+      },
+      {
+        "x": 90,
+        "y": 105,
+        "cx": 62,
+        "cy": 25,
+        "id": 102,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "¤W¤@­¶ "
+      },
+      {
+        "x": 10,
+        "y": 60,
+        "cx": 217,
+        "cy": 31,
+        "id": 103,
+        "style": 1350631424,
+        "class": "Edit",
+        "text": ""
+      },
+      {
+        "x": 10,
+        "y": 10,
+        "cx": 219,
+        "cy": 41,
+        "id": 104,
+        "style": 1342177280,
+        "class": "Static",
+        "text": ""
+      }
+    ]
+  },
+  "138": {
+    "style": 2151678144,
+    "n_items_claimed": 1,
+    "n_items_parsed": 1,
+    "x": 3,
+    "y": 12,
+    "cx": 205,
+    "cy": 120,
+    "menu": "",
+    "class": "CIVDIALOG",
+    "caption": "",
+    "font": [
+      12,
+      "CIVTIMES12"
+    ],
+    "items": [
+      {
+        "x": 179,
+        "y": 109,
+        "cx": 23,
+        "cy": 8,
+        "id": 101,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "½T"
+      }
+    ]
+  },
+  "139": {
+    "style": 2151678080,
+    "n_items_claimed": 3,
+    "n_items_parsed": 3,
+    "x": 208,
+    "y": 72,
+    "cx": 96,
+    "cy": 47,
+    "menu": "",
+    "class": "CIVDIALOG",
+    "caption": "",
+    "font": null,
+    "items": [
+      {
+        "x": 41,
+        "y": 17,
+        "cx": 46,
+        "cy": 22,
+        "id": 101,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "½T"
+      },
+      {
+        "x": 10,
+        "y": 10,
+        "cx": 78,
+        "cy": 1,
+        "id": 103,
+        "style": 1342177280,
+        "class": "RandomUser",
+        "text": ""
+      },
+      {
+        "x": 10,
+        "y": 13,
+        "cx": 20,
+        "cy": 18,
+        "id": 104,
+        "style": 1342177280,
+        "class": "RandomUser",
+        "text": ""
+      }
+    ]
+  },
+  "140": {
+    "style": 2151678080,
+    "n_items_claimed": 5,
+    "n_items_parsed": 5,
+    "x": 82,
+    "y": 80,
+    "cx": 324,
+    "cy": 200,
+    "menu": "",
+    "class": "CIVDIALOG",
+    "caption": "",
+    "font": null,
+    "items": [
+      {
+        "x": 256,
+        "y": 170,
+        "cx": 58,
+        "cy": 20,
+        "id": 101,
+        "style": 1342242817,
+        "class": "Button",
+        "text": "½T"
+      },
+      {
+        "x": 256,
+        "y": 140,
+        "cx": 58,
+        "cy": 20,
+        "id": 102,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "¨ú®ø  "
+      },
+      {
+        "x": 256,
+        "y": 80,
+        "cx": 58,
+        "cy": 20,
+        "id": 103,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "»¡©ú"
+      },
+      {
+        "x": 10,
+        "y": 30,
+        "cx": 234,
+        "cy": 162,
+        "id": 104,
+        "style": 1352663041,
+        "class": "ListBox",
+        "text": ""
+      },
+      {
+        "x": 10,
+        "y": 10,
+        "cx": 272,
+        "cy": 16,
+        "id": 106,
+        "style": 1342308352,
+        "class": "Static",
+        "text": "¦b¦¹«°«Ø³y¬Æ»ò?        "
+      }
+    ]
+  },
+  "141": {
+    "style": 2151678080,
+    "n_items_claimed": 1,
+    "n_items_parsed": 1,
+    "x": 150,
+    "y": 100,
+    "cx": 270,
+    "cy": 41,
+    "menu": "",
+    "class": "CIVDIALOG",
+    "caption": "",
+    "font": null,
+    "items": [
+      {
+        "x": 205,
+        "y": 10,
+        "cx": 57,
+        "cy": 20,
+        "id": 101,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "½T"
+      }
+    ]
+  },
+  "142": {
+    "style": 2151678080,
+    "n_items_claimed": 3,
+    "n_items_parsed": 3,
+    "x": 2,
+    "y": 16,
+    "cx": 512,
+    "cy": 320,
+    "menu": "",
+    "class": "CIVDIALOG",
+    "caption": "",
+    "font": null,
+    "items": [
+      {
+        "x": 408,
+        "y": 288,
+        "cx": 45,
+        "cy": 20,
+        "id": 101,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "½T"
+      },
+      {
+        "x": 56,
+        "y": 224,
+        "cx": 400,
+        "cy": 32,
+        "id": 103,
+        "style": 1342177280,
+        "class": "RandomUser",
+        "text": ""
+      },
+      {
+        "x": 60,
+        "y": 258,
+        "cx": 20,
+        "cy": 12,
+        "id": 104,
+        "style": 1342177280,
+        "class": "RandomUser",
+        "text": ""
+      }
+    ]
+  },
+  "143": {
+    "style": 2151678080,
+    "n_items_claimed": 18,
+    "n_items_parsed": 18,
+    "x": 46,
+    "y": 74,
+    "cx": 512,
+    "cy": 320,
+    "menu": "",
+    "class": "CIVDIALOG",
+    "caption": "",
+    "font": null,
+    "items": [
+      {
+        "x": 444,
+        "y": 264,
+        "cx": 64,
+        "cy": 20,
+        "id": 101,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "½T"
+      },
+      {
+        "x": 444,
+        "y": 296,
+        "cx": 64,
+        "cy": 20,
+        "id": 102,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "¨ú®ø  "
+      },
+      {
+        "x": 4,
+        "y": 3,
+        "cx": 85,
+        "cy": 75,
+        "id": 803,
+        "style": 1342177280,
+        "class": "Region",
+        "text": ""
+      },
+      {
+        "x": 92,
+        "y": 3,
+        "cx": 85,
+        "cy": 75,
+        "id": 804,
+        "style": 1342177280,
+        "class": "Region",
+        "text": ""
+      },
+      {
+        "x": 180,
+        "y": 3,
+        "cx": 85,
+        "cy": 75,
+        "id": 805,
+        "style": 1342177280,
+        "class": "Region",
+        "text": ""
+      },
+      {
+        "x": 4,
+        "y": 81,
+        "cx": 85,
+        "cy": 75,
+        "id": 807,
+        "style": 1342177280,
+        "class": "Region",
+        "text": ""
+      },
+      {
+        "x": 92,
+        "y": 81,
+        "cx": 85,
+        "cy": 75,
+        "id": 808,
+        "style": 1342177280,
+        "class": "Region",
+        "text": ""
+      },
+      {
+        "x": 180,
+        "y": 81,
+        "cx": 85,
+        "cy": 75,
+        "id": 809,
+        "style": 1342177280,
+        "class": "Region",
+        "text": ""
+      },
+      {
+        "x": 4,
+        "y": 159,
+        "cx": 85,
+        "cy": 75,
+        "id": 811,
+        "style": 1342177280,
+        "class": "Region",
+        "text": ""
+      },
+      {
+        "x": 92,
+        "y": 159,
+        "cx": 85,
+        "cy": 75,
+        "id": 812,
+        "style": 1342177280,
+        "class": "Region",
+        "text": ""
+      },
+      {
+        "x": 180,
+        "y": 159,
+        "cx": 85,
+        "cy": 75,
+        "id": 813,
+        "style": 1342177280,
+        "class": "Region",
+        "text": ""
+      },
+      {
+        "x": 4,
+        "y": 237,
+        "cx": 85,
+        "cy": 75,
+        "id": 815,
+        "style": 1342177280,
+        "class": "Region",
+        "text": ""
+      },
+      {
+        "x": 92,
+        "y": 237,
+        "cx": 85,
+        "cy": 75,
+        "id": 816,
+        "style": 1342177280,
+        "class": "Region",
+        "text": ""
+      },
+      {
+        "x": 180,
+        "y": 237,
+        "cx": 85,
+        "cy": 75,
+        "id": 817,
+        "style": 1342177280,
+        "class": "Region",
+        "text": ""
+      },
+      {
+        "x": 276,
+        "y": 13,
+        "cx": 156,
+        "cy": 55,
+        "id": 806,
+        "style": 1342177280,
+        "class": "Region",
+        "text": ""
+      },
+      {
+        "x": 276,
+        "y": 92,
+        "cx": 156,
+        "cy": 55,
+        "id": 810,
+        "style": 1342177280,
+        "class": "Region",
+        "text": ""
+      },
+      {
+        "x": 276,
+        "y": 170,
+        "cx": 156,
+        "cy": 55,
+        "id": 814,
+        "style": 1342177280,
+        "class": "Region",
+        "text": ""
+      },
+      {
+        "x": 276,
+        "y": 249,
+        "cx": 156,
+        "cy": 55,
+        "id": 818,
+        "style": 1342177280,
+        "class": "Region",
+        "text": ""
+      }
+    ]
+  },
+  "144": {
+    "style": 2151678080,
+    "n_items_claimed": 4,
+    "n_items_parsed": 4,
+    "x": 40,
+    "y": 40,
+    "cx": 512,
+    "cy": 320,
+    "menu": "",
+    "class": "CIVDIALOG",
+    "caption": "",
+    "font": null,
+    "items": [
+      {
+        "x": 370,
+        "y": 255,
+        "cx": 70,
+        "cy": 22,
+        "id": 101,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "½T"
+      },
+      {
+        "x": 370,
+        "y": 228,
+        "cx": 70,
+        "cy": 22,
+        "id": 102,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "¤W¤@­¶ "
+      },
+      {
+        "x": 258,
+        "y": 34,
+        "cx": 190,
+        "cy": 20,
+        "id": 103,
+        "style": 1342177280,
+        "class": "RandomUser",
+        "text": ""
+      },
+      {
+        "x": 262,
+        "y": 56,
+        "cx": 20,
+        "cy": 18,
+        "id": 104,
+        "style": 1342177280,
+        "class": "RandomUser",
+        "text": ""
+      }
+    ]
+  },
+  "145": {
+    "style": 2151678080,
+    "n_items_claimed": 4,
+    "n_items_parsed": 4,
+    "x": 188,
+    "y": 32,
+    "cx": 142,
+    "cy": 86,
+    "menu": "",
+    "class": "CIVDIALOG",
+    "caption": "",
+    "font": null,
+    "items": [
+      {
+        "x": 72,
+        "y": 56,
+        "cx": 60,
+        "cy": 20,
+        "id": 101,
+        "style": 1342242817,
+        "class": "Button",
+        "text": "½T"
+      },
+      {
+        "x": 72,
+        "y": 30,
+        "cx": 60,
+        "cy": 20,
+        "id": 102,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "»¡©ú"
+      },
+      {
+        "x": 10,
+        "y": 10,
+        "cx": 122,
+        "cy": 15,
+        "id": 103,
+        "style": 1342177280,
+        "class": "RandomUser",
+        "text": ""
+      },
+      {
+        "x": 30,
+        "y": 29,
+        "cx": 20,
+        "cy": 18,
+        "id": 104,
+        "style": 1342177280,
+        "class": "RandomUser",
+        "text": ""
+      }
+    ]
+  },
+  "146": {
+    "style": 2151678080,
+    "n_items_claimed": 2,
+    "n_items_parsed": 2,
+    "x": 64,
+    "y": 66,
+    "cx": 512,
+    "cy": 320,
+    "menu": "",
+    "class": "CIVDIALOG",
+    "caption": "",
+    "font": null,
+    "items": [
+      {
+        "x": 112,
+        "y": 4,
+        "cx": 288,
+        "cy": 40,
+        "id": 101,
+        "style": 1342177280,
+        "class": "RandomUser",
+        "text": ""
+      },
+      {
+        "x": 191,
+        "y": 85,
+        "cx": 175,
+        "cy": 132,
+        "id": 102,
+        "style": 1342177280,
+        "class": "RandomUser",
+        "text": ""
+      }
+    ]
+  },
+  "147": {
+    "style": 2151678080,
+    "n_items_claimed": 2,
+    "n_items_parsed": 2,
+    "x": 64,
+    "y": 66,
+    "cx": 512,
+    "cy": 320,
+    "menu": "",
+    "class": "CIVDIALOG",
+    "caption": "",
+    "font": null,
+    "items": [
+      {
+        "x": 138,
+        "y": 39,
+        "cx": 269,
+        "cy": 30,
+        "id": 101,
+        "style": 1342177280,
+        "class": "RandomUser",
+        "text": ""
+      },
+      {
+        "x": 133,
+        "y": 69,
+        "cx": 279,
+        "cy": 126,
+        "id": 102,
+        "style": 1342177280,
+        "class": "RandomUser",
+        "text": ""
+      }
+    ]
+  },
+  "148": {
+    "style": 2151678080,
+    "n_items_claimed": 0,
+    "n_items_parsed": 0,
+    "x": 0,
+    "y": 0,
+    "cx": 512,
+    "cy": 320,
+    "menu": "",
+    "class": "CIVDIALOG",
+    "caption": "",
+    "font": null,
+    "items": []
+  },
+  "149": {
+    "style": 2151678080,
+    "n_items_claimed": 3,
+    "n_items_parsed": 3,
+    "x": 64,
+    "y": 90,
+    "cx": 512,
+    "cy": 320,
+    "menu": "",
+    "class": "CIVDIALOG",
+    "caption": "",
+    "font": null,
+    "items": [
+      {
+        "x": 454,
+        "y": 292,
+        "cx": 50,
+        "cy": 20,
+        "id": 101,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "½T"
+      },
+      {
+        "x": 15,
+        "y": 96,
+        "cx": 482,
+        "cy": 20,
+        "id": 103,
+        "style": 1342177280,
+        "class": "RandomUser",
+        "text": ""
+      },
+      {
+        "x": 200,
+        "y": 120,
+        "cx": 20,
+        "cy": 16,
+        "id": 104,
+        "style": 1342177280,
+        "class": "RandomUser",
+        "text": ""
+      }
+    ]
+  },
+  "150": {
+    "style": 2151678080,
+    "n_items_claimed": 2,
+    "n_items_parsed": 2,
+    "x": 41,
+    "y": 53,
+    "cx": 120,
+    "cy": 36,
+    "menu": "",
+    "class": "CIVDIALOG",
+    "caption": "",
+    "font": null,
+    "items": [
+      {
+        "x": 26,
+        "y": 3,
+        "cx": 91,
+        "cy": 29,
+        "id": 65535,
+        "style": 1342308352,
+        "class": "Static",
+        "text": "½Ð´¡¤JºÏ¤ù ^0 (§tÀÉ®× ^1)¡C                      "
+      },
+      {
+        "x": 3,
+        "y": 8,
+        "cx": 17,
+        "cy": 19,
+        "id": 65535,
+        "style": 1342177283,
+        "class": "Static",
+        "text": ""
+      }
+    ]
+  },
+  "151": {
+    "style": 2155872256,
+    "n_items_claimed": 0,
+    "n_items_parsed": 0,
+    "x": 16,
+    "y": 16,
+    "cx": 512,
+    "cy": 320,
+    "menu": "",
+    "class": "CIVDIALOG",
+    "caption": "",
+    "font": null,
+    "items": []
+  },
+  "666": {
+    "style": 2151678080,
+    "n_items_claimed": 2,
+    "n_items_parsed": 2,
+    "x": 10,
+    "y": 10,
+    "cx": 300,
+    "cy": 150,
+    "menu": "",
+    "class": "CIVDIALOG",
+    "caption": "",
+    "font": null,
+    "items": [
+      {
+        "x": 0,
+        "y": 10,
+        "cx": 300,
+        "cy": 35,
+        "id": 103,
+        "style": 1342308353,
+        "class": "Static",
+        "text": "Âà´« Civilization ¹ÏÀÉ¤¤       "
+      },
+      {
+        "x": 100,
+        "y": 105,
+        "cx": 100,
+        "cy": 30,
+        "id": 102,
+        "style": 1342177280,
+        "class": "Button",
+        "text": "¤¤¤î "
+      }
+    ]
+  },
+  "999": {
+    "style": 2151678080,
+    "n_items_claimed": 11,
+    "n_items_parsed": 11,
+    "x": 1,
+    "y": 12,
+    "cx": 256,
+    "cy": 160,
+    "menu": "",
+    "class": "CIVDIALOG",
+    "caption": "",
+    "font": null,
+    "items": [
+      {
+        "x": 220,
+        "y": 145,
+        "cx": 24,
+        "cy": 8,
+        "id": 101,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "½T"
+      },
+      {
+        "x": 27,
+        "y": 106,
+        "cx": 200,
+        "cy": 16,
+        "id": 800,
+        "style": 1342177280,
+        "class": "RandomUser",
+        "text": ""
+      },
+      {
+        "x": 25,
+        "y": 130,
+        "cx": 10,
+        "cy": 9,
+        "id": 801,
+        "style": 1342177280,
+        "class": "RandomUser",
+        "text": ""
+      },
+      {
+        "x": 25,
+        "y": 145,
+        "cx": 22,
+        "cy": 8,
+        "id": 106,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "«e­¶< "
+      },
+      {
+        "x": 55,
+        "y": 145,
+        "cx": 22,
+        "cy": 8,
+        "id": 106,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "«á­¶> "
+      },
+      {
+        "x": 25,
+        "y": 130,
+        "cx": 22,
+        "cy": 8,
+        "id": 108,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "¬F©²"
+      },
+      {
+        "x": 55,
+        "y": 130,
+        "cx": 22,
+        "cy": 8,
+        "id": 107,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "§g¥D"
+      },
+      {
+        "x": 100,
+        "y": 145,
+        "cx": 24,
+        "cy": 8,
+        "id": 105,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "«Â¯Ù  "
+      },
+      {
+        "x": 130,
+        "y": 145,
+        "cx": 24,
+        "cy": 8,
+        "id": 104,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "®`©È  "
+      },
+      {
+        "x": 160,
+        "y": 145,
+        "cx": 24,
+        "cy": 8,
+        "id": 103,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "µL½ì "
+      },
+      {
+        "x": 190,
+        "y": 145,
+        "cx": 24,
+        "cy": 8,
+        "id": 102,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "¨ú®ø  "
+      }
+    ]
+  },
+  "2000": {
+    "style": 2151678080,
+    "n_items_claimed": 20,
+    "n_items_parsed": 20,
+    "x": 18,
+    "y": 18,
+    "cx": 198,
+    "cy": 117,
+    "menu": "",
+    "class": "CIVDIALOG",
+    "caption": "",
+    "font": null,
+    "items": [
+      {
+        "x": 135,
+        "y": 95,
+        "cx": 35,
+        "cy": 14,
+        "id": 101,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "½T"
+      },
+      {
+        "x": 135,
+        "y": 76,
+        "cx": 35,
+        "cy": 14,
+        "id": 102,
+        "style": 1342242816,
+        "class": "Button",
+        "text": "¤W¤@­¶ "
+      },
+      {
+        "x": 0,
+        "y": 66,
+        "cx": 198,
+        "cy": 1,
+        "id": 300,
+        "style": 1342177280,
+        "class": "RandomHorzBump",
+        "text": ""
+      },
+      {
+        "x": 100,
+        "y": 66,
+        "cx": 1,
+        "cy": 51,
+        "id": 350,
+        "style": 1342177280,
+        "class": "RandomVertBump",
+        "text": ""
+      },
+      {
+        "x": 50,
+        "y": 20,
+        "cx": 100,
+        "cy": 8,
+        "id": 400,
+        "style": 1342177288,
+        "class": "RandomStatic",
+        "text": "This is a test of the 3d stuff"
+      },
+      {
+        "x": 50,
+        "y": 30,
+        "cx": 100,
+        "cy": 8,
+        "id": 401,
+        "style": 1342177280,
+        "class": "RandomStatic",
+        "text": "We will see what it looks like."
+      },
+      {
+        "x": 75,
+        "y": 40,
+        "cx": 48,
+        "cy": 12,
+        "id": 103,
+        "style": 1350631424,
+        "class": "Edit",
+        "text": ""
+      },
+      {
+        "x": 88,
+        "y": 54,
+        "cx": 23,
+        "cy": 8,
+        "id": 402,
+        "style": 1342177284,
+        "class": "RandomStatic",
+        "text": "NAME"
+      },
+      {
+        "x": 10,
+        "y": 75,
+        "cx": 45,
+        "cy": 10,
+        "id": 500,
+        "style": 1342373898,
+        "class": "RandomRadio",
+        "text": "Button 1"
+      },
+      {
+        "x": 10,
+        "y": 85,
+        "cx": 45,
+        "cy": 10,
+        "id": 501,
+        "style": 1342373890,
+        "class": "RandomRadio",
+        "text": "Button 2"
+      },
+      {
+        "x": 10,
+        "y": 95,
+        "cx": 45,
+        "cy": 10,
+        "id": 502,
+        "style": 1342373890,
+        "class": "RandomRadio",
+        "text": "Button 3"
+      },
+      {
+        "x": 5,
+        "y": 70,
+        "cx": 55,
+        "cy": 40,
+        "id": 850,
+        "style": 1409286144,
+        "class": "RandomRectangle",
+        "text": ""
+      },
+      {
+        "x": 3,
+        "y": 5,
+        "cx": 64,
+        "cy": 8,
+        "id": 600,
+        "style": 1342242944,
+        "class": "RandomCheck",
+        "text": "The"
+      },
+      {
+        "x": 3,
+        "y": 14,
+        "cx": 64,
+        "cy": 8,
+        "id": 600,
+        "style": 1342242816,
+        "class": "RandomCheck",
+        "text": "check"
+      },
+      {
+        "x": 3,
+        "y": 23,
+        "cx": 40,
+        "cy": 8,
+        "id": 601,
+        "style": 1342242832,
+        "class": "RandomCheck",
+        "text": "Is in"
+      },
+      {
+        "x": 3,
+        "y": 32,
+        "cx": 40,
+        "cy": 8,
+        "id": 602,
+        "style": 1342242848,
+        "class": "RandomCheck",
+        "text": "the mail"
+      },
+      {
+        "x": 3,
+        "y": 40,
+        "cx": 40,
+        "cy": 8,
+        "id": 603,
+        "style": 1342242880,
+        "class": "RandomCheck",
+        "text": "ha!ha!"
+      },
+      {
+        "x": 7,
+        "y": 52,
+        "cx": 56,
+        "cy": 12,
+        "id": 700,
+        "style": 1342177280,
+        "class": "RandomHorzMeter",
+        "text": ""
+      },
+      {
+        "x": 126,
+        "y": 73,
+        "cx": 52,
+        "cy": 39,
+        "id": 800,
+        "style": 1342177280,
+        "class": "RandomFrame",
+        "text": ""
+      },
+      {
+        "x": 154,
+        "y": 5,
+        "cx": 37,
+        "cy": 54,
+        "id": 851,
+        "style": 1342177280,
+        "class": "RandomRectangle",
+        "text": ""
+      }
+    ]
+  }
+}
