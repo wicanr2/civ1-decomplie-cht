@@ -1,0 +1,112 @@
+spec 07 + 03 §3.5.1 整合 Honza Havlicek 2008 SAV RLE / SPR32X32 palette + 加 1993 Win 原版視覺 reference
+
+使用者 2026-06-06 提供 user-provided-data/ 含: (1) 1993 Civ Windows 原版
+3 張 screenshot (2) civdata4.rsc 抽出版 (3) Honza Havlicek 2008
+"CivWin File Format demonstrator" source (公開 RE 研究, free redistribute +
+須 credit). 本 round 把這份材料隔離進 team-a/external/ (Team A only),
+萃取進 spec 03/07 補完之前未抽到的 SAV RLE 算法 + SPR32X32 palette 語意.
+
+# 交付
+
+  team-a/external/                       Team A only 隔離區
+    README.md                            clean-room 處置 + Honza credit
+    .gitignore                           不 push .exe / .rsc binary
+    Civilization/                        Honza 2008 source (gitignore .exe)
+      Readme.txt                         format 文件 (palette + RSC + LZW)
+      src/sav_file.{h,cpp}               SAV RLE 完整算法
+      src/rsc_manager.{h,cpp}            RSC 結構 (校驗我們 spec 03)
+      src/gif_convert.cpp                Civ1 LZW 變體 BitReader
+      src/main.cpp + common.{h,cpp}
+    civdata4_extracted/                  原版 RSC binary (gitignore)
+
+  team-a/specs/07_save_format_and_rle.md NEW spec
+    §7.0 解答什麼
+    §7.1 RLE 壓縮完整 (Honza 算法 = load.c::RLLEncode/Decode 等價):
+           c < 0x80: emit byte × c times
+           c >= 0x80: copy next (c-0x80) bytes verbatim
+           count 範圍 0..127
+    §7.2 SAV 解壓後內部結構 TODO (Honza 也沒抽通)
+    §7.3 Team B 整合介面契約 (civ_rle_encode/decode)
+    §7.4 跟 Track A PROJECT_MEMORY 關係
+    §7.5 其他外部研究參考
+    §7.6 跟 spec 01/02/06 關係
+    License + Honza credit
+
+  team-a/specs/03_asset_formats_and_tiles.md
+    §3.5.1 NEW: SPR32X32 palette 內部結構 (Honza 揭穿)
+      - 72 colors total (64 base + 8 cyclic anim)
+      - idx 0 = transparent (我們 M5 看到的紅底就是此)
+      - idx 1-2 = unit interior/border (runtime 改 national color)
+      - idx 3-4 = barbarian main/bg
+      - idx 5..18 = 7 civ pairs
+      - idx 19-20 = city screen UI
+      - idx >= 72 不可用 (256 mode 黑)
+      - sentinel pixels in bottom-left 自描述 palette slot
+
+  docs/screenshots/reference/            原版視覺 ground-truth
+    README.md                            layout gap analysis
+    civ1_win_civilopedia_dropdown.png    主畫面 + Civilopedia menu 展開
+    civ1_win_city_screen.png             城市 screen (PARIS POP:10,000)
+    civ1_win_main_menu.jpg               主選單 6 entry
+
+  README.md                              加 spec 07 行 + 7.2 TODO 行 +
+                                         RE 覆蓋表「存讀檔 0% → 50%」+
+                                         reference/ + external/ 連結 +
+                                         Credits 段 (Honza)
+
+  .gitignore                             加 user-provided-data/ +
+                                         external/release + civdata4_extracted
+
+# 重要發現
+
+  1. SPR32X32 用 sheet 自帶 palette (sample pixel) **不是 fallback** —
+     palette 內含 national + barbarian color, 是 game engine 設計的.
+     之前我們 D-minimap 用 hardcoded RGB + nearest 是對的 fallback,
+     精確版可以 read sentinel pixels 拿 national color.
+
+  2. SAV file 用純 byte stream RLE (不是 bitstream, 不是 LZW),
+     算法 100 行內可實作. 接通後 M6-full save 半解, 剩 SAV 解壓後
+     city/unit 表 layout 仍 blocker.
+
+  3. 原版 layout 跟我們 M6-minimap 差距:
+     - title bar: 原版 Win16 "CIVILIZATION" + min/max, 我們是窄 menu bar
+     - menu: 原版 8 個 item (File/Edit/Orders/Advisors/World/Civilopedia
+       /City/Help), 我們 5 個 (少 File/Edit/City/Help)
+     - World Map / Status 是獨立 Win16 子視窗有自己 title bar,
+       我們嵌入主 widget. (M5-D polish 可加)
+     - 主地圖缺 city sprite + city name label (M6-full city 系統)
+     詳見 docs/screenshots/reference/README.md
+
+  4. Honza Readme.txt 明示「14 個失敗 CvPc」可能是 MIDI-prefixed
+     (spec 03 §9.4 已標), 不是 LZW 變體問題. 我們的 spec 03 §9.1
+     6-byte header 對 (Honza 算法一樣).
+
+# RE 覆蓋變化
+
+  存讀檔 0% → 50% — spec 07 §7.1 RLE 算法已 ship, §7.2 內部 layout 仍 TODO
+  Palette 模型: 從「未知 256 entry」→「明確 72 colors + 語意」(spec 03 §3.5.1)
+  Layout reference: 從「設計師 agent 找的 lilura1 wiki」→「使用者提供原版直觀 screenshot 3 張」
+
+# 不變
+
+  ctest 15/15 PASS (本 round 是 Team A spec 工作, 不動 Team B code)
+  build 36/36 zero warning
+
+# Clean-room 處置
+
+  Honza source 隔離在 team-a/external/, Team B 不可直接讀.
+  進到 Team B 的只有 spec 07 §7.3 介面契約 (公開可知的 format 描述).
+  Honza 的 license (free redistribute + 須 credit) 完全相容於本專案
+  MIT (code) + CC BY 4.0 (spec) license.
+
+  README.md 加 Credits 段 credit Honza Havlicek 對 spec 03 §3.5.1 +
+  spec 07 §7.1 的貢獻.
+
+# 下一步
+
+  使用者決定. 候選:
+  A) Team B 實作 civ_rle_encode/decode (spec 07 §7.3) + test 對真實 SAV
+  B) Team A 從真實 SAV byte dump 手動分析 §7.2 內部結構
+  C) Team A 寫 spec 06 (Ghidra 抽 unit/civ/tech 數值表)
+  D) Team B layout polish 對齊原版 8 menu items + Win16 子視窗 chrome
+  E) Team B 補 city 系統 (M6-full 真版)

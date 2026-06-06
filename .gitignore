@@ -31,3 +31,12 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+
+# User-provided raw research material (zip / 大型參考)
+# 萃取結果已搬進 team-a/external/ + docs/screenshots/reference/, 原檔留本機.
+user-provided-data/
+
+# team-a/external/ 內的 .exe / .rsc binary 不 push (子 .gitignore 已細控)
+# 來源: Honza Havlicek 2008 CivWin File Format demonstrator
+team-a/external/civdata4_extracted/
+team-a/external/Civilization/release/

@@ -1,0 +1,42 @@
+# Project: Civilization formats
+# Makefile created by Dev-C++ 4.9.9.2
+
+CPP  = g++.exe -D__DEBUG__
+CC   = gcc.exe -D__DEBUG__
+WINDRES = windres.exe
+RES  = 
+OBJ  = obj/common.o obj/gif_convert.o obj/main.o obj/rsc_manager.o obj/sav_file.o $(RES)
+LINKOBJ  = obj/common.o obj/gif_convert.o obj/main.o obj/rsc_manager.o obj/sav_file.o $(RES)
+LIBS =  -L"X:/unsorted/Dev-Cpp/lib"  -g3 
+INCS =  -I"X:/unsorted/Dev-Cpp/include" 
+CXXINCS =  -I"X:/unsorted/Dev-Cpp/lib/gcc/mingw32/3.4.2/include"  -I"X:/unsorted/Dev-Cpp/include/c++/3.4.2/backward"  -I"X:/unsorted/Dev-Cpp/include/c++/3.4.2/mingw32"  -I"X:/unsorted/Dev-Cpp/include/c++/3.4.2"  -I"X:/unsorted/Dev-Cpp/include" 
+BIN  = "Civilization formats.exe"
+CXXFLAGS = $(CXXINCS)   -g3
+CFLAGS = $(INCS)   -g3
+RM = rm -f
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before "Civilization formats.exe" all-after
+
+
+clean: clean-custom
+	${RM} $(OBJ) $(BIN)
+
+$(BIN): $(OBJ)
+	$(CPP) $(LINKOBJ) -o "Civilization formats.exe" $(LIBS)
+
+obj/common.o: src/common.cpp
+	$(CPP) -c src/common.cpp -o obj/common.o $(CXXFLAGS)
+
+obj/gif_convert.o: src/gif_convert.cpp
+	$(CPP) -c src/gif_convert.cpp -o obj/gif_convert.o $(CXXFLAGS)
+
+obj/main.o: src/main.cpp
+	$(CPP) -c src/main.cpp -o obj/main.o $(CXXFLAGS)
+
+obj/rsc_manager.o: src/rsc_manager.cpp
+	$(CPP) -c src/rsc_manager.cpp -o obj/rsc_manager.o $(CXXFLAGS)
+
+obj/sav_file.o: src/sav_file.cpp
+	$(CPP) -c src/sav_file.cpp -o obj/sav_file.o $(CXXFLAGS)

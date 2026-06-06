@@ -1,0 +1,8 @@
+# 不 push 編譯好的 .exe (Windows binary, 來自 Honza Havlicek 2008)
+# 跟 Civdata4.rsc (要使用者自備原版 CIV.EXE / .RSC)
+*.exe
+*.rsc
+*.RSC
+
+# convert.bat 是 Honza 寫的 batch, 也不入 repo
+convert.bat

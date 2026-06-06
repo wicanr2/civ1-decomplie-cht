@@ -166,6 +166,42 @@ Pascal string：1 byte length + N bytes ASCII。
 
 無 palette 不影響 LZW 解碼本身（解出的是 1-byte-per-pixel palette **索引** stream），只影響最後出 PNG 的視覺。`extract_tiles.py` 用內建 gradient palette 作 sanity check fallback；走通 LZW 後可用 `--palette` 餵 256×3 RGB binary。
 
+### 3.5.1  SPR32X32 palette 內部結構 (外部研究: Honza Havlicek 2008)
+
+來源: `team-a/external/Civilization/Readme.txt` L207-226. Honza 2008 RE Win port 後揭穿 SPR32X32 sprite sheet 內 palette 結構不是 256 標準, 而是 **64 base + 8 cyclic animation = 72 colors 上限**, 且包含 sentinel 像素指定 national color 對應:
+
+**Palette index 語意 (Honza 直接觀察)**:
+
+| idx | 用途 | 備註 |
+|---:|---|---|
+| 0 | **transparent / 不畫** | 對應我們 M5 看到的「紅色背景」就是 palette[0] (sheet palette 把 0 設成 magenta-ish red 當 colour key) |
+| 1 | unit interior color | runtime 被 national main color 取代 (`current_civ.main_color`) |
+| 2 | unit border color | runtime 被 national background color 取代 |
+| 3 | barbarian main | 固定 (不隨 civ 變) |
+| 4 | barbarian background | 固定 |
+| 5+6 | civ 0 main+background | (civ 0 = Roman, slot 1) |
+| 7+8 | civ 1 main+background | (Babylonian) |
+| 9+10 | civ 2 | (German) |
+| 11+12 | civ 3 | (Egyptian) |
+| 13+14 | civ 4 | (American) |
+| 15+16 | civ 5 | (Greek) |
+| 17+18 | civ 6 | (Indian) |
+| 19 | city screen foreground | UI |
+| 20 | city screen background | UI |
+| 21..63 | base terrain / decoration | 不變的 sheet colors |
+| 64..71 | **cyclic animation** | 8 slot 用於 water/UI 動畫 (Civ1 經典藍水 shimmer) |
+| ≥72 | **不可用** (256 mode 下 paint 為黑) | encoder 不該產生此 idx |
+
+**Sentinel pixels (SPR32X32 左下角)**:
+sheet 左下角少數 pixel 直接編碼上述 palette idx 值, runtime engine read 這些 pixel 來「自描述」哪些 slot 是 national / barbarian / city color. Honza Readme L207: "In left bottom you can see a few pixels. Pixels meaning from left to right".
+
+**對 Team B 的影響**:
+- M5 / M6 沿用 sheet palette 當 fb palette OK, 因為 sheet 已含 national + barbarian colors
+- D-minimap 用 RGB-nearest 找色 (`widgets/minimap.c::palette_nearest()`) 是正確 fallback, 但精確版可以**從 SPR32X32 sentinel pixel 讀** national color slot 就不用 hardcoded RGB
+- 未來想做 city screen (參考 `town-detail-layout.png`) UI 色從 palette[19], [20] 取
+
+**License**: 上述格式描述自 Honza Havlicek 2008 CivWin File Format demonstrator. 引用時須 credit.
+
 ---
 
 ## 3.6  Tile 排列規則

@@ -10,7 +10,7 @@
 
 ## 目前 ship 狀態 (2026-06-06)
 
-最後 ship: D-minimap — minimap 真實 60×30 縮圖 + view rect overlay + unit dots
+最後 ship: spec 07 草稿 + Honza 2008 SAV RLE 格式整合 + 3 張原版視覺 reference
 
 | Milestone | 範圍 | 狀態 | 證據 |
 |---|---|---|---|
@@ -54,13 +54,14 @@
 | [`03`](team-a/specs/03_asset_formats_and_tiles.md) | 5 個 `.RSC` 完整 breakdown / CvPc 格式 / LZW 解通 (185/199 sprite) | **沒有 .PIC 檔** (Track A 誤判)。所有資產在 5 個 Mac Resource Fork: CIVDATA0..4 + CIVHELP |
 | [`04`](team-a/specs/04_dialogs_and_controls.md) | 24 個 RT_DIALOG 完整 parse + 控制項家族 | 全 dialog 用 `CIVDIALOG` 自製類別；caption 空字串自繪 |
 | [`05`](team-a/specs/05_game_data_and_strings.md) | 33 STR# + 399 TEXT master tables 定位 | **master tables 不在 CIV.EXE** 而在 `Civdata0.RSC`；72 科技 / 46 建築 / 28 單位 / 24 地形 / 14 文明 / 14 領袖 / 6 政府 全名清單已抽出 |
+| [`07`](team-a/specs/07_save_format_and_rle.md) | **SAV file RLE 壓縮** (`load.c::RLLEncode/Decode`) §7.1 完整 | 取自 [Honza Havlicek 2008 CivWin File Format demonstrator](team-a/external/) (公開 RE 研究). RLE: `<count> <byte>` run 或 `<count\|0x80> <bytes>` literal. §7.2 SAV 解壓後內部結構仍 TODO. |
 
 ### 待寫 spec ❌
 
 | spec | 範圍 | 為什麼 deferred |
 |---|---|---|
 | **`06`** | 14 文明 / 14 領袖 / 72 科技 / 28 單位 / 46 建築/奇蹟 **數值表** (attack / defense / cost / movement / production / 科技 prereq DAG) | spec 05 line 104 明點：推測 hardcoded 在 code segment `const` 陣列；M6-full 戰鬥/生產直接阻擋於此 |
-| **`07`** | combat 公式 + AI 決策 + 外交 + **存讀檔格式 (`load.c::RLLEncode/Decode`)** | spec 01 已點出 `load.c` 含 RLL encoder/decoder，**完全未抽** — M6-full save 必須做 |
+| **`07` §7.2** | SAV 解壓後內部結構 (city/unit/civ 表 byte layout) + combat 公式 + AI 決策 + 外交 | §7.1 RLE 壓縮已 ship (取自 Honza 2008). §7.2 Honza 也沒 RE — 需自家 SAV byte dump 手動分析 或 Ghidra walk `CivLoadGame` |
 | **`08`** | 音效 — MMSYSTEM 4 個 API call site + 23 個 WAV 資源未分類 | 不擋遊戲邏輯；可獨立後做 |
 | **`09`** | 勝利條件 / 結局 / scoring | STR# 155-157 (Space 1/2/Archeologist) 文字側已 RE，演算法未碰 |
 
@@ -70,7 +71,7 @@
 |---|---|---|---|
 | Renderer | `godpal/gr/gr_pic/gr_port/shape` | palette 模型、CvPc LZW、blit | tile blending 邊界規則；14/199 CvPc 仍 LZW variant fail |
 | Loader (Mac shim) | `mac/resmgr` | RSC parser + 5 個 archive | 436 個 `GLOBALLOCK` call site 個別語義 |
-| 存讀檔 | `load.c` | 0% | **完全未碰** — `RLLEncode`/`RLLDecode` 名稱已知，格式未抽 |
+| 存讀檔 | `load.c` | 50% — RLE 算法 spec 07 §7.1 完整 (Honza 2008) | §7.2 SAV 解壓後 city/unit/civ 表 byte layout 未抽 |
 | Dialog system | `dialogs.c` | 100% (spec 04) | — |
 | 視窗 proc | `wdwmap/wdwsmmap/wdwstat/windows` | dispatch table 骨架 (7/22 + 7/9 + 7/9) | 個別 message handler 待補 |
 | AI / 外交 | location 不確定 | 5% | 只確認 `FUN_10e8_2d46` 是 "AI 策略表 init"，其他演算法未抽 |
@@ -161,6 +162,8 @@ tools/                         共用資產抽取工具（MIT）
 - [`docs/screenshots/cvpc_spr32x32_decoded.png`](docs/screenshots/cvpc_spr32x32_decoded.png) — 主 sprite sheet 1472×400
 - [`docs/screenshots/cvpc_king00_elizabeth.png`](docs/screenshots/cvpc_king00_elizabeth.png) — Queen Elizabeth I 領袖肖像示意
 - [`docs/screenshots/m6_minimap_real.png`](docs/screenshots/m6_minimap_real.png) — 最新 ship 截圖 (M6-minimap: 真實縮圖 + view rect + unit dots)
+- [`docs/screenshots/reference/`](docs/screenshots/reference/) — **1993 Civ Windows 原版視覺 reference** (使用者 2026-06-06 提供): 主畫面 + 城市畫面 + 主選單 + layout gap notes
+- [`team-a/external/`](team-a/external/) — **外部 RE 研究資料 (Team A only)**: Honza Havlicek 2008 *CivWin File Format demonstrator* (RSC parser + Civ1 LZW + SAV RLE) — Team B 不可直接讀, 經 spec 03/07 萃取後才接觸
 - [`docs/screenshots/m6_full_lite_units.png`](docs/screenshots/m6_full_lite_units.png) — M6-full-lite: unit 系統 + 多 player 場景
 - [`docs/screenshots/m5c_terrain_groundtruth.png`](docs/screenshots/m5c_terrain_groundtruth.png) — M5-C terrain 真實 SPR32X32 對位
 - [`docs/screenshots/m5b_layout_v2.png`](docs/screenshots/m5b_layout_v2.png) — M5-B layout 對齊原版
@@ -175,3 +178,7 @@ tools/                         共用資產抽取工具（MIT）
 - 翻譯文字（`team-b/assets/zh_TW/`）：**CC BY-SA 4.0**
 - 規格文件（`team-a/specs/`）：**CC BY 4.0**
 - 原版 *Sid Meier's Civilization for Windows* © 1993 MicroProse Software, Inc. — 使用者必須自備合法拷貝。
+
+## Credits
+
+- **Honza Havlicek** (havlicek.honza@gmail.com), *CivWin File Format demonstrator*, 2008 — RSC parser / Civ1 GIF (LZW 變體) decoder / SAV RLE 格式 RE. Spec 03 §3.5.1 SPR32X32 palette 結構 + Spec 07 §7.1 SAV RLE 算法直接引用. 公開研究 free redistribute license + 須 credit. 詳見 [`team-a/external/README.md`](team-a/external/README.md).
