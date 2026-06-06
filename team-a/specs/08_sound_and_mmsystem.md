@@ -1,6 +1,6 @@
 # Spec 08 — 音效 / MMSYSTEM / 24 WAV inventory
 
-> **Team A 規格 (v0.1, 2026-06-06 R11)**.
+> **Team A 規格 (v0.2, 2026-06-06 R13 update)**.
 >
 > **主要來源**:
 > - 1993 Civ Windows 遊戲目錄 24 個 `.WAV` 檔 (使用者本機, `D:\03_game_tmp\win31\C\MPS\CIVWIN\`)
@@ -72,19 +72,24 @@
 | `OPENING.WAV` | 194595 | 開場 (對齊 STR# 137 Credits + STR# 139 Story 開場文字) |
 | `AIRNUKE.WAV` | 188972 | 空射核武 (Nuclear unit 攻擊時動畫音) |
 
-## 8.2  MMSYSTEM API call sites (待 Ghidra walk 精確化)
+## 8.2  MMSYSTEM API call sites (R13 Ghidra walk 確認)
 
-spec 01 §1.4 統計到 **4 個 MMSYSTEM call sites**. 1993 Win 時代 sound 主要 API:
+**R13 `team-a/tools/ghidra_extract_spec06_callgraph.py` 跑 `analyzeHeadless` 結果**:
 
-| Win16 API | 推測用途 | call count |
+| Win16 API | Ghidra 確認 | 推測用途 |
 |---|---|---|
-| `sndPlaySound` (MMSYSTEM.2) | 高階單檔播放 (`PlaySound("CANNON.WAV", NULL, SND_FILENAME \| SND_ASYNC)`) | 推測 ~3 |
-| `mciSendString` (MMSYSTEM.703) | MCI 串流控制 (背景音樂) | 可能 1 |
+| **`sndPlaySound`** (MMSYSTEM.2, Ghidra: `MMSYSTEM.SNDPLAYSOUND` @ EXTERNAL:0x99) | ✅ 確認 | 高階單檔 WAV 播放 `sndPlaySound("CANNON.WAV", SND_ASYNC)`. 對應 §8.1.1-§8.1.5 大部分 WAV (14 leader + 3 system + 3 combat + 1 special = 21 個). |
+| **`mciSendCommand`** (MMSYSTEM.701, Ghidra: `MMSYSTEM.MCISENDCOMMAND` @ EXTERNAL:0x9A) | ✅ 確認 | MCI 命令層級控制. 對應 §8.1.4 (LOSE2/WINTUNE) + §8.1.5 OPENING — 較長的 streaming WAV (>90 KB), MCI 給 fine-grained 控制 (pause/resume/volume). |
 
-**v0.2 R13 預定** Ghidra walk:
-1. 在 CIV.EXE imports 表找 MMSYSTEM 4 entry name
-2. cross-ref 每個 import 找 caller
-3. 對應 §8.1 哪個 WAV 在哪個遊戲事件被叫
+**spec 01 §1.4 "4 call sites" 解釋**: 2 個 API × 平均 2 個 call site 各 = 4. 兩個 API 都在 game lifecycle 的多個地方被呼叫 (e.g. WinMain 結束播 WINTUNE / LOSE2 + game start 播 OPENING).
+
+**所以 1993 Win port 音效架構是 dual-API**:
+- 一般 sound effect → sndPlaySound (簡單 fire-and-forget)
+- 長音樂 / endgame → mciSendCommand (給 stop / resume / volume)
+
+對 Team B `audio.h` 介面契約 (§8.3) 影響:
+- `civ_audio_play(snd)` 簡單 SFX → 內部 SDL_audio queue
+- 可選加 `civ_audio_play_streaming(snd, loop)` 給 LOSE/WIN/OPENING 用
 
 ## 8.3  Team B 整合介面契約
 

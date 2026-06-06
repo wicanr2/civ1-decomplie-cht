@@ -514,23 +514,60 @@ extern const civ_government_stats_t CIV_GOVERNMENT_STATS[6];
 
 Team B 可立即依此 spec 實作 M6-full combat formula (spec 06 §6.1.1) + 城市生產 (spec 06 §6.2).
 
-## 6.9  與 CIV.EXE binary 對位狀態 (R3b 2026-06-06 結論)
+## 6.9  與 CIV.EXE binary 對位狀態 (R13 2026-06-06 update)
 
-**OpenCivOne `UnitDefinition` 34-byte struct (含 12-byte name) 在 1993 Win CIV.EXE 內找不到** (`team-a/tools/scan_unitdef_struct.py` scan 結果):
-- "Settlers" 字串在 CIV.EXE 兩處 (0xB75AE, 0xB9DF6), 但都是 **error message text** ("! Settlers lost. ", "Settlers+\0") **不是 unit table 內 name field**
+### 6.9.1  R3b 結論 (byte scan)
+
+**OpenCivOne `UnitDefinition` 34-byte struct (含 12-byte name) 在 1993 Win CIV.EXE 內找不到** (`team-a/tools/scan_unitdef_struct.py` scan):
+- "Settlers" 字串在 CIV.EXE 兩處 (0xB75AE, 0xB9DF6), 都是 **error message text** ("! Settlers lost. ", "Settlers+\0"), 非 unit table
 - 全 34-byte struct hit = 0
+- 分離 attack/defense/cost/move 28-byte array 也 0 hit (試過 cost/10 / LE16 / interleaved)
 
-**推測 1993 Win port 跟 1991 DOS 不同**:
-- DOS 版 (OpenCivOne base) unit struct 含 embedded name (34 byte)
-- Win port 拆 name 進 STR# 132 (per spec 05, name 從 RSC 載), unit table 只剩 **22 byte 數值欄位** (11 LE16 × 2 byte)
-- Win port 是 Mac port + Win shim (spec 01 §1.2), Mac 用 STR# resource 自然把 name 跟 stats 分離
+### 6.9.2  R13 Ghidra callgraph walk 結論
 
-**v0.3 R4 round 預定**:
-- 改掃 22-byte numeric-only struct (從 cancel_tech LE16 起算 11 個 LE16) × 28 = 616 byte
-- 或 用 Ghidra cross-ref 從 `FUN_11e8_0337` 往下 walk 找 unit struct constructor
-- 或 直接從 Civ1 SAV file 的 active unit list (§7.2 §0x06C8 area) 反推 stats 欄位 stride
+**`team-a/tools/ghidra_extract_spec06_callgraph.py` 跑 `analyzeHeadless`**:
+- target: `FUN_11e8_0337` @ `11e8:0337` (spec 02 §2.1.2 E 段所謂 "data_units init")
+- callers: 1 個 = `FUN_1008_0000` (WinMain) — 確認是 WinMain 直接呼叫的 7 個 init function 之一
+- callees: 7 個 — 全部 0..2 個 `DAT_* = imm` writes (沒有「連續 28 byte 寫」pattern)
+  - `FUN_11f8_0080` (1 DAT write) — STR# 載入 utility (對應 spec 02 §2.2.6 GetIndString)
+  - `FUN_1000_18d4` / `FUN_1000_1716` / `FUN_1000_36b2` / `FUN_11a8_0054` / `FUN_11c8_0000` — generic struct copy / palette / window 工具
+  - `FUN_1100_05b8` — 64000-byte framebuffer alloc
 
-**對 Team B 影響 = 零** — `data/unit_stats.h` 內 const 值直接從 OpenCivOne 抄, 即使 binary 沒對齊也沒關係 (因為 ground-truth 在 OpenCivOne, 不在我們的 binary).
+- target 本體 17 個 DAT writes — 都是 player slot IDs (0..7 + 0xF8..0xFF) + 4 STR# loop (STR# 143/144/145/135 各 8/8/8/256 entries)
+
+**結論**: data_units 完全不是 unit stats init. **callgraph 在 callee 層級也沒找到 stats init function**.
+
+### 6.9.3  Unit stats 真實位置假設
+
+最可能 (按優先順序):
+
+1. **在 Game Setup dialog 觸發後的 runtime init** (非 WinMain 啟動段):
+   - 1993 Win port 可能在 "New Game" dialog 確認後才 load unit defs
+   - 對應某 dialog handler function (見 spec 04 §4.4 24 個 RT_DIALOG)
+   - 需要從 dialog "Start Game" button click handler 往下 walk
+
+2. **嵌在 Game-Specific State 段** (CIV.EXE 內某個非 code 區段):
+   - Ghidra auto-analysis 可能沒識別出 data segment 邊界
+   - 需 manual segment 標記後 byte scan 才會看到
+   - 28 × 22 = 616 byte 連續區塊是線索
+
+3. **完全沒有 unit stats table — 全部用 MOV immediate 散布在各 combat / production function 內**:
+   - 1991 manual P35 公式 `A / (A + D)` 在 binary 內可能是 hardcode
+   - 例如 Combat function 內看到 `if (unit_type == SETTLERS) attack = 0`
+   - 這是最暗黑情境 — stats 不可作為 table 對位
+
+**v0.3 R14+ 預定 (擴大 walk)**:
+- dump CIV.EXE 24 個 RT_DIALOG 對應的 callback function (spec 04 §4.2 24 個 ID 已對)
+- 找 "Start Game" button handler (dialog ID 999 — diplomat / Game Setup)
+- 跟著 walk 看 dialog confirm 後是否 load unit table 進 data segment
+- 或: 直接 search byte pattern `28 unit × 22-byte LE16` (不含 name field) — 之前 scan_unit_stats.py 沒嘗試這配置
+
+### 6.9.4  對 Team B 影響 = 零 (重申)
+
+- `data/unit_stats.h` 內 const 值直接從 OpenCivOne ground-truth 抄
+- spec 06 §6.1 / §6.2 / §6.3 / etc 數值表都是 ground-truth, 不依賴 binary offset
+- M6-full combat / production 公式 (manual P35) 可直接實作
+- binary offset 只影響 R&D 完整度, 不影響 ship
 
 ## 6.10  License & credit
 

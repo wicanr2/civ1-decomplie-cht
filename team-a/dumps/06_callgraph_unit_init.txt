@@ -1,0 +1,46 @@
+# spec 06 §6.9 R13 callgraph walk for unit stats init
+
+
+=== data_units (FUN_11e8_0337): FUN_11e8_0337 @ 11e8:0337 ===
+  body size: 461 bytes
+  Callees (7):
+    FUN_11f8_0080 @ 11f8:0080
+    FUN_1000_18d4 @ 1000:18d4
+    FUN_1100_05b8 @ 1100:05b8
+    FUN_1000_1716 @ 1000:1716
+    FUN_1000_36b2 @ 1000:36b2
+    FUN_11a8_0054 @ 11a8:0054
+    FUN_11c8_0000 @ 11c8:0000
+  Callers (1):
+    FUN_1008_0000 @ 1008:0000
+
+=== Decompile callees + DAT_* write count ===
+
+  FUN_11f8_0080 @ 11f8:0080: 1 DAT_*=imm 寫 globals (推測 struct init)
+  written: /mnt/d/03_game_tmp/civ1-decomplie-cht/team-a/dumps/06b_callgraph_FUN_11f8_0080.c
+
+  FUN_1000_18d4 @ 1000:18d4: 0 DAT_*=imm 寫 globals (推測 struct init)
+  written: /mnt/d/03_game_tmp/civ1-decomplie-cht/team-a/dumps/06b_callgraph_FUN_1000_18d4.c
+
+  FUN_1100_05b8 @ 1100:05b8: 0 DAT_*=imm 寫 globals (推測 struct init)
+  written: /mnt/d/03_game_tmp/civ1-decomplie-cht/team-a/dumps/06b_callgraph_FUN_1100_05b8.c
+
+  FUN_1000_1716 @ 1000:1716: 2 DAT_*=imm 寫 globals (推測 struct init)
+  written: /mnt/d/03_game_tmp/civ1-decomplie-cht/team-a/dumps/06b_callgraph_FUN_1000_1716.c
+
+  FUN_1000_36b2 @ 1000:36b2: 0 DAT_*=imm 寫 globals (推測 struct init)
+  written: /mnt/d/03_game_tmp/civ1-decomplie-cht/team-a/dumps/06b_callgraph_FUN_1000_36b2.c
+
+  FUN_11a8_0054 @ 11a8:0054: 0 DAT_*=imm 寫 globals (推測 struct init)
+  written: /mnt/d/03_game_tmp/civ1-decomplie-cht/team-a/dumps/06b_callgraph_FUN_11a8_0054.c
+
+  FUN_11c8_0000 @ 11c8:0000: 2 DAT_*=imm 寫 globals (推測 struct init)
+  written: /mnt/d/03_game_tmp/civ1-decomplie-cht/team-a/dumps/06b_callgraph_FUN_11c8_0000.c
+
+  data_units self (11e8:0337): 17 DAT_*=imm 寫 globals (推測 struct init)
+  written: /mnt/d/03_game_tmp/civ1-decomplie-cht/team-a/dumps/06b_callgraph_FUN_11e8_0337.c
+
+=== MMSYSTEM imports (spec 08 §8.2) ===
+  found 2 MMSYSTEM-related external symbols
+    MMSYSTEM.SNDPLAYSOUND @ EXTERNAL:00000099
+    MMSYSTEM.MCISENDCOMMAND @ EXTERNAL:0000009a
