@@ -1,0 +1,73 @@
+M1: palette FB + CJK 字模 + ctest 4/4 PASS + 中文 demo 渲染
+
+# M1 交付
+
+7 個 module + 1 個 demo test，全部建在 SDL_IMPLEMENTATION_PLAN 規範
+上：
+
+  src/gfx/surface.{c,h}      8bpp indexed framebuffer + clip + blit
+  src/gfx/palette.{c,h}      256-color palette
+                              - VGA 16 色 + 漸層 + 6x6x6 cube
+                              - ANIMATEPALETTE generation tracking
+  src/gfx/primitive.{c,h}    Bresenham line / fill_rect / frame_rect
+                              對應 GDI LINETO/MOVETO/FILLRECT/
+                              FRAMERECT
+  src/gfx/present.{c,h}      palette FB -> RGBA SDL_Texture +
+                              SDL_RenderSetLogicalSize + linear
+                              scaling (M3+ 升 bicubic)
+  src/text/big5.{c,h}        Big5 -> Unicode via iconv
+                              (保留給 Track A patched binary 偵錯)
+  src/text/utf8.{c,h}        UTF-8 walker
+                              (C source / JSON catalog 用)
+  src/text/glyph_cache.{c,h} FreeType FT_LOAD_TARGET_MONO + open-
+                              addressing hashmap (cap 1024 glyph)
+  src/text/text_out.{c,h}    字串 -> surface (UTF-8 -> glyph_get
+                              -> mask blit)
+
+CMakeLists 重構: core 抽成 libciv_core.a static lib, executable +
+tests 共用。預設字型 /usr/share/fonts/truetype/arphic/uming.ttc,
+runtime CIV_FONT env override。
+
+# 編碼陷阱踩過: UTF-8 vs Big5
+
+初版 text_out 走 Big5 walker, demo 標題 "文明帝國" 變 "æ...æ..."
+(Latin1 mojibake)。
+
+Root cause: C 編譯器把 source UTF-8 bytes 直接放進 string literal
+(E6 96 87 = 文)。Big5 walker 把 E6 當 lead byte, 但 trail byte 0x96
+不在 Big5 範圍 [0x40,0x7E] U [0xA1,0xFE] -> fallthrough 把 E6 當
+單 byte 印成 U+00E6 (æ)。
+
+Fix: 加 civ_utf8_walk, text_out 改走 UTF-8。Big5 walker 保留給未來
+解 Track A patched binary 內 inline 字串用。
+
+教訓 (應寫入 LESSONS_LEARNED 候選第 12 條):
+  clean-room SDL2 重寫的 chokepoint 文字 walker 預設 UTF-8。原版
+  dfCharSet 0x88 Big5 byte-pair walking 是 Win16 GDI 的事, 我們不
+  該繼承。Big5 流程只在「直讀 Track A patched binary inline
+  字串」這種特殊偵錯場合才用。
+
+# 驗證 (WSL Ubuntu 22.04 + GCC 11.4 + SDL2 2.0.20 + FreeType
+       24.1.18 + AR PL UMing TW)
+
+  cmake build      18/18 zero warning
+  ctest            4/4 PASS, 0.33 sec total
+    window_lifecycle  0.04 s
+    palette_blit      0.01 s  (9 sub-tests)
+    glyph_cache       0.03 s  (6 sub-tests, 含 Big5 "文明" 轉
+                                Unicode 驗證)
+    demo_snapshot     0.18 s  -> m1_demo.ppm 921 KB
+
+  docs/screenshots/m1_demo.png 7.7 KB
+    "文明帝國 視窗版 Civilization for Windows" 標題 (24px 中英混排,
+     白字藍底)
+    M0-M7 milestone 中文列表 (16px, 黑字白底)
+    diagonal Bresenham line (紅 + 綠)
+    central frame_rect (灰)
+    全部正確顯示
+
+# 下一步
+
+M2: 三個 widget skeleton (map / minimap / status) + dispatch
+    table 模型 (對齊 spec 02 §2.2.6 的 22-entry parallel array)
+    不依賴 spec 04+, 可立即動工。

@@ -23,6 +23,34 @@
 - 寫第一份簽核 spec `team-a/specs/00_ne_structure.md`：binary 身分、記憶體模型、133 segments（約 69 code + 約 63 data + 1 autodata 在 segment 133）、6 個 Win16 import（KERNEL / USER / GDI / WIN87EM / MMSYSTEM / COMMDLG）、11 個導出 callback（`WDWMAPPROC`、`TIMERPROC`、`CIVDIALOGPROC`…）、resource directory（24 `RT_DIALOG`、1 `RT_MENU`、16 `RT_CURSOR`、1 `RT_ICON`、無 `RT_STRING`、無 `RT_RCDATA`、無 `RT_VERSION`）。
 - Spec 00 簽核待 Team A 與 Team B 各別覆核。
 
+## 2026-06-06 — M1 完整可動（palette FB + CJK 字模 + 中文 demo 渲染）
+
+### M1 交付
+- `team-b/src/gfx/surface.{c,h}` — 8bpp indexed framebuffer with clip / blit
+- `team-b/src/gfx/palette.{c,h}` — 256-color palette、VGA 16 + 漸層 + 6×6×6 RGB cube + ANIMATEPALETTE
+- `team-b/src/gfx/primitive.{c,h}` — Bresenham line / hline / vline / fill_rect / frame_rect
+- `team-b/src/gfx/present.{c,h}` — palette FB → RGBA SDL_Texture upload + linear scaling + `SDL_RenderSetLogicalSize`
+- `team-b/src/text/big5.{c,h}` — Big5 → Unicode 透過 iconv (保留給 Track A patched binary 偵錯用)
+- `team-b/src/text/utf8.{c,h}` — UTF-8 walker（C source / JSON catalog 用，現代 toolchain 預設）
+- `team-b/src/text/glyph_cache.{c,h}` — FreeType `FT_LOAD_TARGET_MONO` + open-addressing hashmap，cache 1024 個 glyph
+- `team-b/src/text/text_out.{c,h}` — 字串繪到 surface（UTF-8 walker → glyph_get → mask blit）
+- `team-b/CMakeLists.txt` 重構：core 抽成 `libciv_core.a` static lib，executable + tests 共用
+- 預設字型 `CIV_DEFAULT_FONT_PATH = /usr/share/fonts/truetype/arphic/uming.ttc`，runtime 可由 `CIV_FONT` env override
+
+### 編碼陷阱踩過：UTF-8 vs Big5
+- 初版 text_out 走 Big5 walker，demo 標題 `"文明帝國"` 變 `"æ...æ..."` (Latin1 mojibake)。Root cause：C 編譯器把 source UTF-8 bytes 直接放進 string literal（E6 96 87 = 文），而我用 Big5 walker 把 E6 當 lead byte → trail byte 0x96 不符 Big5 範圍 → fallthrough 把 E6 當單 byte 印成 U+00E6 (æ)。
+- Fix：加 `civ_utf8_walk`，text_out 改走 UTF-8。Big5 walker 保留給未來解 Track A patched binary 內 inline 字串用。
+- **新增 LESSONS_LEARNED 第 12 條（候選，未進文件）：clean-room SDL2 重寫的 chokepoint 文字 walker 預設 UTF-8。原版 dfCharSet 0x88 Big5 byte-pair walking 是 Win16 GDI 的事，我們不該繼承。**
+
+### 驗證結果（WSL Ubuntu 22.04 + GCC 11.4 + SDL2 2.0.20 + FreeType 24.1.18 + AR PL UMing TW）
+- cmake configure + build：18/18 zero warning
+- ctest 4/4 PASS（總計 0.33 秒）：
+  - `window_lifecycle` 0.04 s
+  - `palette_blit` 0.01 s（9 sub-tests：put/get/clear/fill/frame/line/clip/palette/blit）
+  - `glyph_cache` 0.03 s（6 sub-tests：Big5 walker + FreeType MONO glyph 載入；「文」`A4 E5` → U+6587、「明」`A9 FA` → U+660E 等價於 FreeType 載入）
+  - `demo_snapshot` 0.18 s → `m1_demo.ppm` 921 KB（headless dummy driver render，含 dump PPM）
+- `docs/screenshots/m1_demo.png` 7.7 KB ✅ **「文明帝國 視窗版 Civilization for Windows」標題 + M0–M7 中文 milestone 列表全正確顯示**
+
 ## 2026-06-06 — Specs 簽核 + M0 開工（SDL 視窗起來）
 
 使用者代簽 spec 00 / 01 / 02 與 SDL 實作計畫，授權進入實作階段。
