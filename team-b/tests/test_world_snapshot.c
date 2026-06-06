@@ -176,9 +176,8 @@ int main(int argc, char **argv)
             civ_surface_t *king = NULL;
             civ_palette_t  king_pal = {0};
             if (civ_load_cvpc_by_id(r2, (int16_t)king_id, &king, &king_pal) == 0) {
-                g.leader_portraits[l] = king;
-                civ_palette_build_lut(king_pal.entries, 256, &g.palette,
-                                      g.leader_portrait_luts[l]);
+                g.leader_portraits[l]      = king;
+                g.leader_king_palettes[l]  = king_pal;   /* R20: cache full palette */
                 loaded++;
             }
         }
@@ -236,7 +235,8 @@ int main(int argc, char **argv)
         g.modal_lock       = true;
     }
 
-    /* R18 demo: 若 argv 帶 "diplomat-XXX" 則打開 diplomat visit modal */
+    /* R18 demo: 若 argv 帶 "diplomat-XXX" 則打開 diplomat visit modal.
+     * R20 重大: 安裝 KING palette 為 g.palette → sprite blit identity, 顏色 100%. */
     if (argc > 2 && strncmp(argv[2], "diplomat-", 9) == 0) {
         if (file_exists(CIV_DEFAULT_FONT_PATH)) {
             if (g.font_title) civ_font_close(g.font_title);
@@ -252,11 +252,24 @@ int main(int argc, char **argv)
             dev->leader = CIV_LEADER_MAO;
         else if (strcmp(argv[2], "diplomat-gandhi") == 0)
             dev->leader = CIV_LEADER_GANDHI;
+        else if (strncmp(argv[2], "diplomat-id-", 12) == 0) {
+            /* R20 dump mode: diplomat-id-NN where NN = 0..13 直接取 KING sprite
+             * 不問 enum, 用 leader=NN+1 (因為 sprite idx = leader - 1) */
+            int id = atoi(argv[2] + 12);
+            if (id < 0) id = 0;
+            if (id > 13) id = 13;
+            dev->leader = (civ_leader_id_t)(id + 1);
+        }
         else
             dev->leader = CIV_LEADER_CAESAR;
         dev->mood = CIV_DIPLOMAT_GREETING;
         g.diplomat_screen_open = true;
         g.modal_lock           = true;
+
+        /* R20: 安裝該領袖 KING palette 為 game palette → sprite 100% 顏色 */
+        if (g.leader_portraits[dev->leader]) {
+            g.palette = g.leader_king_palettes[dev->leader];
+        }
     }
 
     paint_background(&g);

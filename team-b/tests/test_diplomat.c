@@ -40,11 +40,17 @@ static void test_icon_char(void)
 
 static void test_king_sprite_id(void)
 {
-    /* R19: 對齊 spec 03 §3.1 CIVDATA2 KING00..13 = id 500..513 */
-    assert(civ_leader_king_sprite_id(CIV_LEADER_CAESAR)    == 500);
-    assert(civ_leader_king_sprite_id(CIV_LEADER_FREDERICK) == 502);
-    assert(civ_leader_king_sprite_id(CIV_LEADER_ELIZABETH) == 513);
-    /* slot 8 NONE 沒對應 leader → -1 */
+    /* R20: 對齊 14 KING sprite 視覺辨識 mapping (SLOT_TO_KING_IDX).
+     * STR# 140 slot ≠ KING sprite idx. */
+    assert(civ_leader_king_sprite_id(CIV_LEADER_CAESAR)    == 510);   /* KING10 */
+    assert(civ_leader_king_sprite_id(CIV_LEADER_HAMMURABI) == 505);   /* KING05 */
+    assert(civ_leader_king_sprite_id(CIV_LEADER_FREDERICK) == 512);   /* KING12 */
+    assert(civ_leader_king_sprite_id(CIV_LEADER_RAMESES)   == 501);   /* KING01 */
+    assert(civ_leader_king_sprite_id(CIV_LEADER_ELIZABETH) == 500);   /* KING00 */
+    assert(civ_leader_king_sprite_id(CIV_LEADER_MAO)       == 506);   /* KING06 */
+    assert(civ_leader_king_sprite_id(CIV_LEADER_GANDHI)    == 502);   /* KING02 */
+    assert(civ_leader_king_sprite_id(CIV_LEADER_ALEXANDER) == 513);   /* KING13 */
+    /* slot 8 NONE 沒對應 leader → -1 (KING07 是 blank slot) */
     assert(civ_leader_king_sprite_id((civ_leader_id_t)8) == -1);
     assert(civ_leader_king_sprite_id(CIV_LEADER_NONE)    == -1);
     /* 越界 → -1 */

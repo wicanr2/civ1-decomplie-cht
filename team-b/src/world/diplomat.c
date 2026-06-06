@@ -81,12 +81,39 @@ static const struct { uint8_t r, g, b; } LEADER_PAL[CIV_LEADER_COUNT + 1] = {
     [CIV_LEADER_ELIZABETH] = { 0xC0, 0x20, 0x20 },  /* 紅華服 */
 };
 
+/* R20 ground-truth: STR# 140 slot → KING sprite idx mapping.
+ * 由 R20-3 全 14 KING 視覺辨識決定 (見 dump_kings.sh + _king_dump/).
+ *
+ * KING* sprite 順序 ≠ STR# 140 slot 順序 — 原 1991 Mac CIV 內部用
+ * 不同 leader 編號; 1993 Win port 沿用 sprite 但 STR# 140 重新排序.
+ *
+ * KING07 = blank/未使用 (對應 slot 8 NONE);
+ * KING05 = Hammurabi (Babylonian, 古東方頭冠+甲);
+ * KING13 = Alexander (Greek, 紅捲髮+短劍). */
+static const int8_t SLOT_TO_KING_IDX[CIV_LEADER_COUNT + 1] = {
+    [CIV_LEADER_NONE]      = -1,
+    [CIV_LEADER_CAESAR]    = 10,
+    [CIV_LEADER_HAMMURABI] =  5,
+    [CIV_LEADER_FREDERICK] = 12,
+    [CIV_LEADER_RAMESES]   =  1,
+    [CIV_LEADER_LINCOLN]   =  4,
+    [CIV_LEADER_ALEXANDER] = 13,
+    [CIV_LEADER_GANDHI]    =  2,
+    [8]                    = -1,   /* slot 8 NONE — KING07 blank */
+    [CIV_LEADER_STALIN]    =  8,
+    [CIV_LEADER_SHAKA]     =  3,
+    [CIV_LEADER_NAPOLEON]  = 11,
+    [CIV_LEADER_MONTEZUMA] =  9,
+    [CIV_LEADER_MAO]       =  6,
+    [CIV_LEADER_ELIZABETH] =  0,
+};
+
 int civ_leader_king_sprite_id(civ_leader_id_t l)
 {
-    if ((int)l < 1 || (int)l > CIV_LEADER_COUNT) return -1;
-    if ((int)l == 8) return -1;   /* slot 8 NONE 沒有對應 leader, 但 KING07 sprite 存在 */
-    /* KING00..13 = CIVDATA2 id 500..513, slot 1..14 對齊 idx 0..13 */
-    return 500 + ((int)l - 1);
+    if ((int)l < 0 || (int)l > CIV_LEADER_COUNT) return -1;
+    int8_t k = SLOT_TO_KING_IDX[l];
+    if (k < 0) return -1;
+    return 500 + k;
 }
 
 const char *civ_leader_name_zh(civ_leader_id_t l)

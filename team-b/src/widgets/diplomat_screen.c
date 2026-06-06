@@ -170,31 +170,42 @@ static void paint_leader_portrait(civ_surface_t *fb, struct civ_game *g,
         return;
     }
 
-    /* R19 v4: KING sprite 427×320 layout (cvpc_king00_elizabeth.png 觀察):
+    /* R20: KING sprite 427×320 layout (對齊 spec 03 + agent 視覺辨識):
      *   - 5 col × 4 row 動畫 modular frame (head/eyes/mouth/expression)
-     *   - **大主肖像** 在每個 KING 的固定位置 (right-bottom ~165×235)
-     *   - 透明背景 = palette idx 0 (Civ1 sentinel)
+     *     在 左側 + 上方 (x=0..250, y=0..280)
+     *   - **大主肖像** 位於 right-bottom 區 (x=250..420, y=110..315)
+     *     ≈ 170×205 (對 Elizabeth 已視覺驗證)
+     *   - 透明背景 = palette idx 0 (Civ1 sentinel pixel, spec 03 §3.5.1)
      *
-     * KING00 (Elizabeth) 大主肖像位置 = (260, 80, 165, 235) — 已視覺驗證.
-     * 其他 KING01..13 layout 不同 (R20 對 14 個 sprite 視覺辨識); R19 fallback
-     * 用同 src_rect 顯示什麼算什麼 (有 sprite content visible 即視為 "在用"). */
-    civ_rect_t src = { 240, 60, 187, 260 };
+     * R20 改用 in-place build LUT: 對齊當前 g.palette (test 已在 diplomat
+     * mode 安裝 king palette → LUT identity, 100% accurate). */
+    civ_rect_t src = { 250, 110, 170, 205 };
 
-    /* 1.5x scale 大主肖像 187×260 → ~280×390. clip 到 max 320 高度. */
-    int dst_h = 320;
+    /* 1.5x scale → 255×308. 居中放上半 */
+    int dst_h = 308;
     int dst_w = dst_h * src.w / src.h;
+    if (dst_h > DS_DIALOG_Y - 10) {
+        dst_h = DS_DIALOG_Y - 10;
+        dst_w = dst_h * src.w / src.h;
+    }
     int dst_x = (DS_W - dst_w) / 2;
     int dst_y = DS_DIALOG_Y - dst_h - 4;
 
-    /* 建 skip mask (magenta-ish 透明色) */
+    /* R20: build LUT in-place (每次 render). king_pal → 當前 g.palette.
+     * 若 g.palette 已切換為 king palette (R20 diplomat showcase mode),
+     * LUT 為 identity (1:1). 若 g.palette 還是其他 (e.g. sprite_sheet 共用),
+     * LUT 是 nearest match (顏色會被 quantize 但結構保留). */
+    uint8_t lut[256];
+    civ_palette_build_lut(g->leader_king_palettes[leader].entries, 256,
+                          &g->palette, lut);
+
+    /* skip mask: idx 0 是 Civ1 sentinel transparent (spec 03 §3.5.1) */
     uint8_t skip[256];
     memset(skip, 0, sizeof skip);
-    /* 我們沒留 source palette pointer, 所以用 fixed convention: idx 0 是
-     * Civ1 慣用 transparent (與 spec 03 §3.5.1 sentinel pixel 一致). */
     skip[0] = 1;
 
     blit_scaled_remap_skip(fb, dst_x, dst_y, dst_w, dst_h, king, src,
-                           g->leader_portrait_luts[leader], skip);
+                           lut, skip);
 }
 
 /* R18: 兩側 advisor 占位 — 較小頭像, 對齊 reference 圖左右兵士 */

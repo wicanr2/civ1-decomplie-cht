@@ -52,3 +52,7 @@ dist/civ1-cht-linux-x64/
 dist/*.tar.gz
 dist/*.zip
 dist/*.exe
+
+# R20 dev tool 產出: KING sprite 視覺辨識用 dump (含原版 1993 MicroProse 美術)
+# 純本機研究用; 識別後 SLOT_TO_KING_IDX 已 hardcode 進 diplomat.c, dump 可刪
+team-b/tests/_king_dump/
