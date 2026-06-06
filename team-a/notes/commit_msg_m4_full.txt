@@ -1,0 +1,79 @@
+M4-full: Dialog framework + 3 頁新局精靈 (Difficulty -> Civ -> Name)
+
+依使用者「1 > 2 > 3 依序」#3 任務。完成 M4-full 收尾本回合三項目標。
+
+# 交付
+
+  src/dialog/dialog.{c,h}      modal dialog framework
+                                - civ_dialog_t base type (event/render/destroy)
+                                - civ_dialog_stack_t modal stack
+                                  (M4-full 深度 1, 未來可疊多層)
+                                - civ_dialog_push/pop/handle_event/render
+
+  src/dialog/wizard.{c,h}      3 頁新局精靈
+                                - Page 1 Difficulty: 5 難度
+                                  (酋長/軍閥/王子/國王/皇帝)
+                                - Page 2 Civ: 13 文明 grid 7x2
+                                  (跳過 slot 8 = NONE)
+                                - Page 3 Name: 顯示前 2 頁選擇 + 文字輸入
+                                - keyboard 導覽: 方向鍵 / Enter / ESC /
+                                                 BackSpace / TEXTINPUT
+                                - ESC 從中間頁回上一頁, Page 1 ESC 取消
+                                - UTF-8 safe backspace
+                                - 完成時把結果寫入 game state
+
+  tests/test_wizard.c          狀態機測試
+                                - 完整三頁流程: 選 King + 選印度 + 輸入 Alice
+                                - timer_counter = difficulty*100 + civ_slot
+                                  作測試標記 (King=3, India=7 -> 307)
+                                - ESC 取消測試
+                                - 上一頁 navigation 測試
+
+  tests/test_wizard_snapshot.c 視覺驗證
+                                - 渲染三頁分別到 PPM
+                                - docs/screenshots/m4full_p1_difficulty.png
+                                  docs/screenshots/m4full_p2_civ.png
+                                  docs/screenshots/m4full_p3_name.png
+
+# 驗證
+
+  cmake build       42/42 zero warning
+  ctest no data:    12/12 PASS
+  ctest with data:  12/12 PASS
+
+  視覺確認 (3 張截圖):
+    Page 1 - 5 個難度按 Prince 高亮 (預設 cursor)
+    Page 2 - 13 文明 grid 含中文 + 領袖名, 羅馬凱撒高亮
+    Page 3 - 顯示「難度: 國王 / 文明: 英格蘭 / 領袖: 伊莉莎白」+
+            名稱輸入框「Anna_」帶下劃線游標
+    底部都有鍵盤導覽提示 (中文)
+
+# 對應 spec
+
+  spec 02 §2.1.2 D 段提到 5 個 startup dialog (0xAB/B1/BE/CB/D8) 用
+  Mac .RSC 格式; M4-full 走 Team B 自製 modal dialog 框架取代,
+  功能等價但實作獨立。
+
+  spec 04 §4.4 RANDOM* widget family (RandomRadio/Static/User/Check/
+  HorzBump/VertBump/Meter/Frame/Rectangle) 暫未實作 -
+  wizard 用簡化的「list selection」UI 滿足新局精靈需求;
+  RANDOM* 留給 M5+ 真實 in-game dialog (#999 外交對話框等)。
+
+# 本回合三項目標全部完成
+
+  #1 翻譯 catalog 擴張: 241 條 zh-TW 涵蓋 11 個 STR# - commit 03ba538
+  #2 palette stomp RGB-nearest LUT (M5-prep)        - commit 6238925
+  #3 M4-full dialog framework + 多頁 wizard         - 本次
+
+# Milestone 進度
+
+  M0  SDL 視窗 + 主迴圈                                done
+  M1  palette FB + CJK + UTF-8                         done
+  M2  3 widget skeleton + dispatch + modal_lock        done
+  M3  Mac Resource Fork + CvPc + EARTH blit            done
+  M4-lite STR# + 14 文明 + 領袖肖像 + zh-TW           done
+  M4-full Dialog framework + 3 頁新局精靈              done (本次)
+  M5-prep palette stomp RGB-nearest LUT remap          done
+  M5  地圖視窗 paint terrain + scroll + cursor         下次候選
+  M6  turn loop + AI + 存讀檔                          (spec 06+07)
+  M7  奇蹟 + 外交 + 勝利條件                            (spec 07)

@@ -56,3 +56,19 @@ add_executable(test_palette_remap test_palette_remap.c)
 target_link_libraries(test_palette_remap PRIVATE civ_core)
 add_test(NAME palette_remap COMMAND test_palette_remap)
 set_tests_properties(palette_remap PROPERTIES TIMEOUT 10)
+
+add_executable(test_wizard test_wizard.c)
+target_link_libraries(test_wizard PRIVATE civ_core)
+add_test(NAME wizard COMMAND test_wizard)
+set_tests_properties(wizard PROPERTIES
+    ENVIRONMENT "SDL_VIDEODRIVER=dummy"
+    TIMEOUT 10
+)
+
+add_executable(test_wizard_snapshot test_wizard_snapshot.c)
+target_link_libraries(test_wizard_snapshot PRIVATE civ_core)
+add_test(NAME wizard_snapshot COMMAND test_wizard_snapshot)
+set_tests_properties(wizard_snapshot PROPERTIES
+    ENVIRONMENT "SDL_VIDEODRIVER=dummy"
+    TIMEOUT 30
+)
