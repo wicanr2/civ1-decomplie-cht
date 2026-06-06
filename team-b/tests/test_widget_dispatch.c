@@ -63,9 +63,16 @@ int main(void)
     EXPECT(g.minimap_w->call_count == 0);
     EXPECT(g.status_w->call_count == 0);
 
+    /* C-B layout (2026-06-06):
+     *   menu bar:  y < 16
+     *   minimap:   x 0..159,   y 16..135
+     *   status:    x 0..159,   y 136..479
+     *   map:       x 160..639, y 16..479
+     */
+
     /* ── 測 1：mouse motion 落在主地圖區 ───────────────── */
     SDL_Event ev;
-    mk_motion(&ev, 100, 100);   /* 在 map (0..480, 40..480) 內 */
+    mk_motion(&ev, 300, 100);   /* 在 map (160..640, 16..480) 內 */
     civ_dispatch_event(&g, &ev);
     EXPECT(g.map_w->call_count == 1);
     EXPECT(g.minimap_w->call_count == 0);
@@ -74,11 +81,11 @@ int main(void)
     /* 驗證 map state 收到正確座標 */
     civ_map_state_t *ms = g.map_w->state;
     EXPECT(ms->has_mouse);
-    EXPECT(ms->last_mouse_x == 100);
+    EXPECT(ms->last_mouse_x == 300);
     EXPECT(ms->last_mouse_y == 100);
 
     /* ── 測 2：mouse motion 落在小地圖區 ─────────────── */
-    mk_motion(&ev, 550, 80);    /* 在 minimap (480..640, 40..160) 內 */
+    mk_motion(&ev, 80, 80);     /* 在 minimap (0..160, 16..136) 內 */
     civ_dispatch_event(&g, &ev);
     EXPECT(g.minimap_w->call_count == 1);
     EXPECT(g.map_w->call_count == 1);    /* 沒漏出去 */
@@ -91,7 +98,7 @@ int main(void)
     int  click_y_pre = ms->last_click_y;
 
     g.modal_lock = true;
-    mk_click(&ev, 200, 200);     /* 在 map 內 */
+    mk_click(&ev, 400, 200);     /* 在 map 內 */
     civ_dispatch_event(&g, &ev);
 
     /* dispatch 仍進去（call_count 仍 ++），但 short-circuit 而非
@@ -103,19 +110,17 @@ int main(void)
 
     /* ── 測 4：modal_lock 解除後 click 正常處理 ────────── */
     g.modal_lock = false;
-    mk_click(&ev, 250, 250);
+    mk_click(&ev, 450, 250);
     civ_dispatch_event(&g, &ev);
-    EXPECT(ms->last_click_x == 250);
+    EXPECT(ms->last_click_x == 450);
     EXPECT(ms->last_click_y == 250);
 
     /* ── 測 5：座標越界（落在 widget 之外）→ 無 widget 被呼叫 ── */
-    /* 注意：layout 內 map 完全覆蓋了 (0,40)..(480,480)，minimap 覆蓋
-     * (480,40)..(640,160)、status 覆蓋 (480,160)..(640,480)；剩下唯一
-     * 沒覆蓋的區域是 title bar (y < 40)。 */
+    /* C-B layout: 唯一沒覆蓋的區域是 menu bar (y < 16)。 */
     uint64_t all_calls_pre = g.map_w->call_count +
                              g.minimap_w->call_count +
                              g.status_w->call_count;
-    mk_motion(&ev, 300, 10);     /* title bar 內 */
+    mk_motion(&ev, 300, 8);     /* menu bar 內 */
     civ_dispatch_event(&g, &ev);
     uint64_t all_calls_post = g.map_w->call_count +
                               g.minimap_w->call_count +

@@ -116,8 +116,11 @@ void civ_world_init_demo(civ_world_t *w)
             w->terrain[y][rx] = (uint8_t)CIV_TERRAIN_RIVER;
     }
 
-    w->view_x   = 0;
-    w->view_y   = 0;
+    /* 視窗預設置中於大陸 (而非從 (0,0) 看 OCEAN 邊角):
+     *   map widget 15 cols × 13 rows visible @ 32×32 tile
+     *   world 60×30 → center view_x ≈ 22, view_y ≈ 8 */
+    w->view_x   = 22;
+    w->view_y   = 8;
     w->cursor_x = CIV_MAP_W / 2;
     w->cursor_y = CIV_MAP_H / 2;
 }

@@ -1,0 +1,72 @@
+M5-B: layout 對齊原版 — minimap 搬左上 / menu bar 取代 title / status 改顯 game state
+
+設計師 agent 找回 1993 Civ Win 原版截圖比對後揭穿: 之前的 layout 三點不對。
+本次接著 451f4d1 (C-A terrain 真實 render path) 修 layout:
+
+# 交付
+
+  src/civ_widgets.c           Layout 重排:
+                              before: title 40 + map (0,40,480,440)
+                                      + minimap (480,40,160,120)
+                                      + status (480,160,160,320)
+                              after:  menu 16 + minimap (0,16,160,120)
+                                      + status (0,136,160,344)
+                                      + map (160,16,480,464)
+
+  tests/test_world_snapshot.c paint_background():
+                              拿掉大紅 TITLE_H=40 + 置中標題,改成 MENU_H=16
+                              + 五個 menu item: Game / Orders / Advisors /
+                              World / Civilopedia (原版 1993 Win 選單)
+
+  src/widgets/status.c        移除 M0-M7 milestone debug 進度列 (那是 RE
+                              期占位), 改為原版 status panel 欄位:
+                                AD 0 (西元年)
+                                Gold: $0 (金庫 placeholder)
+                                Rate 三色條 + T60 L20 S20 (稅率)
+                                Despotism (政府型態 placeholder)
+                                Unit: (none) (選中單位 panel placeholder)
+                                Turn N / Tick N / AI moves N (RE 期保留底)
+
+                              真實 player.treasury / player.government / unit
+                              selection 等 M6-full / M7 才接 hook.
+
+  src/world/world.c           view_x/view_y 從 (0,0) 改成 (22, 8) 預設置中
+                              landmass; (0,0) 視窗大部分是 OCEAN 邊角看不出
+                              terrain 變化.
+
+  tests/test_widget_dispatch.c 5 個子測座標跟著新 layout 改:
+                                map 區從 (0..480, 40..480) → (160..640, 16..480)
+                                minimap 從 (480..640, 40..160) → (0..160, 16..136)
+                                menu bar 沒覆蓋區是 y<16
+
+  docs/screenshots/m5b_layout_v2.png
+                              C-A + C-B 完整 ship 截圖. 三分區 widget tree
+                              對齊原版位置 + 真實 terrain rendering. 剩
+                              terrain (col, row) ground-truth 對位待 spec 06.
+
+# 驗證
+
+  cmake build           33/33 zero warning
+  ctest with data:      14/14 PASS (含修正座標的 widget_dispatch)
+  CIV1_DATA_DIR=/mnt/d/03_game_tmp/civ1/civ1win/civ1win
+
+# 視覺對比 (m6_status.png → m5b_layout_v2.png)
+
+  之前                                | 現在
+  -----------------------------------|----------------------------------
+  大紅標題列 文明帝國 視窗版          | 窄 menu bar Game/Orders/Advisors/...
+  右上 minimap 黃底占位               | 左上 minimap (位置對 1993 Win 原版)
+  右側 M0-M7 開發進度+回合            | 左側 status: AD/Gold/Rate/Gov/Unit
+  整片紅 + sprite sheet 平鋪 + grid   | 右側真 terrain render + cursor frame
+
+# 已知未解
+
+  - terrain (col, row) lookup 是 best-guess 視覺辨認: OCEAN=(22,5) 顯示
+    綠岩不對 / FOREST=(2,2) 透明處露紅 / 大部分仍同一 sprite. 待 spec 06
+    ground-truth pass (task #13) 對齊.
+  - minimap 仍是黃底文字占位 - 真正畫世界縮圖留 M6-full.
+  - status panel Rate: 文字標籤跟 bar 視覺重疊 - 可優化但不擋 ship.
+
+# 下一步
+
+  使用者選 D: i18n catalog 擴張 vs M6-full 二擇一.

@@ -24,7 +24,7 @@
 
 #define FB_W 640
 #define FB_H 480
-#define TITLE_H 40
+#define MENU_H 16    /* C-B-2: 窄 menu bar 取代大紅標題列 */
 
 #ifndef CIV_DEFAULT_FONT_PATH
 #define CIV_DEFAULT_FONT_PATH "/usr/share/fonts/truetype/arphic/uming.ttc"
@@ -36,14 +36,20 @@ static void paint_background(struct civ_game *g)
 {
     civ_surface_t *fb = g->framebuffer;
     civ_surface_clear(fb, 15);
-    civ_fill_rect(fb, (civ_rect_t){0, 0, FB_W, TITLE_H}, 9);
-    civ_hline(fb, 0, TITLE_H, FB_W, 0);
-    if (g->font_title) {
-        const char *t = "文明帝國 視窗版 Civilization for Windows";
-        int w = civ_text_measure(g->font_title, t);
-        int x = (FB_W - w) / 2;
-        civ_text_out(fb, g->font_title, x, 28, t, 15, 9,
-                     CIV_TEXT_BK_TRANSPARENT);
+    /* 窄 menu bar - 對應原版 Civ1 1993 Win 頂部 dropdown 列 */
+    civ_fill_rect(fb, (civ_rect_t){0, 0, FB_W, MENU_H}, 15);  /* 亮灰底 */
+    civ_hline(fb, 0, MENU_H - 1, FB_W, 0);                    /* 底部隔線 */
+    if (g->font_body) {
+        /* 五個 menu item 從左到右排,原版選項 */
+        const char *items[] = {
+            "Game", "Orders", "Advisors", "World", "Civilopedia"
+        };
+        int x = 8;
+        for (size_t i = 0; i < sizeof items / sizeof items[0]; i++) {
+            civ_text_out(fb, g->font_body, x, MENU_H - 4, items[i],
+                         0, 15, CIV_TEXT_BK_TRANSPARENT);
+            x += civ_text_measure(g->font_body, items[i]) + 14;
+        }
     }
 }
 

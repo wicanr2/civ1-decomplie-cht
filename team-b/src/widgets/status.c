@@ -20,6 +20,14 @@ static civ_evt_result_t status_dispatch(civ_widget_t *w, SDL_Event *ev)
 
 static void status_render(civ_widget_t *w, civ_surface_t *fb)
 {
+    /* C-B-3 改 (2026-06-06 第二輪):
+     *
+     * 原版 1993 Civ1 status panel 顯示玩家當前 game state - 西元年 / 金庫
+     * / 稅率三色條 (Tax/Lux/Sci) / 政府型態 / 選中單位 panel. 之前用 M0-M7
+     * milestone 進度當占位是 RE 期 debug; 改成原版欄位以對位視覺.
+     * 真實的 player state hook (金庫, 稅率, 政府) 等 M6-full / M7 才會接.
+     */
+
     /* 灰底 */
     civ_fill_rect(fb, w->rect, 7);
     civ_frame_rect(fb, w->rect, 8);
@@ -28,55 +36,65 @@ static void status_render(civ_widget_t *w, civ_surface_t *fb)
     civ_font_t *font = w->game->font_body;
     if (!font) return;
 
-    civ_text_out(fb, font,
-                 w->rect.x + 8, w->rect.y + 22,
-                 "WDWSTATUS — 狀態", 0, 7,
-                 CIV_TEXT_BK_TRANSPARENT);
-
-    /* M0–M7 milestone 列表 */
-    const char *lines[] = {
-        "M0 SDL 視窗",
-        "M1 palette + CJK",
-        "M2 widget skeleton",
-        "M3 .RSC + CvPc",
-        "M4 14 文明 + 新局",
-        "M5 地圖 + 地形",
-        "M6 turn + AI + 存讀",
-        "M7 奇蹟 / 外交 / 勝利",
-    };
-    int y = w->rect.y + 50;
-    for (size_t i = 0; i < sizeof lines / sizeof lines[0]; i++) {
-        civ_text_out(fb, font, w->rect.x + 8, y, lines[i], 0, 7,
-                     CIV_TEXT_BK_TRANSPARENT);
-        y += 20;
-    }
-
-    /* 動態：回合 / 西元年 / AI actions / tick */
     char buf[64];
-    int y_bottom = w->rect.y + w->rect.h - 60;
+    int x = w->rect.x + 6;
+    int y = w->rect.y + 16;
 
-    snprintf(buf, sizeof buf, "回合: %u",
-             (unsigned)w->game->turn_number);
-    civ_text_out(fb, font, w->rect.x + 8, y_bottom, buf,
-                 1, 7, CIV_TEXT_BK_TRANSPARENT);
-
+    /* 1. 西元年 */
     int year = w->game->civ_year;
     if (year < 0)
-        snprintf(buf, sizeof buf, "西元前 %d 年", -year);
+        snprintf(buf, sizeof buf, "%d BC", -year);
     else
-        snprintf(buf, sizeof buf, "西元 %d 年", year);
-    civ_text_out(fb, font, w->rect.x + 8, y_bottom + 14, buf,
-                 0, 7, CIV_TEXT_BK_TRANSPARENT);
+        snprintf(buf, sizeof buf, "AD %d", year);
+    civ_text_out(fb, font, x, y, buf, 14, 7, CIV_TEXT_BK_TRANSPARENT);
+    y += 18;
 
-    snprintf(buf, sizeof buf, "AI: %llu",
-             (unsigned long long)w->game->ai_actions);
-    civ_text_out(fb, font, w->rect.x + 8, y_bottom + 28, buf,
-                 1, 7, CIV_TEXT_BK_TRANSPARENT);
+    /* 2. 金庫 (placeholder $0, M7 接 player.treasury) */
+    snprintf(buf, sizeof buf, "Gold: $0");
+    civ_text_out(fb, font, x, y, buf, 1, 7, CIV_TEXT_BK_TRANSPARENT);
+    y += 16;
 
-    snprintf(buf, sizeof buf, "tick=%llu",
+    /* 3. 稅率三色條 - 60% Tax / 20% Lux / 20% Sci 預設 (placeholder) */
+    civ_text_out(fb, font, x, y, "Rate:", 0, 7, CIV_TEXT_BK_TRANSPARENT);
+    y += 14;
+    int bar_x = x, bar_y = y, bar_w = w->rect.w - 12, bar_h = 8;
+    int tax_pct = 60, lux_pct = 20, sci_pct = 20;
+    int tax_w = bar_w * tax_pct / 100;
+    int lux_w = bar_w * lux_pct / 100;
+    int sci_w = bar_w - tax_w - lux_w;
+    civ_fill_rect(fb, (civ_rect_t){bar_x,                bar_y, tax_w, bar_h}, 12); /* tax 紅 */
+    civ_fill_rect(fb, (civ_rect_t){bar_x + tax_w,        bar_y, lux_w, bar_h}, 14); /* lux 黃 */
+    civ_fill_rect(fb, (civ_rect_t){bar_x + tax_w + lux_w, bar_y, sci_w, bar_h}, 9); /* sci 藍 */
+    civ_frame_rect(fb, (civ_rect_t){bar_x, bar_y, bar_w, bar_h}, 0);
+    y += bar_h + 4;
+    snprintf(buf, sizeof buf, "T%d L%d S%d", tax_pct, lux_pct, sci_pct);
+    civ_text_out(fb, font, x, y, buf, 0, 7, CIV_TEXT_BK_TRANSPARENT);
+    y += 16;
+
+    /* 4. 政府型態 (placeholder, M7 接 player.government) */
+    civ_text_out(fb, font, x, y, "Despotism", 1, 7, CIV_TEXT_BK_TRANSPARENT);
+    y += 18;
+
+    /* 5. 分隔線 */
+    civ_hline(fb, x, y, bar_w, 8);
+    y += 4;
+
+    /* 6. 選中單位 panel (placeholder) */
+    civ_text_out(fb, font, x, y, "Unit:", 0, 7, CIV_TEXT_BK_TRANSPARENT);
+    y += 14;
+    civ_text_out(fb, font, x, y, "(none)", 8, 7, CIV_TEXT_BK_TRANSPARENT);
+    y += 16;
+
+    /* 7. 回合計數 (底部, RE 期保留) */
+    int y_bottom = w->rect.y + w->rect.h - 30;
+    snprintf(buf, sizeof buf, "Turn %u  Tick %llu",
+             (unsigned)w->game->turn_number,
              (unsigned long long)w->game->tick_count);
-    civ_text_out(fb, font, w->rect.x + 8, y_bottom + 42, buf,
-                 12, 7, CIV_TEXT_BK_TRANSPARENT);
+    civ_text_out(fb, font, x, y_bottom, buf, 8, 7, CIV_TEXT_BK_TRANSPARENT);
+
+    snprintf(buf, sizeof buf, "AI moves: %llu",
+             (unsigned long long)w->game->ai_actions);
+    civ_text_out(fb, font, x, y_bottom + 14, buf, 8, 7, CIV_TEXT_BK_TRANSPARENT);
 }
 
 static void status_destroy(civ_widget_t *w)
