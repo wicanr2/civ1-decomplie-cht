@@ -10,7 +10,7 @@
 
 ## 目前 ship 狀態 (2026-06-06)
 
-最後 ship: D-#3 i18n catalog 第二波 (241 → 376 條,22/33 STR# 表覆蓋)
+最後 ship: D-M6-full-lite — unit 系統 + placeholder 戰鬥 + selection panel
 
 | Milestone | 範圍 | 狀態 | 證據 |
 |---|---|---|---|
@@ -26,7 +26,8 @@
 | **M5-B** | layout 對齊原版 — minimap 左上 / menu bar / status panel game state | ✅ | `m5b_layout_v2.png` |
 | **M5-C** | terrain (col, row) ground-truth 對位 — 12 種 terrain → SPR32X32 真實座標 | ✅ | `m5c_terrain_groundtruth.png` |
 | **M6-lite** | turn loop + 西元年 + AI mock counter | ✅ | `m6_status.png` |
-| **M6-full** | unit move + 戰鬥 + 城市生產 + 存讀檔 | 🟡 阻 spec 06+07 | — |
+| **M6-full-lite** | unit 系統 (5 類型) + 8 player slot + placeholder 戰鬥 + selection panel + 方向鍵移動 | ✅ | `m6_full_lite_units.png` |
+| **M6-full** | 真實戰鬥公式 (spec 07) + 城市生產 + RLL 存讀檔 | 🟡 阻 spec 06+07 | — |
 | **M7** | 奇蹟 + 外交 + 勝利條件 | ❌ | — |
 
 最後 ctest: 14/14 PASS，build 33/33 zero warning。
@@ -73,8 +74,8 @@
 | 視窗 proc | `wdwmap/wdwsmmap/wdwstat/windows` | dispatch table 骨架 (7/22 + 7/9 + 7/9) | 個別 message handler 待補 |
 | AI / 外交 | location 不確定 | 5% | 只確認 `FUN_10e8_2d46` 是 "AI 策略表 init"，其他演算法未抽 |
 | 音效 | MMSYSTEM 4 call | 0% | API call 統計過但語義未分析 |
-| Game state machine | 推測 `wdwmap` + WinMain D 段 | turn 推進骨架 (M6-lite) | city growth / tech research 演算法未抽 |
-| Combat | location 不確定 | 0% | 攻擊/防禦公式 + RNG |
+| Game state machine | 推測 `wdwmap` + WinMain D 段 | turn 推進骨架 (M6-lite) + unit 系統 (M6-full-lite) | city growth / tech research 演算法未抽 |
+| Combat | location 不確定 | 15% — M6-full-lite 已 placeholder 公式 | 真正攻擊/防禦公式 + 老兵加成 + RNG seed (spec 07) |
 | 城市生產 | per-turn handler | 0% | shield / food / trade 配率 |
 | 太空船 | `Dock` STR# 150 | 文字側 RE 完成 | 組裝/啟動演算法未碰 |
 
@@ -158,8 +159,9 @@ tools/                         共用資產抽取工具（MIT）
 - [`docs/ASSETS_INDEX.md`](docs/ASSETS_INDEX.md) — **185 個 sprite 完整分類索引**（領袖 14 / 科技 ~65 / 單位 ~28 / 奇蹟 / 政府 / 太空 / 動畫 / UI），含縮圖
 - [`docs/screenshots/cvpc_spr32x32_decoded.png`](docs/screenshots/cvpc_spr32x32_decoded.png) — 主 sprite sheet 1472×400
 - [`docs/screenshots/cvpc_king00_elizabeth.png`](docs/screenshots/cvpc_king00_elizabeth.png) — Queen Elizabeth I 領袖肖像示意
-- [`docs/screenshots/m5c_terrain_groundtruth.png`](docs/screenshots/m5c_terrain_groundtruth.png) — 最新 ship 截圖 (M5-C terrain 真實 SPR32X32 對位)
-- [`docs/screenshots/m5b_layout_v2.png`](docs/screenshots/m5b_layout_v2.png) — M5-B layout 對齊原版 (前一張)
+- [`docs/screenshots/m6_full_lite_units.png`](docs/screenshots/m6_full_lite_units.png) — 最新 ship 截圖 (M6-full-lite: unit 系統 + 多 player 場景)
+- [`docs/screenshots/m5c_terrain_groundtruth.png`](docs/screenshots/m5c_terrain_groundtruth.png) — M5-C terrain 真實 SPR32X32 對位
+- [`docs/screenshots/m5b_layout_v2.png`](docs/screenshots/m5b_layout_v2.png) — M5-B layout 對齊原版
 - [`docs/screenshots/terrain_rows/`](docs/screenshots/terrain_rows/) — SPR32X32 row 0..11 強化縮放 strip + col 22 zoom 4x ground-truth 對位證據
 - 完整版權聲明：[`NOTICE.md`](NOTICE.md)
 

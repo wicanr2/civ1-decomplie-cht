@@ -1,5 +1,6 @@
 #include "world.h"
 
+#include <stdio.h>
 #include <string.h>
 
 /*
@@ -128,13 +129,150 @@ void civ_world_init_demo(civ_world_t *w)
             w->terrain[y][rx] = (uint8_t)CIV_TERRAIN_RIVER;
     }
 
-    /* 視窗預設置中於大陸 (而非從 (0,0) 看 OCEAN 邊角):
-     *   map widget 15 cols × 13 rows visible @ 32×32 tile
-     *   world 60×30 → center view_x ≈ 22, view_y ≈ 8 */
-    w->view_x   = 22;
-    w->view_y   = 8;
+    /* 視窗 view 起始 (M6-full-lite 後改):
+     *   map widget 15 cols × 14 rows visible @ 32×32 tile
+     *   shift 到 (20, 10) 讓 player 1 (30..31, 15..16) + 1 barbarian
+     *   (21, 12) + player 4 (20, 22) 都能進視野, 展示多 player 場景. */
+    w->view_x   = 20;
+    w->view_y   = 10;
     w->cursor_x = CIV_MAP_W / 2;
     w->cursor_y = CIV_MAP_H / 2;
+
+    /* M6-full-lite: spawn 8 player 的 starting unit
+     *   player 1 (Roman 凱撒) 取地圖中央: 2 settler + 1 phalanx
+     *   player 2..7 各放 1 unit 在大陸不同象限
+     *   player 0 = barbarian: 放 2 個 militia 在 jungle / mountain 邊
+     */
+    w->units_count   = 0;
+    w->selected_unit = -1;
+    w->last_combat_msg[0] = '\0';
+
+    civ_world_spawn_unit(w, CIV_UNIT_SETTLERS, 1, 30, 15);
+    civ_world_spawn_unit(w, CIV_UNIT_SETTLERS, 1, 31, 15);
+    civ_world_spawn_unit(w, CIV_UNIT_PHALANX,  1, 30, 16);
+
+    civ_world_spawn_unit(w, CIV_UNIT_SETTLERS, 2, 15, 10);
+    civ_world_spawn_unit(w, CIV_UNIT_LEGION,   2, 16, 10);
+
+    civ_world_spawn_unit(w, CIV_UNIT_SETTLERS, 3, 45, 12);
+    civ_world_spawn_unit(w, CIV_UNIT_LEGION,   3, 46, 12);
+
+    civ_world_spawn_unit(w, CIV_UNIT_SETTLERS, 4, 20, 22);
+
+    civ_world_spawn_unit(w, CIV_UNIT_SETTLERS, 5, 42, 22);
+
+    /* barbarian camp - 在 jungle / mountain 區放敵兵 */
+    civ_world_spawn_unit(w, CIV_UNIT_MILITIA, 0, 38, 22);
+    civ_world_spawn_unit(w, CIV_UNIT_MILITIA, 0, 21, 12);
+
+    /* 預設選 player 1 第一個 settler */
+    w->selected_unit = 0;
+    if (w->units_count > 0) {
+        w->cursor_x = w->units[0].x;
+        w->cursor_y = w->units[0].y;
+    }
+}
+
+int civ_world_spawn_unit(civ_world_t *w, civ_unit_type_t t,
+                         uint8_t owner, int x, int y)
+{
+    if (!w || w->units_count >= CIV_MAX_UNITS) return -1;
+    if (x < 0 || x >= CIV_MAP_W || y < 0 || y >= CIV_MAP_H) return -1;
+    int atk, def, moves;
+    civ_unit_stats(t, &atk, &def, &moves);
+    civ_unit_t *u = &w->units[w->units_count];
+    u->type        = t;
+    u->owner       = owner;
+    u->hp          = 20;
+    u->moves_left  = (uint8_t)moves;
+    u->x           = (int16_t)x;
+    u->y           = (int16_t)y;
+    u->alive       = true;
+    return w->units_count++;
+}
+
+int civ_world_unit_at(const civ_world_t *w, int x, int y)
+{
+    if (!w) return -1;
+    for (int i = 0; i < w->units_count; i++) {
+        if (w->units[i].alive && w->units[i].x == x && w->units[i].y == y)
+            return i;
+    }
+    return -1;
+}
+
+bool civ_world_move_selected(civ_world_t *w, int dx, int dy,
+                             int view_cols, int view_rows)
+{
+    if (!w || w->selected_unit < 0 || w->selected_unit >= w->units_count)
+        return false;
+    civ_unit_t *u = &w->units[w->selected_unit];
+    if (!u->alive || u->moves_left == 0) return false;
+
+    int nx = u->x + dx;
+    int ny = u->y + dy;
+    if (nx < 0 || nx >= CIV_MAP_W || ny < 0 || ny >= CIV_MAP_H) return false;
+
+    /* OCEAN 拒絕 (M6-lite: 沒處理 transport ship) */
+    if (w->terrain[ny][nx] == (uint8_t)CIV_TERRAIN_OCEAN) return false;
+
+    int target = civ_world_unit_at(w, nx, ny);
+    if (target >= 0) {
+        civ_unit_t *d = &w->units[target];
+        if (d->owner == u->owner) return false;  /* 自家 unit, 拒絕 */
+        /* 戰鬥 */
+        const char *atk_name = civ_unit_name_zh(u->type);
+        const char *def_name = civ_unit_name_zh(d->type);
+        bool win = civ_unit_attack_resolve(u, d);
+        if (win) {
+            snprintf(w->last_combat_msg, sizeof w->last_combat_msg,
+                     "%s 擊敗 %s", atk_name, def_name);
+            u->x = (int16_t)nx;
+            u->y = (int16_t)ny;
+        } else {
+            snprintf(w->last_combat_msg, sizeof w->last_combat_msg,
+                     "%s 被 %s 擊敗", atk_name, def_name);
+            w->selected_unit = -1;
+        }
+        u->moves_left = 0;
+    } else {
+        u->x = (int16_t)nx;
+        u->y = (int16_t)ny;
+        u->moves_left--;
+    }
+
+    /* 同步 cursor + view scroll */
+    if (w->selected_unit >= 0 && w->units[w->selected_unit].alive) {
+        w->cursor_x = w->units[w->selected_unit].x;
+        w->cursor_y = w->units[w->selected_unit].y;
+    } else {
+        w->cursor_x = nx;
+        w->cursor_y = ny;
+    }
+    int margin = 2;
+    if (w->cursor_x - w->view_x < margin && w->view_x > 0) w->view_x--;
+    if (w->cursor_x - w->view_x >= view_cols - margin &&
+        w->view_x + view_cols < CIV_MAP_W) w->view_x++;
+    if (w->cursor_y - w->view_y < margin && w->view_y > 0) w->view_y--;
+    if (w->cursor_y - w->view_y >= view_rows - margin &&
+        w->view_y + view_rows < CIV_MAP_H) w->view_y++;
+    return true;
+}
+
+void civ_world_cycle_selection(civ_world_t *w, int player_slot)
+{
+    if (!w || w->units_count == 0) return;
+    int start = w->selected_unit < 0 ? 0 : (w->selected_unit + 1);
+    for (int probe = 0; probe < w->units_count; probe++) {
+        int i = (start + probe) % w->units_count;
+        civ_unit_t *u = &w->units[i];
+        if (u->alive && u->owner == player_slot && u->moves_left > 0) {
+            w->selected_unit = i;
+            w->cursor_x = u->x;
+            w->cursor_y = u->y;
+            return;
+        }
+    }
 }
 
 void civ_world_move_cursor(civ_world_t *w, int dx, int dy,

@@ -9,6 +9,8 @@
 #ifndef CIV_WORLD_WORLD_H
 #define CIV_WORLD_WORLD_H
 
+#include "unit.h"
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -35,6 +37,14 @@ typedef struct civ_world {
     uint8_t terrain[CIV_MAP_H][CIV_MAP_W];  /* civ_terrain_kind_t 值 */
     int     view_x, view_y;       /* top-left tile shown in widget */
     int     cursor_x, cursor_y;   /* world coords of selected tile */
+
+    /* M6-full-lite: unit roster ------------------------------ */
+    civ_unit_t units[CIV_MAX_UNITS];
+    int        units_count;
+    int        selected_unit;     /* index into units[]; -1 = no selection */
+
+    /* M6-full-lite: 最近一次戰鬥結果 (給 status panel 顯示) ----- */
+    char       last_combat_msg[96];
 } civ_world_t;
 
 /* 把 terrain enum 對應到 SPR32X32 內的 (col, row)。
@@ -52,5 +62,29 @@ void civ_world_init_demo(civ_world_t *w);
  * cols/rows 是當前可顯示的 tile 數（widget 內）。 */
 void civ_world_move_cursor(civ_world_t *w, int dx, int dy,
                            int cols, int rows);
+
+/* M6-full-lite ──────────────────────────────────────────────── */
+
+/* 在 (x, y) 放一個 unit, 回 index, 失敗回 -1。 */
+int civ_world_spawn_unit(civ_world_t *w, civ_unit_type_t t,
+                         uint8_t owner, int x, int y);
+
+/* 找 (x, y) 上的第一個 alive unit, 沒找到回 -1。 */
+int civ_world_unit_at(const civ_world_t *w, int x, int y);
+
+/* 對 selected_unit (若 alive) 做 (dx, dy) 一格移動。
+ *   - 目標格越界 / OCEAN: 拒絕
+ *   - 目標格上有 enemy unit: 觸發 civ_unit_attack_resolve, 寫
+ *     last_combat_msg, 勝者佔據格子
+ *   - 目標格上有自己 unit: 拒絕
+ *   - 空格: 直接 move
+ *
+ * 同步把 cursor 移到該 unit 位置, 並消耗 1 moves_left。
+ * 回 true 表示有移動或戰鬥, false 表示拒絕 (caller 可重試方向). */
+bool civ_world_move_selected(civ_world_t *w, int dx, int dy,
+                             int view_cols, int view_rows);
+
+/* TAB 鍵循環 player 1 (slot 0) 還有 moves_left > 0 的 unit. */
+void civ_world_cycle_selection(civ_world_t *w, int player_slot);
 
 #endif /* CIV_WORLD_WORLD_H */

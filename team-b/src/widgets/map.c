@@ -72,7 +72,38 @@ static civ_evt_result_t on_mouse_wheel(civ_widget_t *w, SDL_Event *ev)
 
 static civ_evt_result_t on_key_down(civ_widget_t *w, SDL_Event *ev)
 {
-    (void)w; (void)ev;
+    /* M6-full-lite: 方向鍵 = 移動 selected unit; TAB = 循環下一個 unit;
+     * 空白鍵 = 跳過此 unit (consume moves_left). */
+    if (!w->game || !w->game->world_ready) return 0;
+    civ_world_t *wd = &w->game->world;
+    int tile_w = 32, tile_h = 32;
+    if (w->game->sprite_sheet.sheet) {
+        tile_w = w->game->sprite_sheet.tile_w;
+        tile_h = w->game->sprite_sheet.tile_h;
+    }
+    int cols = w->rect.w / tile_w;
+    int rows = w->rect.h / tile_h;
+
+    switch (ev->key.keysym.sym) {
+        case SDLK_UP:
+        case SDLK_KP_8:    civ_world_move_selected(wd,  0, -1, cols, rows); break;
+        case SDLK_DOWN:
+        case SDLK_KP_2:    civ_world_move_selected(wd,  0,  1, cols, rows); break;
+        case SDLK_LEFT:
+        case SDLK_KP_4:    civ_world_move_selected(wd, -1,  0, cols, rows); break;
+        case SDLK_RIGHT:
+        case SDLK_KP_6:    civ_world_move_selected(wd,  1,  0, cols, rows); break;
+        case SDLK_KP_7:    civ_world_move_selected(wd, -1, -1, cols, rows); break;
+        case SDLK_KP_9:    civ_world_move_selected(wd,  1, -1, cols, rows); break;
+        case SDLK_KP_1:    civ_world_move_selected(wd, -1,  1, cols, rows); break;
+        case SDLK_KP_3:    civ_world_move_selected(wd,  1,  1, cols, rows); break;
+        case SDLK_TAB:     civ_world_cycle_selection(wd, 1); break;  /* player 1 */
+        case SDLK_SPACE:
+            if (wd->selected_unit >= 0 && wd->selected_unit < wd->units_count)
+                wd->units[wd->selected_unit].moves_left = 0;
+            break;
+        default: break;
+    }
     return 0;
 }
 
@@ -148,14 +179,65 @@ static void map_render(civ_widget_t *w, civ_surface_t *fb)
                 }
             }
         }
+        /* M6-full-lite: render units (overlay on terrain).
+         *
+         * Unit sprite 取 SPR32X32 row 10 cols 0..15 (軍事單位橘框 icon),
+         * Settlers 用 row 7 col 14 (人物站立 icon, 草色). 真實 unit→sprite
+         * 對位是 spec 06 後續工作; 本輪先用 placeholder 對位讓 unit 看得到.
+         *
+         * Owner 0 = barbarian 用紅框, 1 = 黃, 2 = 藍, 3..7 各色. 對應原版
+         * civilization 色 (Civ1 玩家色). */
+        static const uint8_t OWNER_COLOR[CIV_NUM_PLAYERS] = {
+            12,  /* 0 barbarian = 紅 */
+            14,  /* 1 player    = 黃 */
+            9,   /* 2 = 藍 */
+            10,  /* 3 = 綠 */
+            11,  /* 4 = 青 */
+            13,  /* 5 = 紫 */
+            6,   /* 6 = 灰 */
+            15,  /* 7 = 白 */
+        };
+        for (int i = 0; i < wd->units_count; i++) {
+            const civ_unit_t *u = &wd->units[i];
+            if (!u->alive) continue;
+            int rx = u->x - wd->view_x;
+            int ry = u->y - wd->view_y;
+            if (rx < 0 || ry < 0 || rx >= cols || ry >= rows) continue;
+            int dx = w->rect.x + rx * tile_w;
+            int dy = w->rect.y + ry * tile_h;
+
+            int sc = 0, sr = 10;  /* 預設軍事單位 row */
+            switch (u->type) {
+                case CIV_UNIT_SETTLERS:   sc = 0;  sr = 10; break;
+                case CIV_UNIT_MILITIA:    sc = 1;  sr = 10; break;
+                case CIV_UNIT_PHALANX:    sc = 2;  sr = 10; break;
+                case CIV_UNIT_LEGION:     sc = 3;  sr = 10; break;
+                case CIV_UNIT_MUSKETEERS: sc = 4;  sr = 10; break;
+                default: sc = 0; sr = 10; break;
+            }
+            civ_rect_t src = civ_sprite_rect(sh, sc, sr);
+            if (sh->lut_built)
+                civ_surface_blit_remap(fb, dx, dy, sh->sheet, &src, sh->lut);
+            else
+                civ_surface_blit(fb, dx, dy, sh->sheet, &src);
+
+            /* owner 色框 (3 px 雙環顯眼) */
+            uint8_t col = OWNER_COLOR[u->owner < CIV_NUM_PLAYERS ? u->owner : 0];
+            civ_frame_rect(fb, (civ_rect_t){dx,     dy,     tile_w,     tile_h}, col);
+            civ_frame_rect(fb, (civ_rect_t){dx + 1, dy + 1, tile_w - 2, tile_h - 2}, col);
+        }
+
         /* cursor */
         int cx = (wd->cursor_x - wd->view_x) * tile_w + w->rect.x;
         int cy = (wd->cursor_y - wd->view_y) * tile_h + w->rect.y;
         if (cx >= w->rect.x && cy >= w->rect.y &&
             cx + tile_w <= w->rect.x + w->rect.w &&
             cy + tile_h <= w->rect.y + w->rect.h) {
-            civ_frame_rect(fb, (civ_rect_t){cx,     cy,     tile_w, tile_h}, 14);
-            civ_frame_rect(fb, (civ_rect_t){cx - 1, cy - 1, tile_w + 2, tile_h + 2}, 14);
+            /* selected unit 用閃爍白框 (drawn 比 owner 框更外圈);
+             * 非 selected 用一般 cursor 黃框 */
+            uint8_t cur_col = (wd->selected_unit >= 0) ? 15 : 14;
+            civ_frame_rect(fb, (civ_rect_t){cx,     cy,     tile_w, tile_h}, cur_col);
+            civ_frame_rect(fb, (civ_rect_t){cx - 1, cy - 1, tile_w + 2, tile_h + 2}, cur_col);
         }
         civ_frame_rect(fb, w->rect, 0);
         return;

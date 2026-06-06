@@ -85,3 +85,8 @@ add_executable(test_turn test_turn.c)
 target_link_libraries(test_turn PRIVATE civ_core)
 add_test(NAME turn COMMAND test_turn)
 set_tests_properties(turn PROPERTIES TIMEOUT 10)
+
+add_executable(test_unit_combat test_unit_combat.c)
+target_link_libraries(test_unit_combat PRIVATE civ_core)
+add_test(NAME unit_combat COMMAND test_unit_combat)
+set_tests_properties(unit_combat PROPERTIES TIMEOUT 10)

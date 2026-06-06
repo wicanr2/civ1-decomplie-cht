@@ -1,0 +1,101 @@
+M6-full-lite: unit 系統 + 8 player slot + placeholder 戰鬥 + selection panel
+
+使用者 C → D 路線第三步 (D-M6-full). 因為 spec 06 (數值表) + spec 07 (combat
+公式 + RLL save 格式) 都需要 Ghidra side 還沒寫, 本輪 ship M6-full-lite —
+用 hardcoded placeholder 數值跟簡化公式先讓 unit 系統可見+可動+可互動.
+
+真實的 spec 06/07 ground-truth 對位是 D-M6-full 正式 ship 的前置.
+
+# 交付
+
+  src/world/unit.{h,c}         civ_unit_t (type/owner/hp/moves/xy/alive)
+                               + 5 unit type (settlers/militia/phalanx/
+                                 legion/musketeers)
+                               + civ_unit_stats() placeholder 數值表
+                               + civ_unit_attack_resolve() placeholder 公式:
+                                   roll = rand() % (atk+def); win if roll<atk
+                               + civ_unit_name_zh() zh-TW 名稱
+
+  src/world/world.h            civ_world_t 新增:
+                                 units[CIV_MAX_UNITS=256]
+                                 units_count
+                                 selected_unit
+                                 last_combat_msg[96]
+                               + civ_world_spawn_unit()
+                               + civ_world_unit_at()
+                               + civ_world_move_selected()
+                                   - OCEAN 拒絕
+                                   - 同 owner 拒絕
+                                   - 敵 unit → 觸發 combat
+                                   - 空格 → 走過去
+                               + civ_world_cycle_selection()
+
+  src/world/world.c            civ_world_init_demo() 補 spawn 11 個
+                               starting unit (3 player1 + 2 player2 + 2 player3
+                                 + 1 player4 + 1 player5 + 2 barbarian)
+                               view 移到 (20, 10) 讓 4 個 player + 1 barbarian
+                                 同框可見
+
+  src/widgets/map.c            map_render() 加 unit 渲染 pass:
+                                 - 對 SPR32X32 row 10 取軍事單位 sprite
+                                 - 每 owner 不同色框 (barb=紅 / p1=黃 / p2=藍
+                                   / p3=綠 / p4=青 / p5=紫 / p6=灰 / p7=白)
+                                 - 選中 unit 額外 白框 cursor
+                               on_key_down() 加方向鍵 + numpad 8 方向移動
+                                 + TAB (cycle player 1 unit) + SPACE (skip turn)
+
+  src/widgets/status.c         status panel 加 unit 詳細 panel:
+                                 - 單位 zh-TW 名稱
+                                 - A/D/M 屬性 + 剩餘 moves
+                                 - (x, y) 位置 + HP
+                                 - 最近戰鬥訊息 (e.g. "墾荒者 擊敗 民兵")
+
+  tests/test_unit_combat.c     8 子測:
+                                 1. stats 表查詢
+                                 2. init_demo 生 11 unit
+                                 3. unit_at lookup
+                                 4. 合法移動 + moves_left 扣
+                                 5. OCEAN block
+                                 6. 同 owner block
+                                 7. 敵 combat 觸發 + winner 判定
+                                 8. cycle_selection player 1 內循環
+
+  CMakeLists.txt               加 unit.c 到 civ_core
+  tests/CMakeLists.txt         加 test_unit_combat
+
+  docs/screenshots/m6_full_lite_units.png   ship snapshot
+
+# 驗證
+
+  cmake build         36/36 zero warning
+  ctest with data:    15/15 PASS (新加 unit_combat 8 子測)
+
+# 視覺結果
+
+  m6_full_lite_units.png 可同框看到:
+    - Player 1 (黃框) 3 unit: 2 settler 馬車 sprite + 1 phalanx 城堡 sprite
+    - Barbarian (紅框) 1 militia
+    - Player 4 (青框) 1 settler (左下角)
+    - 多種 terrain: GRASS / OCEAN / RIVER / MOUNTAIN / JUNGLE
+    - Status panel 顯示 selected unit: "墾荒者 A0 D1 M1/1 (30,15) HP 20"
+
+# 已知 placeholder (待 spec 06/07 ground-truth)
+
+  - 5 unit type 數值 hardcoded (settlers a0/d1 / phalanx a1/d2 / legion a4/d2
+    /musketeers a3/d3) — 真值待 Ghidra 從 CIV.EXE code const 抽出
+  - combat 公式是簡化版 — 真版含老兵加成、地形防禦、城牆等
+  - 沒有 RNG seed 控制 — combat 結果非 reproducible (除非 srand 手動)
+  - 沒有移動 path animation
+  - 沒有 unit upgrade
+  - 沒有 city / 殖民 / build action
+  - 沒有 RLL 存讀檔 (spec 07 範圍)
+
+# 下一步
+
+  D-minimap: 把 minimap widget 從黃底文字占位改成真實世界縮圖
+             (60×30 → 160×120 縮放 + per-terrain color + unit 紅藍黃點)
+
+# RE 覆蓋變化
+
+  Combat: 0% → 15% (placeholder 公式骨架)
+  Game state machine: 30% → 40% (加 unit 系統)

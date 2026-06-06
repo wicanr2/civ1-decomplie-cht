@@ -79,13 +79,42 @@ static void status_render(civ_widget_t *w, civ_surface_t *fb)
     civ_hline(fb, x, y, bar_w, 8);
     y += 4;
 
-    /* 6. 選中單位 panel (placeholder) */
+    /* 6. 選中單位 panel — M6-full-lite hook 進 world.selected_unit */
     civ_text_out(fb, font, x, y, "Unit:", 0, 7, CIV_TEXT_BK_TRANSPARENT);
     y += 14;
-    civ_text_out(fb, font, x, y, "(none)", 8, 7, CIV_TEXT_BK_TRANSPARENT);
-    y += 16;
+    if (w->game->world_ready && w->game->world.selected_unit >= 0 &&
+        w->game->world.selected_unit < w->game->world.units_count) {
+        const civ_unit_t *u = &w->game->world.units[w->game->world.selected_unit];
+        if (u->alive) {
+            const char *uname = civ_unit_name_zh(u->type);
+            civ_text_out(fb, font, x, y, uname, 14, 7, CIV_TEXT_BK_TRANSPARENT);
+            y += 14;
+            int atk, def, moves;
+            civ_unit_stats(u->type, &atk, &def, &moves);
+            snprintf(buf, sizeof buf, "A%d D%d M%d/%d", atk, def,
+                     u->moves_left, moves);
+            civ_text_out(fb, font, x, y, buf, 0, 7, CIV_TEXT_BK_TRANSPARENT);
+            y += 14;
+            snprintf(buf, sizeof buf, "(%d,%d) HP %d", u->x, u->y, u->hp);
+            civ_text_out(fb, font, x, y, buf, 0, 7, CIV_TEXT_BK_TRANSPARENT);
+            y += 14;
+        } else {
+            civ_text_out(fb, font, x, y, "(陣亡)", 12, 7, CIV_TEXT_BK_TRANSPARENT);
+            y += 14;
+        }
+    } else {
+        civ_text_out(fb, font, x, y, "(無)", 8, 7, CIV_TEXT_BK_TRANSPARENT);
+        y += 14;
+    }
 
-    /* 7. 回合計數 (底部, RE 期保留) */
+    /* 7. 最近戰鬥訊息 */
+    if (w->game->world_ready && w->game->world.last_combat_msg[0]) {
+        civ_text_out(fb, font, x, y, w->game->world.last_combat_msg,
+                     12, 7, CIV_TEXT_BK_TRANSPARENT);
+        y += 14;
+    }
+
+    /* 8. 回合計數 (底部, RE 期保留) */
     int y_bottom = w->rect.y + w->rect.h - 30;
     snprintf(buf, sizeof buf, "Turn %u  Tick %llu",
              (unsigned)w->game->turn_number,
