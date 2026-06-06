@@ -56,6 +56,11 @@ struct civ_game {
     civ_world_t           world;
     civ_sprite_sheet_t    sprite_sheet;
     bool                  world_ready;
+
+    /* M6-lite：回合 ──────────────────────────────────── */
+    uint32_t              turn_number;     /* 起始 0；第 1 回合 = 4000 BC */
+    int                   civ_year;        /* 西元；負數 = BC */
+    uint64_t              ai_actions;      /* AI mock action 累計 */
 };
 
 #endif /* CIV_GAME_H */

@@ -51,12 +51,32 @@ static void status_render(civ_widget_t *w, civ_surface_t *fb)
         y += 20;
     }
 
-    /* 動態：目前 tick count */
+    /* 動態：回合 / 西元年 / AI actions / tick */
     char buf[64];
+    int y_bottom = w->rect.y + w->rect.h - 60;
+
+    snprintf(buf, sizeof buf, "回合: %u",
+             (unsigned)w->game->turn_number);
+    civ_text_out(fb, font, w->rect.x + 8, y_bottom, buf,
+                 1, 7, CIV_TEXT_BK_TRANSPARENT);
+
+    int year = w->game->civ_year;
+    if (year < 0)
+        snprintf(buf, sizeof buf, "西元前 %d 年", -year);
+    else
+        snprintf(buf, sizeof buf, "西元 %d 年", year);
+    civ_text_out(fb, font, w->rect.x + 8, y_bottom + 14, buf,
+                 0, 7, CIV_TEXT_BK_TRANSPARENT);
+
+    snprintf(buf, sizeof buf, "AI: %llu",
+             (unsigned long long)w->game->ai_actions);
+    civ_text_out(fb, font, w->rect.x + 8, y_bottom + 28, buf,
+                 1, 7, CIV_TEXT_BK_TRANSPARENT);
+
     snprintf(buf, sizeof buf, "tick=%llu",
              (unsigned long long)w->game->tick_count);
-    civ_text_out(fb, font, w->rect.x + 8, w->rect.y + w->rect.h - 24,
-                 buf, 1, 7, CIV_TEXT_BK_TRANSPARENT);
+    civ_text_out(fb, font, w->rect.x + 8, y_bottom + 42, buf,
+                 12, 7, CIV_TEXT_BK_TRANSPARENT);
 }
 
 static void status_destroy(civ_widget_t *w)

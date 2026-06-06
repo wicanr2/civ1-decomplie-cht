@@ -80,3 +80,8 @@ set_tests_properties(world_snapshot PROPERTIES
     ENVIRONMENT "SDL_VIDEODRIVER=dummy"
     TIMEOUT 30
 )
+
+add_executable(test_turn test_turn.c)
+target_link_libraries(test_turn PRIVATE civ_core)
+add_test(NAME turn COMMAND test_turn)
+set_tests_properties(turn PROPERTIES TIMEOUT 10)

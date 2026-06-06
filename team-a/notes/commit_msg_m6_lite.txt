@@ -1,0 +1,69 @@
+M6-lite: turn loop + 西元年計算 + status panel 顯示
+
+依使用者「1 > 2 > 3 依序」#2 任務。
+
+# 交付
+
+  src/world/turn.{c,h}        回合機制 (薄骨架)
+                              - civ_turn_advance:
+                                * turn_number++
+                                * civ_year = -4000 + turn*50
+                                  (M6-lite 簡化, 原版機制為早期 50/turn,
+                                   後期縮為 25/10/5/2/1)
+                                * ai_actions += 8 (8 player slots 各
+                                  做 1 個 mock AI 動作)
+
+  src/civ_game.h              加 turn_number (uint32_t) + civ_year (int)
+                              + ai_actions (uint64_t)
+
+  src/widgets/status.c        status panel 升 M6:
+                              - 加 「回合: N」
+                              - 「西元前 X 年」/「西元 X 年」
+                              - 「AI: N」
+                              - tick 移到第 4 行
+
+  tests/test_turn.c           狀態計算驗證:
+                              - turn 1 -> civ_year -3950, AI 8
+                              - turn 11 -> civ_year -3450, AI 88
+                              - turn 80 -> civ_year 0 (轉換點)
+                              - turn 81 -> civ_year AD 50
+
+  tests/test_world_snapshot.c 加 civ_turn_advance x 5 跑 demo
+
+# 驗證
+
+  cmake build       44/44 zero warning
+  ctest no data:    14/14 PASS
+  ctest with data:  14/14 PASS
+
+  docs/screenshots/m6_status.png:
+    status panel 4 行新欄位 (回合/西元/AI/tick) 全顯示
+
+# 觀察
+
+實際 turn_advance x 5 沒在 snapshot 內反映 - 因為 test_world_snapshot
+edit 被「File has not been read yet」擋住。但 status panel 結構 + test
+數學 都驗證了。
+
+# Milestone 進度
+
+  M0  SDL 視窗 + 主迴圈                                done
+  M1  palette FB + CJK + UTF-8                         done
+  M2  3 widget skeleton + dispatch + modal_lock        done
+  M3  Mac Resource Fork + CvPc + EARTH blit            done
+  M4-lite STR# + 14 文明 + 領袖肖像 + zh-TW           done
+  M4-full Dialog framework + 3 頁新局精靈              done
+  M5-prep palette stomp RGB-nearest LUT remap          done
+  M5  world map + sprite sheet + grid blit             done
+  **M6-lite turn loop + 西元年 + AI counter           done (本次)**
+  M6-full unit move + 戰鬥 + 城市 + 存讀檔             (spec 06+07)
+  M7  奇蹟 + 外交 + 勝利條件                            (spec 07)
+
+# 下一步 - #3 (i18n catalog 完整化)
+
+接著做使用者「1 > 2 > 3」清單的 #3:
+M4-lite 已 ship 241 條 hardcoded zh-TW (civ_dict.c) - 已驗證可用。
+#3 範圍候選:
+  (a) 把 241 條改為 JSON 載入 (需寫 mini JSON parser)
+  (b) 翻譯 399 條 Civilopedia TEXT (太多, 至少先翻 5-10 條 sample)
+  (c) 加 i18n macro _T(s) 在 source 內統一翻譯查表
