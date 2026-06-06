@@ -16,7 +16,8 @@ static uint8_t pn(struct civ_game *g, uint8_t r, uint8_t g_, uint8_t b)
     return civ_palette_nearest_rgb(&g->palette, r, g_, b);
 }
 
-/* 藍色 stipple dither (2x2 checker) — 對齊原版 city screen 底色 */
+/* 藍色 stipple dither (2x2 checker) — 對齊原版 city screen 底色
+ * 仍保留作 fallback (sprite sheet 未載入時用) */
 static void paint_stipple(civ_surface_t *fb, civ_rect_t r,
                           uint8_t c_hi, uint8_t c_lo)
 {
@@ -27,6 +28,38 @@ static void paint_stipple(civ_surface_t *fb, civ_rect_t r,
                 fb->pixels[yy * fb->pitch + xx] = c;
         }
     }
+}
+
+/* R15: 用真實 SPR32X32 sprite tile 重複貼當背景 — 對齊使用者新 reference
+ * (原版 city screen 藍底實際是 ocean/coast sprite 真 tile pattern, 不是
+ * 單色 stipple). 對 rect 內 32x32 grid 重複 blit ocean tile.
+ *
+ * tile_col / tile_row 是 SPR32X32 內 source. clip 過 rect 邊界. */
+static void paint_tile_repeat(civ_surface_t *fb, civ_rect_t r,
+                              struct civ_game *g, int tile_col, int tile_row)
+{
+    if (!g->sprite_sheet.sheet) {
+        /* fallback: 2x2 stipple 藍 */
+        paint_stipple(fb, r, pn(g, 0x60,0x80,0xD0), pn(g, 0x50,0x70,0xC0));
+        return;
+    }
+    civ_sprite_sheet_t *sh = &g->sprite_sheet;
+    int tw = sh->tile_w, th = sh->tile_h;
+    civ_rect_t src = civ_sprite_rect(sh, tile_col, tile_row);
+
+    /* clip 設定: 不讓 blit 跑出 rect */
+    civ_rect_t old_clip = fb->clip;
+    civ_surface_clip_set(fb, r);
+
+    for (int yy = r.y; yy < r.y + r.h; yy += th) {
+        for (int xx = r.x; xx < r.x + r.w; xx += tw) {
+            if (sh->lut_built)
+                civ_surface_blit_remap(fb, xx, yy, sh->sheet, &src, sh->lut);
+            else
+                civ_surface_blit(fb, xx, yy, sh->sheet, &src);
+        }
+    }
+    fb->clip = old_clip;
 }
 
 /* 對齊 reference/civ1_win_city_screen.png. 全螢幕 modal.
@@ -57,6 +90,8 @@ static void draw_panel(civ_surface_t *fb, civ_rect_t r,
     uint8_t title_bg = pn(g, 0x00, 0x00, 0x80);
     uint8_t title_fg = pn(g, 0xFF, 0xFF, 0xFF);
 
+    /* R15 v2: panel 內仍用 stipple (text 易讀), 外大底才用 ocean tile 紋路.
+     * 對齊使用者 reference: panel 跟外背景對比明顯 (panel 較柔). */
     paint_stipple(fb, r, bg_hi, bg_lo);
     civ_frame_rect(fb, r, border);
     if (title && g->font_body) {
@@ -84,7 +119,8 @@ void civ_city_screen_render(struct civ_game *g, civ_surface_t *fb)
     uint8_t c_white   = pn(g, 0xFF, 0xFF, 0xFF);
     uint8_t c_red     = pn(g, 0xC0, 0x00, 0x00);
     uint8_t c_blue    = pn(g, 0x00, 0x00, 0x80);
-    paint_stipple(fb, (civ_rect_t){0, 0, CS_W, CS_H}, c_bg_hi, c_bg_lo);
+    /* R15: 整版背景改用真 ocean tile (對齊原版 city screen 真有 tile pattern) */
+    paint_tile_repeat(fb, (civ_rect_t){0, 0, CS_W, CS_H}, g, 22, 9);
 
     /* === 標題列 y 0..30 (黑底黃字 — 原版風格) === */
     civ_fill_rect(fb, (civ_rect_t){0, 0, CS_W, 30}, c_black);

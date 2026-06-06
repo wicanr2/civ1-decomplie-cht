@@ -10,7 +10,7 @@
 
 ## 目前 ship 狀態 (2026-06-06)
 
-最後 ship: R14 設計師 P1 polish — minimap body 黃→黑 + status body 灰→Win16 #C0C0C0 + 全 status text 用 palette_nearest 真色 + terrain base+overlay 雙 layer (解 Mountain 露紅)
+最後 ship: R15 city screen 真 ocean tile 背景 + TECH_DISCOVERY_SCREEN design 文件 + 2 張新 reference (BRONZE WORKING + ROME 完整 city)
 
 | Milestone | 範圍 | 狀態 | 證據 |
 |---|---|---|---|
@@ -35,6 +35,8 @@
 | **M8-chrome** | 設計師 audit 後全面套 `civ_palette_nearest_rgb()`: title bar #000080 / menu bar #C0C0C0 / sub-window title #000080 / city screen 2×2 藍 stipple 底 (#6080D0 + #5070C0) / 標題黑底黃字 / 深藍 panel header / 紅 EXIT 按鈕. 解 P0 設計師清單. | ✅ | `m8_chrome_polish_main.png` + `m8_chrome_polish_city_screen.png` |
 | **M8-portable** | Linux portable tarball: `tools/build_portable.sh` 一鍵生成 10.3 MB tar.gz (civ1 43KB stripped + uming.ttc 字型 + launcher script + README); Win64 cross-compile 留 v0.2 | ✅ Linux only | `dist/civ1-cht-linux-x64.tar.gz` (gitignored, GitHub Releases 發布) |
 | **M9-polish** | 設計師 P1 polish: minimap body 黃→黑, status body 灰→Win16 #C0C0C0, status text 全 palette_nearest 真色 (黑數據/藍政府/黃單位名), Rate bar 真三色 (紅/黃/青), terrain base+overlay 雙 layer 解 Mountain 露 palette-0 紅 | ✅ | `m9_terrain_overlay_polish.png` |
+| **M9-citytile** | city screen 背景升級: 外大底用 SPR32X32 真 ocean tile 重複貼 (`paint_tile_repeat`), 內 panel 仍 stipple (文字易讀). 對齊使用者新 reference 「背景有真 tile pattern 不是單色」 | ✅ | `m9_city_screen_ocean_tile.png` |
+| **M-techscreen** | tech discovery modal (BRONZE WORKING reference): 花邊 frame + 大標題 + Allows 列表 (科技/單位/奇蹟) — design 文件已寫 | 🟡 R16+ | `docs/TECH_DISCOVERY_SCREEN.md` design |
 | **M6-full** | 真實戰鬥公式 (spec 07) + 城市生產 + RLL 存讀檔 | 🟡 阻 spec 06+07 | — |
 | **M7** | 奇蹟 + 外交 + 勝利條件 | ❌ | — |
 
@@ -173,7 +175,9 @@ tools/                         共用資產抽取工具（MIT）
 - [`docs/ASSETS_INDEX.md`](docs/ASSETS_INDEX.md) — **185 個 sprite 完整分類索引**（領袖 14 / 科技 ~65 / 單位 ~28 / 奇蹟 / 政府 / 太空 / 動畫 / UI），含縮圖
 - [`docs/screenshots/cvpc_spr32x32_decoded.png`](docs/screenshots/cvpc_spr32x32_decoded.png) — 主 sprite sheet 1472×400
 - [`docs/screenshots/cvpc_king00_elizabeth.png`](docs/screenshots/cvpc_king00_elizabeth.png) — Queen Elizabeth I 領袖肖像示意
-- [`docs/screenshots/m9_terrain_overlay_polish.png`](docs/screenshots/m9_terrain_overlay_polish.png) — 最新 ship 截圖 (R14: minimap 黑底 + status Win16 灰底 + terrain 雙 layer)
+- [`docs/screenshots/m9_city_screen_ocean_tile.png`](docs/screenshots/m9_city_screen_ocean_tile.png) — 最新 ship 截圖 (R15: city screen 外底 ocean tile + 內 panel stipple hybrid)
+- [`docs/screenshots/m9_terrain_overlay_polish.png`](docs/screenshots/m9_terrain_overlay_polish.png) — R14: minimap 黑底 + status Win16 灰底 + terrain 雙 layer
+- [`docs/TECH_DISCOVERY_SCREEN.md`](docs/TECH_DISCOVERY_SCREEN.md) — R16+ tech discovery modal 設計文件 (對齊 BRONZE WORKING reference)
 - [`docs/screenshots/m8_chrome_polish_main.png`](docs/screenshots/m8_chrome_polish_main.png) — R10 主畫面: Win16 深藍 title + 灰 menu (R14 前)
 - [`docs/screenshots/m8_chrome_polish_city_screen.png`](docs/screenshots/m8_chrome_polish_city_screen.png) — R10 城市畫面: 藍 stipple 底 + 黃字標題 + 紅 EXIT
 - [`docs/screenshots/m7_city_screen.png`](docs/screenshots/m7_city_screen.png) — R6: city screen modal (R10 前的舊色)
