@@ -1,0 +1,44 @@
+docs: 整合 Fandom Civ1 wiki 主頁公開資料
+
+依使用者指示讀取
+https://civilization.fandom.com/wiki/Sid_Meier%27s_Civilization
+整理成中文 docs/CIV1_REFERENCE.md。
+
+抓取方法:
+- WebFetch 與 curl 直接抓 HTML 都被 Cloudflare 擋
+- 改走 Fandom MediaWiki API
+  api.php?action=query&prop=revisions&rvslots=*&rvprop=content
+  &formatversion=2&format=json
+- 拿到 19.7 KB JSON 包 184 行 wikitext
+
+主頁明確的 resource format 只有一處 - 開場文字存於 disk text
+file 可改。其餘是設計 / 歷史 / 評論。
+
+整理內容 (中文化):
+ 1. binary 身分欄位 (對應 spec 00)
+ 2. 平台 / 版本演進 (DOS 1991 / Win 1993 / CivNet 1995)
+ 3. 介面操作 (mouse / 4 個必有 menu) - 對應 spec 02
+ 4. 14 個文明 + 配樂表 (8 首原創 / 6 首現實)
+ 5. 開場 .txt 全文 (8 段英文)
+ 6. 設計血脈 + 未做出的版本 (Bunten / Daglow)
+ 7. 戰鬥模型爭議 (長矛兵打贏戰艦 / AI 隱性加成)
+ 8. 1996 CGW #1 評語
+ 9. 周邊作品 (Master of Magic 同年同 MicroProse - 技術可雙向流通)
+ 10. IP 歷史 (Atari -> Take-Two 2005)
+ 11. 與本專案 spec 的交叉對照表
+ 12. Fandom 主頁未涵蓋的內容 (檔案副檔名 / 內部格式 / 存檔 /
+     科技樹數值 / 單位數值) - 須從 civfanatics / strategywiki /
+     我們的 disassembly 補
+ 13. 進一步建議抓的 sub-page 與外部來源清單
+
+文件性質:
+- 公開遊戲資訊, 不屬於 clean-room spec
+- Team B 實作時 *不* 直接讀此文件
+- Team A 寫 spec 時可引用做 *行為層* 對照
+- 不污染 clean-room (公開資料 + Fandom CC-BY-SA)
+
+工具:
+- team-a/notes/extract_wikitext.py (從 MediaWiki API JSON 抽
+  wikitext)
+
+PHASE_LOG 與 README 更新對應條目。

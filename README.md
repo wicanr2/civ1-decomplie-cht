@@ -40,6 +40,7 @@ docs/
   CLEAN_ROOM.md                雙隊制度與簽核流程細節
   PHASE_LOG.md                  逐階段進度紀錄
   REUSE_FROM_TRACK_A.md        從前置 Track A 可乾淨取用什麼
+  CIV1_REFERENCE.md            Fandom 公開資料對照（行為層參考，非 spec）
 
 assets-extracted/             從 CIV.EXE 抽出的 .pic / .pal / .txt（gitignore）
 tools/                         共用資產抽取工具（EDILZSS2 等，MIT）

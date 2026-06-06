@@ -23,6 +23,14 @@
 - 寫第一份簽核 spec `team-a/specs/00_ne_structure.md`：binary 身分、記憶體模型、133 segments（約 69 code + 約 63 data + 1 autodata 在 segment 133）、6 個 Win16 import（KERNEL / USER / GDI / WIN87EM / MMSYSTEM / COMMDLG）、11 個導出 callback（`WDWMAPPROC`、`TIMERPROC`、`CIVDIALOGPROC`…）、resource directory（24 `RT_DIALOG`、1 `RT_MENU`、16 `RT_CURSOR`、1 `RT_ICON`、無 `RT_STRING`、無 `RT_RCDATA`、無 `RT_VERSION`）。
 - Spec 00 簽核待 Team A 與 Team B 各別覆核。
 
+## 2026-06-06 — 整合 Fandom Civ1 wiki 主頁
+
+- 依使用者要求，抓 https://civilization.fandom.com/wiki/Sid_Meier%27s_Civilization 內容。Cloudflare 擋 WebFetch 與一般 curl；改走 Fandom MediaWiki API（`api.php?action=query&prop=revisions&...`）拿 wikitext 成功。
+- 整理成 `docs/CIV1_REFERENCE.md`（中文）— 公開遊戲資訊，不屬於 clean-room spec 的一部分（Team B 實作時不直接讀此文件），可作為 Team A 寫 spec 時的 **行為層交叉參考**。
+- 主頁明確的 resource format 訊息**只有一處**：開場文字存於 disk text file 可改。其餘為遊戲設計、歷史、評論。
+- 整理項目：(1) binary 識別欄位 (2) 平台與版本演進 (3) 介面操作（mouse / 4 個 menu）對應 spec 02 (4) 14 個文明 + 配樂 (5) 開場 .txt 全文 (6) 設計血脈 + 未做出的版本 (Bunten / Daglow) (7) 戰鬥 / AI 隱性加成爭議 (8) 1996 CGW #1 評語 (9) 周邊作品（Master of Magic 同年同公司，技術可雙向流通） (10) IP 歷史 (11) 與本專案 spec 對照表 (12) Fandom 主頁未涵蓋 → 須其他來源補（civfanatics / strategywiki / disassembly）(13) 進一步建議抓的 sub-page。
+- 工具：`team-a/notes/extract_wikitext.py` — 從 MediaWiki API JSON 抽 wikitext 的小工具。
+
 ## 2026-06-06 — Spec 02：啟動流程、game loop、11 個 callback 職責
 
 - 寫 `team-a/tools/ghidra_extract_spec02.py` Jython post-script — 透過 Ghidra DecompInterface 對 11 個導出 callback + entry stub 各別做 decompile，輸出 `team-a/dumps/02a_<name>.c`；同時從 entry 起點走 call graph，找第一個 call `REGISTERCLASS` / `LOADMENU` / `LOADACCELERATORS` 的 function 作為 WinMain candidate，decompile 到 `02b_winmain_chain.c`。
