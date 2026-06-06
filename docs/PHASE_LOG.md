@@ -23,6 +23,37 @@
 - 寫第一份簽核 spec `team-a/specs/00_ne_structure.md`：binary 身分、記憶體模型、133 segments（約 69 code + 約 63 data + 1 autodata 在 segment 133）、6 個 Win16 import（KERNEL / USER / GDI / WIN87EM / MMSYSTEM / COMMDLG）、11 個導出 callback（`WDWMAPPROC`、`TIMERPROC`、`CIVDIALOGPROC`…）、resource directory（24 `RT_DIALOG`、1 `RT_MENU`、16 `RT_CURSOR`、1 `RT_ICON`、無 `RT_STRING`、無 `RT_RCDATA`、無 `RT_VERSION`）。
 - Spec 00 簽核待 Team A 與 Team B 各別覆核。
 
+## 2026-06-06 — M3：Mac Resource Fork parser + CvPc decoder + EARTH 端到端 blit
+
+### M3 交付
+- `team-b/src/res/rsrcfork.{c,h}` — Apple Mac Resource Fork parser
+  - big-endian header / type list / ref list / name list 解析
+  - `civ_rsrc_open/close` 載入整個 .RSC 到記憶體；payload 用 plain pointer 訪問（**壓平 Mac Handle 抽象**，對應 spec 01 §1.4.1 + SDL plan §2）
+  - `civ_rsrc_count` / `civ_rsrc_find(type, id)` / `civ_rsrc_iter(type, idx)` 介面
+  - `CIV_FOURCC()` macro
+- `team-b/src/gfx/cvpc.{c,h}` — CvPc 影像 decoder
+  - 標準 GIF89a Appendix F LZW（LSB-first bit packing，length-prefixed sub-blocks）
+  - dictionary `prefix[]` + `suffix[]` 4096-entry，反向展開 chain 到 `rev[]` 再正向寫到 output
+  - KwKwK 特例正確處理
+  - palette 寫進 `civ_palette_t`，generation++
+- `team-b/src/res/loader.{c,h}` — 高層 `civ_load_cvpc_by_id` / `civ_load_cvpc_by_name`（後者對 `.GIF` 副檔名敏感 — Mac Resource Fork 內 name 帶副檔名）
+- `team-b/tests/test_rsrc_fork.c` — 對 Civdata0.RSC 驗 spec 03 §3.1 計數 (4 CvPc / 33 STR# / 399 TEXT / 7 GDAT / 14 KDAT)
+- `team-b/tests/test_cvpc_decode.c` — EARTH (id 137, 320×200) 解碼 + by_name 副檔名邏輯驗證
+- `team-b/tests/test_demo_snapshot.c` 升 M3：載入 EARTH 中央 blit 到主地圖 widget
+
+### Env-driven test 路線
+`CIV1_DATA_DIR` 環境變數未設 → `test_rsrc_fork` / `test_cvpc_decode` 自動 SKIP；設定 → 跑完整驗證。CI 不強制要求原版 .RSC，本地開發 export 變數做 visual smoke。
+
+### 驗證結果
+- 31/31 zero warning build
+- ctest 7/7 PASS（無 CIV1_DATA_DIR / 有 CIV1_DATA_DIR 兩條都 100%）
+- [`docs/screenshots/m3_demo.png`](screenshots/m3_demo.png) — EARTH worldmap blit 到主地圖 widget 中央，黃色大陸 + 藍海可辨
+
+### 觀察：spec 03 §12 #3 palette stomp 雷正面出現
+M3 demo 用 `g->palette = earth_pal` 直接整片換 EARTH 的 8 色 palette → 原本 default palette 的 6×6×6 cube 色全被覆蓋 → 主地圖 widget 的綠色 background 變黑、minimap 藍色變黑藍。
+
+這是 spec 03 §12 第 3 條雷（CityView palette stomp）的活樣本。M5 必須做 RGB-nearest LUT 重映射，否則 terrain CvPc + base CBACK + 14 個文明橫幅各自 palette 互換時必然 visual 出問題。M3 階段先 ship 直接覆蓋 palette 的 stub 行為，issue 留作 M5 開工前修。
+
 ## 2026-06-06 — Spec 03 §9.1 CvPc LZW 解開（M3 解除阻塞）
 
 ### byte-pattern scan 找到 `gr_pic.c` 家族 5 個函式
