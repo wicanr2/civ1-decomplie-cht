@@ -2,16 +2,29 @@
 
 ## 為什麼要 clean-room
 
-1993 年《文明帝國 視窗版》的原始碼從未公開，根據各方說法已遺失。坊間已有數個從 disassembly 反組譯的 open source 專案，最知名的是 OpenCiv1（1991 DOS 版的 C# 移植），程式以 MIT 釋出，技術上可直接利用。但本專案目標是 **獨立重建** — 一份程式碼的著作脈絡可以追到「**只看 disassembly 觀察寫出來的 spec**」，沒有衍生自任何前人反組譯實作。
+1993 年《文明帝國 視窗版》的原始碼從未公開，根據各方說法已遺失。坊間已有數個從 disassembly 反組譯的 open source 專案，最知名的是 OpenCiv1（1991 DOS 版的 C# 移植），程式以 MIT 釋出。本專案原本目標是 **獨立重建** — 但 2026-06-06 起，使用者授權放寬 — 在某些範圍可參考第三方 RE 研究 (尤其是公開 license 已驗證過的數值表), 仍維持 Team B 不直接讀外部 source 的原則.
 
-這樣做有兩個好處：(1) 釐清 IP 來源毫無疑義；(2) 強迫實作直接面對原版 binary 行為，會浮現衍生 port 通常被掩蓋的細節。
-
-## 雙隊分工
+## 雙隊分工 (R3b 2026-06-06 起更新)
 
 | 隊 | 輸入 | 輸出 | 禁止 |
 |---|---|---|---|
-| **A — disassembly 側** | `CIV.EXE` 的 Ghidra 專案；Track A 的 EDILZSS2 格式 spec | `team-a/specs/*.md`、`team-a/dumps/*.txt` | 寫 C / C++ / 任何可編譯的程式碼；讀 `team-b/` 下任何檔案；讀 OpenCiv1 / Freeciv / CivOne |
-| **B — 實作側** | 只有 `team-a/specs/*.md` | `team-b/src/**`、`team-b/tests/**` | 開 Ghidra；把 `CIV.EXE` 載入任何 disassembler；讀 OpenCiv1 或其他 Civ 重寫；讀 `team-a/dumps/`（只能讀 spec） |
+| **A — disassembly 側** | `CIV.EXE` 的 Ghidra 專案；Track A 的 EDILZSS2 格式 spec；**`team-a/external/` 外部 RE research** (Honza 2008, OpenCivOne, 1991 manual 等) | `team-a/specs/*.md`、`team-a/dumps/*.txt` | 寫 C / C++ / 任何可編譯的程式碼；讀 `team-b/` 下任何檔案 |
+| **B — 實作側** | 只有 `team-a/specs/*.md` | `team-b/src/**`、`team-b/tests/**` | 開 Ghidra；把 `CIV.EXE` 載入任何 disassembler；**讀 OpenCiv1 或其他 Civ 重寫 (含 `team-a/external/`)**；讀 `team-a/dumps/`（只能讀 spec） |
+
+## External research material (R3b 2026-06-06 新增)
+
+`team-a/external/` 是 Team A 對齊外部 RE 研究的隔離區。**Team B 永遠不直接讀**, 只看 spec 萃取後的結果. 截 2026-06-06 包含:
+
+| Source | License | 用途 | 引用 spec |
+|---|---|---|---|
+| **Honza Havlicek 2008** *CivWin File Format demonstrator* (`Civilization/`) | Free redistribute + 須 credit | RSC parser / Civ1 LZW / SAV RLE | spec 03 §3.5.1, spec 07 §7.1 |
+| **1991 Civ1 Manual** PDF (使用者本機) | © 1991 MicroProse — fair use 引用 facts | unit / improvement / wonder 玩家視角描述, 校驗 ground-truth | spec 06 §6.1-6.4 secondary |
+| **OpenCivOne** (`OpenCiv1/`) | MIT (Rajko Horvat 2023-) | 28 unit + 25 building + 22 wonder + 47 tech + 24 terrain ground-truth (從 1991 DOS Civ v475.05 RE) | **spec 06 §6.1-6.6 primary** |
+
+**為何 OpenCivOne 列入**: (1) MIT license 完全相容本專案; (2) FOSS preservation 目的, 跟我們同道; (3) 已揭穿 4-5 個 wiki/manual 錯誤值, 是目前最可靠的 ground-truth; (4) 仍維持 Team B 不直接讀, IP 鏈 = manual+OpenCivOne → spec → Team B code, 不是直接 port.
+
+`team-a/dumps/` 仍是 Team A 的 audit trail — **不屬於介面**。Team B 永遠不讀。
+`team-a/notes/` 是 Team A 私人 scratch，也不屬於介面。
 
 `team-a/dumps/` 存在的目的是 Team A 自己的 audit trail — **不屬於介面**。Team B 永遠不讀。
 

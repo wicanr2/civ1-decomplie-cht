@@ -1,0 +1,107 @@
+R3b: spec 06 v0.2 + OpenCivOne 整合 — 28 unit/25 building/22 wonder/47 tech/24 terrain ground-truth
+
+使用者 2026-06-06 明示「單位定義可以參考 openciv1」放寬 clean-room 政策,
+允許 OpenCivOne (MIT, FOSS preservation of 1991 DOS Civ v475.05) 作為
+Team A external research material. Team B 仍不直接讀.
+
+# 交付
+
+  team-a/external/OpenCiv1/                  clone codeberg.org/rhorvat/OpenCivOne
+    src/Game/State/Definitions/*.cs           24 個 definition struct + enum
+    src/Game/State/GameData.cs                **核心 ground-truth 來源**
+                                              (28 unit + 25 building +
+                                               22 wonder + 47 tech + 24 terrain)
+    LICENSE (MIT)
+    README.md
+
+  team-a/external/README.md                   加 OpenCivOne 段
+                                              + 從哪萃取進哪份 spec
+                                              + license 相容性說明
+
+  team-a/specs/06_game_data_tables.md v0.2    大規模重寫:
+    §6.1.0 NEW UnitDefinition 34-byte struct layout 完整
+    §6.1.1 28 unit ground-truth (含 AI role / Sight / Cargo /
+                                  CancelTech 全新補)
+    §6.2 改寫 25 building 完整 ground-truth
+    §6.2.4 NEW 22 wonder 完整 ground-truth (含 obsolete tech)
+    §6.5 NEW 47 tech 完整 prereq DAG + 5 future tech
+    §6.6 改寫 24 terrain (含 12 resource variants)
+    §6.9 binary offset 對位狀態 update (確認 1993 Win port 跟
+                                        OpenCivOne 基於的 DOS 版
+                                        unit struct 不同 -
+                                        Win port 可能拆 name 進 STR# 132)
+    §6.10 license & credit update
+    §6.11 NEW v0.3 待補清單
+
+  docs/CLEAN_ROOM.md                          政策放寬 (R3b):
+    - 加 external research material 段
+    - 列出 Honza 2008 + manual + OpenCivOne 三個 source
+    - Team B 仍不直接讀, IP 鏈 = source → spec → Team B code
+
+  team-a/tools/scan_unitdef_struct.py         34-byte Settlers struct scan
+                                              CIV.EXE / RSC / SAV 都 0 hit
+                                              確認 Win port struct ≠ DOS
+
+  README.md                                   ship 行 + spec 06 v0.2 + Credits
+                                              加 Rajko Horvat (OpenCivOne)
+
+# 重大發現 (R3b)
+
+  1. **OpenCivOne 揭穿 Fighter 4-2** (不是 manual 寫的 3-3!)
+     - manual P41 Fighter "3-3-10" 是 印錯
+     - OpenCivOne (從 1991 DOS binary v475.05 RE) 確認 4-2
+     - 我們的 R3 spec 06 v0.1 用 manual 3-3, R3b v0.2 修正為 4-2
+
+  2. **OpenCivOne 揭穿 UnitDefinition 34-byte struct**:
+     - 12-byte name (ASCII null-pad)
+     - 11 × LE16 fields (CancelTech / MovementType / MoveCount /
+       TurnsOutside / Attack / Defense / Cost / Sight / Cargo /
+       AIRole / RequiredTech)
+     - Cost 是 shields/10 (Settlers cost=4 → 40 shields)
+
+  3. **1993 Win port struct ≠ 1991 DOS struct**:
+     - 1991 DOS (OpenCivOne base): 34 byte 含 name
+     - 1993 Win: "Settlers" 字串只在 error messages 出現,
+       不在任何 unit table 內. 推測 Win port 拆 name 進 STR# 132
+       (per spec 05), unit table 純數值 ~22 byte
+     - 這是 Mac port + Win shim 的副產物 (spec 01 §1.2),
+       Mac 自然把 name 跟 stats 分離成 Resource
+
+  4. **Wiki 對 Civ1 unit stats 多項錯** (manual + OpenCivOne 都修):
+     - Legion 3-1 (wiki 4-2) ✗
+     - Musketeers 2-3 (wiki 3-3) ✗
+     - Riflemen 3-5 (wiki 5-4) ✗
+     - Fighter 4-2 (wiki 4-2 對, manual 3-3 錯)
+     - Frigate move=3 (wiki move=4 ✗)
+
+# Clean-room 政策放寬 (使用者明示)
+
+  使用者「單位定義可以參考 openciv1」明示允許.
+  我們按 Honza 2008 同樣模式處理 OpenCivOne:
+    - Team A 可看 (放 team-a/external/)
+    - Team B 仍不可直接讀 (只看 team-a/specs/)
+    - IP 鏈: OpenCivOne (MIT) → spec 06 (CC BY 4.0) → Team B code (MIT)
+    - 所有 license 完全相容
+
+  CLEAN_ROOM.md 公開記錄此放寬, 不留模糊.
+
+# RE 覆蓋變化 (R3b)
+
+  數值表: 60% → 95% (28 unit + 25 imp + 22 wonder + 47 tech + 24 terrain)
+  spec 06 v0.1 → v0.2 (新加: AI role / sight / cargo / cancel tech /
+                       tech DAG / terrain palette idx / wonder obsolete)
+
+# 不變
+
+  ctest 16/16 PASS (R3b 仍是 Team A spec, 沒動 Team B code)
+
+# 下一步 (R4 = 1>2>3>4>5 第四步)
+
+  Team B layout polish 對齊原版 8 menu items + Win16 子視窗 chrome:
+    - menu bar 5 → 8 (加 File/Edit/City/Help)
+    - World Map 子視窗 (有 title bar) 取代嵌入
+    - Status 子視窗 (有 title bar)
+    - 對齊 docs/screenshots/reference/civ1_win_civilopedia_dropdown.png
+
+  之後 R5 = Team B city 系統 M6-full 真版 (現在有 spec 06 完整數值表
+  + spec 07 §7.2 SAV city table layout, M6-full 真版 unblocker 都齊了!)

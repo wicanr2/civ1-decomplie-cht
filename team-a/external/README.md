@@ -16,7 +16,7 @@ as long as this credit is given where due" (見 `Civilization/Readme.txt`).
 ## 包含什麼
 
 ```
-Civilization/
+Civilization/                            Honza Havlicek 2008 (free redistribute, 須 credit)
   Readme.txt              format documentation (Honza 寫的)
   src/
     common.{h,cpp}        utility
@@ -30,15 +30,32 @@ Civilization/
 civdata4_extracted/
   civdata4.rsc            76 KB CIVDATA4 (含 SPR32X32 sprite sheet) 原版
   readme.txt
+
+OpenCiv1/                                Rajko Horvat 2023- OpenCivOne (MIT) [R3b 2026-06-06 加入]
+  src/
+    Game/State/Definitions/              核心 ground-truth — Team A 萃取 spec 06 用
+      UnitDefinition.cs                  34-byte struct layout (含 11 LE16 fields)
+      ImprovementDefinition.cs           (id, name, cost, maint, prereq, cancel)
+      TechnologyAdvanceDefinition.cs     (enum, name, prereq1, prereq2)
+      TerrainDefinition.cs               (enum, name, move, def, food, shield, trade, ...)
+      WonderEnum.cs / UnitTypeEnum.cs / ImprovementEnum.cs ...  enum 值
+    Game/State/GameData.cs               **核心數據檔** — 28 unit + 25 improvement +
+                                         22 wonder + 47 tech + 24 terrain 完整 ctor args
+  LICENSE                                MIT (Rajko Horvat)
+  README.md                              FOSS preservation, base on 1991 DOS Civ v475.05
 ```
 
 ## 我們已從這份材料萃取到的 spec
 
-| spec | 引用內容 | Honza 的角色 |
+| spec | 引用內容 | 來源 |
 |---|---|---|
-| [`spec 03 §3.5`](../specs/03_asset_formats_and_tiles.md) | SPR32X32 palette: 64 base + 8 cyclic anim, sentinel pixels @ bottom-left 指定 national color slots | 校驗 + 補完 (我們 RE 出 LZW + sheet size, Honza 補 palette 語意) |
-| [`spec 03 §3.6`](../specs/03_asset_formats_and_tiles.md) | RSC file table structure (header / desc / section / file_info) | 校驗 (我們 RE 一致, Honza 補 zero-field 半時 0xFFFF name 意義) |
-| [`spec 07`](../specs/07_save_format_and_rle.md) | SAV file RLE 壓縮格式 (byte stream, 0x80 旗標) | **新 spec 主體** (我們之前 spec 01 §1.2 只知 `RLLEncode/Decode` 在 `load.c`, 沒抽到實際算法) |
+| [`spec 03 §3.5.1`](../specs/03_asset_formats_and_tiles.md) | SPR32X32 palette: 64 base + 8 cyclic anim, sentinel pixels @ bottom-left 指定 national color slots | Honza Readme.txt |
+| [`spec 03 §3.6`](../specs/03_asset_formats_and_tiles.md) | RSC file table structure | Honza `rsc_manager.{h,cpp}` |
+| [`spec 06 §6.1`](../specs/06_game_data_tables.md) | **28 unit ground-truth** (含 34-byte struct layout + AI role + sight + cargo) | OpenCivOne `UnitDefinition.cs` + `GameData.cs:209-236` |
+| [`spec 06 §6.2`](../specs/06_game_data_tables.md) | **25 city improvement + 22 wonder** | OpenCivOne `ImprovementDefinition.cs` + `GameData.cs:238-322` |
+| [`spec 06 §6.5`](../specs/06_game_data_tables.md) | **47 tech + 5 future tech DAG** | OpenCivOne `TechnologyAdvanceDefinition.cs` + `GameData.cs:266-336` |
+| [`spec 06 §6.6`](../specs/06_game_data_tables.md) | **24 terrain (含 12 resource variants)** | OpenCivOne `TerrainDefinition.cs` + `GameData.cs:354-378` |
+| [`spec 07 §7.1`](../specs/07_save_format_and_rle.md) | SAV file RLE 壓縮格式 (byte stream, 0x80 旗標) | Honza `sav_file.cpp` |
 
 ## 為何 clean-room 安全
 

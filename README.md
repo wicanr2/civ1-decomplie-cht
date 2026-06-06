@@ -10,7 +10,7 @@
 
 ## 目前 ship 狀態 (2026-06-06)
 
-最後 ship: spec 06 v0.1 — 28 unit + 21 building + 6 government 數值表 ground-truth (from 1991 官方 manual); + spec 03 §3.5.1 Honza palette
+最後 ship: spec 06 v0.2 — 28 unit (修 manual Fighter 3-3 → 4-2) + 25 building + 22 wonder + 47 tech + 24 terrain (OpenCivOne MIT ground-truth)
 
 | Milestone | 範圍 | 狀態 | 證據 |
 |---|---|---|---|
@@ -54,7 +54,7 @@
 | [`03`](team-a/specs/03_asset_formats_and_tiles.md) | 5 個 `.RSC` 完整 breakdown / CvPc 格式 / LZW 解通 (185/199 sprite) | **沒有 .PIC 檔** (Track A 誤判)。所有資產在 5 個 Mac Resource Fork: CIVDATA0..4 + CIVHELP |
 | [`04`](team-a/specs/04_dialogs_and_controls.md) | 24 個 RT_DIALOG 完整 parse + 控制項家族 | 全 dialog 用 `CIVDIALOG` 自製類別；caption 空字串自繪 |
 | [`05`](team-a/specs/05_game_data_and_strings.md) | 33 STR# + 399 TEXT master tables 定位 | **master tables 不在 CIV.EXE** 而在 `Civdata0.RSC`；72 科技 / 46 建築 / 28 單位 / 24 地形 / 14 文明 / 14 領袖 / 6 政府 全名清單已抽出 |
-| [`06` v0.1](team-a/specs/06_game_data_tables.md) | **28 unit + 21 building + 6 government 數值表** ground-truth (1991 manual) | Manual 推翻 wiki 4 個值 (Legion 3-1 / Musketeers 2-3 / Riflemen 3-5 / Fighter 3-3 / Frigate move=3). Binary offset 仍 TBD (`06_unit_stats_scan.txt` 證實非 contiguous array, 推測 hardcoded 在 code segment MOV immediate). v0.2 補 72 tech tree + 21 wonders + 14 civ AI personality. |
+| [`06` v0.2](team-a/specs/06_game_data_tables.md) | **28 unit + 25 building + 22 wonder + 47 tech + 24 terrain** ground-truth | 主要源自 [OpenCivOne](https://codeberg.org/rhorvat/OpenCivOne) (MIT, FOSS preservation of 1991 DOS Civ v475.05). 揭穿 34-byte unit struct + 連 manual P41 Fighter 3-3 都是錯的 (真值 4-2). Binary offset 仍 TBD — 1993 Win port struct 可能拆 name 進 STR# 132, 純數值欄位 ~22 byte. v0.3 補 14 civ AI personality + SETI/Cure for Cancer 兩個 wonder + STR# 130 剩 20 entry. |
 | [`07`](team-a/specs/07_save_format_and_rle.md) | **SAV file RLE 壓縮** (`load.c::RLLEncode/Decode`) §7.1 完整 + §7.2 v0.1 SAV layout map | §7.1 取自 [Honza Havlicek 2008](team-a/external/). §7.2 R2 cross-compare 3 HAM*.SAV (107 KB fixed-size) 對位 header / king names / civ names / player table / city table / 256 city pool. |
 
 ### 待寫 spec ❌
@@ -167,7 +167,7 @@ tools/                         共用資產抽取工具（MIT）
 - [`docs/screenshots/cvpc_king00_elizabeth.png`](docs/screenshots/cvpc_king00_elizabeth.png) — Queen Elizabeth I 領袖肖像示意
 - [`docs/screenshots/m6_minimap_real.png`](docs/screenshots/m6_minimap_real.png) — 最新 ship 截圖 (M6-minimap: 真實縮圖 + view rect + unit dots)
 - [`docs/screenshots/reference/`](docs/screenshots/reference/) — **1993 Civ Windows 原版視覺 reference** (使用者 2026-06-06 提供): 主畫面 + 城市畫面 + 主選單 + layout gap notes
-- [`team-a/external/`](team-a/external/) — **外部 RE 研究資料 (Team A only)**: Honza Havlicek 2008 *CivWin File Format demonstrator* (RSC parser + Civ1 LZW + SAV RLE) — Team B 不可直接讀, 經 spec 03/07 萃取後才接觸
+- [`team-a/external/`](team-a/external/) — **外部 RE 研究資料 (Team A only)**: Honza Havlicek 2008 *CivWin File Format demonstrator* (RSC parser + Civ1 LZW + SAV RLE) + **OpenCivOne (MIT, 2023-)** (28 unit/25 imp/22 wonder/47 tech ground-truth) — Team B 不可直接讀, 經 spec 03/06/07 萃取後才接觸. 詳見 [`docs/CLEAN_ROOM.md`](docs/CLEAN_ROOM.md)
 - **1991 官方 Manual** (使用者提供, 126 頁): spec 06 v0.1 的 ground-truth 來源 (28 unit + 21 building + 6 government). 不入 repo (版權), 使用者本機保留
 - [`docs/screenshots/m6_full_lite_units.png`](docs/screenshots/m6_full_lite_units.png) — M6-full-lite: unit 系統 + 多 player 場景
 - [`docs/screenshots/m5c_terrain_groundtruth.png`](docs/screenshots/m5c_terrain_groundtruth.png) — M5-C terrain 真實 SPR32X32 對位
@@ -187,3 +187,4 @@ tools/                         共用資產抽取工具（MIT）
 ## Credits
 
 - **Honza Havlicek** (havlicek.honza@gmail.com), *CivWin File Format demonstrator*, 2008 — RSC parser / Civ1 GIF (LZW 變體) decoder / SAV RLE 格式 RE. Spec 03 §3.5.1 SPR32X32 palette 結構 + Spec 07 §7.1 SAV RLE 算法直接引用. 公開研究 free redistribute license + 須 credit. 詳見 [`team-a/external/README.md`](team-a/external/README.md).
+- **Rajko Horvat**, *OpenCivOne* (https://codeberg.org/rhorvat/OpenCivOne), MIT license, 2023- — FOSS preservation project based on 1991 DOS Civilization v475.05. Spec 06 §6.1-6.6 (28 unit + 25 improvement + 22 wonder + 47 tech + 24 terrain) ground-truth 直接萃取. 揭穿 manual P41 Fighter 3-3 是印錯 (binary 為 4-2).
