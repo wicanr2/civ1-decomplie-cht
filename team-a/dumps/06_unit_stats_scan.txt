@@ -1,0 +1,5 @@
+# spec 06 unit stats byte pattern scan
+
+attack 28B: 0 hits 
+defense 28B: 0 hits 
+move 28B: 0 hits 

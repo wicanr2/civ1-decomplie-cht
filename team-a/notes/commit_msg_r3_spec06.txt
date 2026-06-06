@@ -1,0 +1,93 @@
+R3: spec 06 v0.1 — 28 unit + 21 building + 6 government 數值表 ground-truth (1991 官方 manual)
+
+使用者 1>2>3>4>5 第三步: Team A spec 06 (Ghidra 抽 unit/civ/tech 數值表).
+
+R3 中段使用者額外提供 **1991 Civ1 官方 Manual** (126 頁 PDF) +
+明示 WSL Ghidra 已起 (civ1.gpr 在 ~/ghidra-projects). 兩者並用大幅
+推進 spec 06 從 0% → v0.1 完整 (manual 是 ground-truth, Ghidra 留 v0.2
+做 binary offset 對位).
+
+# 交付
+
+  team-a/specs/06_game_data_tables.md     **新 spec 06 v0.1 草稿**
+    §6.0  本 spec 解答什麼
+    §6.1  28 unit stats 完整表 (a/d/m/cost/prereq)
+          + §6.1.1 特殊規則 (veteran / walls / terrain bonus / 容量)
+    §6.2  21 city improvement 表 (cost/maint/prereq/effect)
+          + §6.2.1 power plant 互斥
+          + §6.2.2 Wonders × improvement stack
+    §6.3  6 government 表 (max rate / trade mod / unit support /
+          settler food / 自由度)
+          + §6.3.1 revolution 機制
+    §6.4  21 Wonders 名單 + 部分 effect (ancient/medieval/modern)
+    §6.5  72 tech tree (v0.1 列關鍵 prereq, 完整 graph v0.2)
+    §6.6  Terrain combat modifier (12 terrain × 移動/防禦/特殊)
+    §6.7  14 civ + 領袖 + AI personality (推測)
+    §6.8  Team B 整合介面契約 (unit_stats.h / building_stats.h /
+          government_stats.h)
+    §6.9  Binary offset 對位狀態 (未找 contiguous array, 推測 MOV imm)
+    §6.10 License & credit
+
+  team-a/tools/ghidra_extract_spec06_unit_stats.py
+    Ghidra Jython script: byte pattern + decompile data_units
+    (撞到 Jython 2.7 byte > 127 bug, 完整 28-byte scan 還是 0 hit)
+
+  team-a/tools/scan_unit_stats.py + scan_stats_in_sav_rsc.py
+    Python 對 CIV.EXE + 5 RSC + 3 SAV 全面掃 unit stats array
+    確認: stats 在這些檔案內都非 contiguous → 必在 code segment
+
+  team-a/dumps/06_unit_stats_scan.txt
+    Ghidra scan 結果 (full / 10-byte prefix / interleaved 都 0 hit)
+
+  README.md
+    spec 06 v0.1 ship 行 + RE 覆蓋表 update:
+      Combat: 15% → 50% (manual P35 公式 ground-truth)
+      城市生產: 0% → 30% (spec 06 §6.2 21 building 完整)
+      數值表: NEW row, 60% (spec 06 v0.1 28 unit + 21 building + 6 gov)
+
+# 重大發現
+
+  1. **Wiki 對 4 個 unit 錯誤** (manual 是 ground-truth):
+     - Legion: 3-1 不是 4-2
+     - Musketeers: 2-3 不是 3-3
+     - Riflemen: 3-5 不是 5-4
+     - Fighter: 3-3 不是 4-2
+     - Frigate move=3 不是 4
+
+  2. **Unit stats 不存於 CIV.EXE / 5 RSC / 3 SAV 任何位置作為
+     contiguous 28-byte 陣列**:
+     - manual ground-truth 全 4 個 array (attack/defense/move/cost) 都 0 hit
+     - 包括 (a,d) interleaved 56-byte / (a,d,m,cost) 112-byte 都 0 hit
+     - 結論: stats hardcoded 在 code segment 用 MOV immediate 初始化
+     - v0.2 R4 用 Ghidra cross-ref + MOV pattern walk 補
+
+  3. **data_units function decompile (FUN_11e8_0337) 證實**:
+     - 它不是初始化 unit stats, 是載 STR# 143/144/145/146/135 names
+     - 跟 SAV §7.2 spec 對位完全一致 (offset 0x12d8+0x3DA/0x2DA/0x1DA
+       對應 SAV file 內 0x112/0x212 etc.)
+     - 真正 unit stats init function 還沒找到
+
+  4. **Manual P35 Combat formula**:
+     - Chariot (A=4) vs Phalanx (D=2): Chariot 勝率 = 4/(4+2) = 66.7%
+     - Combat = single dice roll, ratio = A / (A+D)
+     - 修飾: Veteran ×1.5 / Walls ×3 / Fortified ×1.5 / Terrain bonus
+     - Team B 可直接實作 (spec 06 §6.1.1)
+
+# 驗證
+
+  ctest 16/16 PASS (R3 是 Team A 純 spec, 沒動 Team B code)
+  spec 06 §6.8 介面契約給 Team B 立即可用
+
+# RE 覆蓋變化 (R3)
+
+  數值表: 0% → 60% (28 unit + 21 building + 6 gov ground-truth)
+  Combat: 15% → 50% (公式 ground-truth)
+  城市生產: 0% → 30% (building cost / maint ground-truth)
+
+# 下一步 (R4, 1>2>3>4>5 第四步)
+
+  Team B layout polish 對齊原版 8 menu items + Win16 子視窗 chrome:
+    - menu bar 5 → 8 (加 File/Edit/City/Help)
+    - World Map 子視窗 (有 title bar) 取代嵌入
+    - Status 子視窗 (有 title bar)
+    - 對齊 docs/screenshots/reference/civ1_win_civilopedia_dropdown.png

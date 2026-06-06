@@ -10,7 +10,7 @@
 
 ## 目前 ship 狀態 (2026-06-06)
 
-最後 ship: spec 07 §7.2 v0.1 草稿 — cross-compare 3 HAM*.SAV (固定 107 KB) 出 SAV layout map (header / king/civ names / player table / city table / 256 city pool)
+最後 ship: spec 06 v0.1 — 28 unit + 21 building + 6 government 數值表 ground-truth (from 1991 官方 manual); + spec 03 §3.5.1 Honza palette
 
 | Milestone | 範圍 | 狀態 | 證據 |
 |---|---|---|---|
@@ -54,15 +54,17 @@
 | [`03`](team-a/specs/03_asset_formats_and_tiles.md) | 5 個 `.RSC` 完整 breakdown / CvPc 格式 / LZW 解通 (185/199 sprite) | **沒有 .PIC 檔** (Track A 誤判)。所有資產在 5 個 Mac Resource Fork: CIVDATA0..4 + CIVHELP |
 | [`04`](team-a/specs/04_dialogs_and_controls.md) | 24 個 RT_DIALOG 完整 parse + 控制項家族 | 全 dialog 用 `CIVDIALOG` 自製類別；caption 空字串自繪 |
 | [`05`](team-a/specs/05_game_data_and_strings.md) | 33 STR# + 399 TEXT master tables 定位 | **master tables 不在 CIV.EXE** 而在 `Civdata0.RSC`；72 科技 / 46 建築 / 28 單位 / 24 地形 / 14 文明 / 14 領袖 / 6 政府 全名清單已抽出 |
-| [`07`](team-a/specs/07_save_format_and_rle.md) | **SAV file RLE 壓縮** (`load.c::RLLEncode/Decode`) §7.1 完整 | 取自 [Honza Havlicek 2008 CivWin File Format demonstrator](team-a/external/) (公開 RE 研究). RLE: `<count> <byte>` run 或 `<count\|0x80> <bytes>` literal. §7.2 SAV 解壓後內部結構仍 TODO. |
+| [`06` v0.1](team-a/specs/06_game_data_tables.md) | **28 unit + 21 building + 6 government 數值表** ground-truth (1991 manual) | Manual 推翻 wiki 4 個值 (Legion 3-1 / Musketeers 2-3 / Riflemen 3-5 / Fighter 3-3 / Frigate move=3). Binary offset 仍 TBD (`06_unit_stats_scan.txt` 證實非 contiguous array, 推測 hardcoded 在 code segment MOV immediate). v0.2 補 72 tech tree + 21 wonders + 14 civ AI personality. |
+| [`07`](team-a/specs/07_save_format_and_rle.md) | **SAV file RLE 壓縮** (`load.c::RLLEncode/Decode`) §7.1 完整 + §7.2 v0.1 SAV layout map | §7.1 取自 [Honza Havlicek 2008](team-a/external/). §7.2 R2 cross-compare 3 HAM*.SAV (107 KB fixed-size) 對位 header / king names / civ names / player table / city table / 256 city pool. |
 
 ### 待寫 spec ❌
 
 | spec | 範圍 | 為什麼 deferred |
 |---|---|---|
-| **`06`** | 14 文明 / 14 領袖 / 72 科技 / 28 單位 / 46 建築/奇蹟 **數值表** (attack / defense / cost / movement / production / 科技 prereq DAG) | spec 05 line 104 明點：推測 hardcoded 在 code segment `const` 陣列；M6-full 戰鬥/生產直接阻擋於此 |
-| **`07` §7.2 v0.2** | byte→struct field 對位細部 (treasury / known_techs bitmap / world map terrain) | §7.2 v0.1 layout map 已 ship (R2 cross-compare 出); v0.2 待 Ghidra walk `CivLoadGame` decompile 看 `fread()` 順序 |
-| **`07` combat + AI** | combat 公式 + AI 決策 + 外交 | 與 SAV 無關, 等 spec 06 Ghidra 抽完 unit stats 順便 |
+| **`06` v0.2** | 72 科技 tree (prereq DAG) + 21 wonders 完整 effect + 14 civ AI personality / GDAT 結構 | v0.1 已 ship 28 unit + 21 building + 6 gov 數值; v0.2 補完餘部 |
+| **`06` §6.9 binary offset** | 28 unit stats 在 CIV.EXE / RSC 內的實際位址 | R3 scan 證實非 contiguous array, 推測 hardcoded 在 code segment MOV immediate, 待 Ghidra 全 function MOV pattern walk |
+| **`07` §7.2 v0.2** | byte→struct field 對位細部 (treasury / known_techs bitmap / world map terrain) | §7.2 v0.1 layout map 已 ship (R2); v0.2 待 Ghidra walk `CivLoadGame` 看 `fread()` 順序 |
+| **`07` combat + AI** | combat 公式 + AI 決策 + 外交 | 數值表 ground-truth 已 ship (spec 06 §6.1.1); 公式骨架 manual P35 明示, 可直接實作 Team B `civ_combat_resolve()` |
 | **`08`** | 音效 — MMSYSTEM 4 個 API call site + 23 個 WAV 資源未分類 | 不擋遊戲邏輯；可獨立後做 |
 | **`09`** | 勝利條件 / 結局 / scoring | STR# 155-157 (Space 1/2/Archeologist) 文字側已 RE，演算法未碰 |
 
@@ -78,8 +80,9 @@
 | AI / 外交 | location 不確定 | 5% | 只確認 `FUN_10e8_2d46` 是 "AI 策略表 init"，其他演算法未抽 |
 | 音效 | MMSYSTEM 4 call | 0% | API call 統計過但語義未分析 |
 | Game state machine | 推測 `wdwmap` + WinMain D 段 | turn 推進骨架 (M6-lite) + unit 系統 (M6-full-lite) | city growth / tech research 演算法未抽 |
-| Combat | location 不確定 | 15% — M6-full-lite 已 placeholder 公式 | 真正攻擊/防禦公式 + 老兵加成 + RNG seed (spec 07) |
-| 城市生產 | per-turn handler | 0% | shield / food / trade 配率 |
+| Combat | location 不確定 | 50% — manual P35 公式 ground-truth (`A/(A+D)` 機率) + spec 06 §6.1.1 修飾 (veteran ×1.5 / walls ×3 / terrain) | 真正 RNG seed + 攻擊推進規則 + 命中分配 |
+| 城市生產 | per-turn handler | 30% — spec 06 §6.2 21 building cost + maint + prereq 完整 | shield/food/trade 配率算法 + 7 Wonder 全 effect |
+| 數值表 | hardcoded in CIV.EXE | 60% — spec 06 v0.1 ground-truth from manual (28 unit / 21 building / 6 gov) | 72 tech tree + 21 wonders + 14 civ AI personality (v0.2) |
 | 太空船 | `Dock` STR# 150 | 文字側 RE 完成 | 組裝/啟動演算法未碰 |
 
 ### 資產解碼狀態
@@ -165,6 +168,7 @@ tools/                         共用資產抽取工具（MIT）
 - [`docs/screenshots/m6_minimap_real.png`](docs/screenshots/m6_minimap_real.png) — 最新 ship 截圖 (M6-minimap: 真實縮圖 + view rect + unit dots)
 - [`docs/screenshots/reference/`](docs/screenshots/reference/) — **1993 Civ Windows 原版視覺 reference** (使用者 2026-06-06 提供): 主畫面 + 城市畫面 + 主選單 + layout gap notes
 - [`team-a/external/`](team-a/external/) — **外部 RE 研究資料 (Team A only)**: Honza Havlicek 2008 *CivWin File Format demonstrator* (RSC parser + Civ1 LZW + SAV RLE) — Team B 不可直接讀, 經 spec 03/07 萃取後才接觸
+- **1991 官方 Manual** (使用者提供, 126 頁): spec 06 v0.1 的 ground-truth 來源 (28 unit + 21 building + 6 government). 不入 repo (版權), 使用者本機保留
 - [`docs/screenshots/m6_full_lite_units.png`](docs/screenshots/m6_full_lite_units.png) — M6-full-lite: unit 系統 + 多 player 場景
 - [`docs/screenshots/m5c_terrain_groundtruth.png`](docs/screenshots/m5c_terrain_groundtruth.png) — M5-C terrain 真實 SPR32X32 對位
 - [`docs/screenshots/m5b_layout_v2.png`](docs/screenshots/m5b_layout_v2.png) — M5-B layout 對齊原版
