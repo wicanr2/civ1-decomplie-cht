@@ -63,16 +63,16 @@ int main(void)
     EXPECT(g.minimap_w->call_count == 0);
     EXPECT(g.status_w->call_count == 0);
 
-    /* C-B layout (2026-06-06):
-     *   menu bar:  y < 16
-     *   minimap:   x 0..159,   y 16..135
-     *   status:    x 0..159,   y 136..479
-     *   map:       x 160..639, y 16..479
+    /* R4 layout (2026-06-06): chrome 從 16 → 32 (title + menu)
+     *   chrome:    y < 32 (title 16 + menu 16)
+     *   minimap:   x 0..159,   y 32..159  (含 W16 sub-title)
+     *   status:    x 0..159,   y 160..479 (含 W16 sub-title)
+     *   map:       x 160..639, y 32..479
      */
 
     /* ── 測 1：mouse motion 落在主地圖區 ───────────────── */
     SDL_Event ev;
-    mk_motion(&ev, 300, 100);   /* 在 map (160..640, 16..480) 內 */
+    mk_motion(&ev, 300, 100);   /* 在 map (160..640, 32..480) 內 */
     civ_dispatch_event(&g, &ev);
     EXPECT(g.map_w->call_count == 1);
     EXPECT(g.minimap_w->call_count == 0);
@@ -85,7 +85,7 @@ int main(void)
     EXPECT(ms->last_mouse_y == 100);
 
     /* ── 測 2：mouse motion 落在小地圖區 ─────────────── */
-    mk_motion(&ev, 80, 80);     /* 在 minimap (0..160, 16..136) 內 */
+    mk_motion(&ev, 80, 80);     /* 在 minimap (0..160, 32..160) 內 */
     civ_dispatch_event(&g, &ev);
     EXPECT(g.minimap_w->call_count == 1);
     EXPECT(g.map_w->call_count == 1);    /* 沒漏出去 */
@@ -116,11 +116,11 @@ int main(void)
     EXPECT(ms->last_click_y == 250);
 
     /* ── 測 5：座標越界（落在 widget 之外）→ 無 widget 被呼叫 ── */
-    /* C-B layout: 唯一沒覆蓋的區域是 menu bar (y < 16)。 */
+    /* R4 layout: 唯一沒覆蓋的區域是 chrome (title + menu, y < 32)。 */
     uint64_t all_calls_pre = g.map_w->call_count +
                              g.minimap_w->call_count +
                              g.status_w->call_count;
-    mk_motion(&ev, 300, 8);     /* menu bar 內 */
+    mk_motion(&ev, 300, 20);    /* menu bar 內 (y=20 < 32) */
     civ_dispatch_event(&g, &ev);
     uint64_t all_calls_post = g.map_w->call_count +
                               g.minimap_w->call_count +

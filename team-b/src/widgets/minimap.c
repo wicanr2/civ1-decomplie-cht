@@ -86,11 +86,24 @@ static civ_evt_result_t minimap_dispatch(civ_widget_t *w, SDL_Event *ev)
 
 static void minimap_render(civ_widget_t *w, civ_surface_t *fb)
 {
-    /* D-minimap (2026-06-06): 改為真實世界縮圖
-     *
-     * 對應 spec 02 §2.2.7 WDWSMMAPPROC (DrawSmTiles).
-     * Layout: minimap rect 160×120 = world (60×30) 各 tile → 2.6×4 px 塊.
-     * 簡化: 一律 2×4 px per tile, x 留邊距;真值 world_ready=false 時走 fallback. */
+    /* R4 (2026-06-06): 加 Win16 子視窗 chrome — title bar "World Map" */
+    enum { SUB_TITLE_H = 12 };
+    /* Win16 title bar (active blue) */
+    civ_fill_rect(fb, (civ_rect_t){w->rect.x, w->rect.y, w->rect.w, SUB_TITLE_H}, 1);
+    if (w->game && w->game->font_body) {
+        const char *title = "World Map";
+        int tw = civ_text_measure(w->game->font_body, title);
+        int tx = w->rect.x + (w->rect.w - tw) / 2;
+        civ_text_out(fb, w->game->font_body, tx, w->rect.y + SUB_TITLE_H - 3,
+                     title, 15, 1, CIV_TEXT_BK_TRANSPARENT);
+    }
+    /* 縮小 w->rect 給內容區用, 但 widget 接 event 仍用完整 rect */
+    civ_rect_t inner = { w->rect.x, w->rect.y + SUB_TITLE_H,
+                         w->rect.w, w->rect.h - SUB_TITLE_H };
+
+    /* D-minimap (2026-06-06): 改為真實世界縮圖 (subset of w->rect 後的 inner) */
+    civ_rect_t orig_rect = w->rect;
+    w->rect = inner;
 
     /* 深藍底佔位 */
     civ_fill_rect(fb, w->rect, 9);
@@ -172,6 +185,9 @@ static void minimap_render(civ_widget_t *w, civ_surface_t *fb)
     int cx = inner_x + wd->cursor_x * tw;
     int cy = inner_y + wd->cursor_y * th;
     civ_fill_rect(fb, (civ_rect_t){cx, cy, tw, th}, white);
+
+    /* 還原 w->rect (event dispatch 仍用原完整 rect) */
+    w->rect = orig_rect;
 }
 
 static void minimap_destroy(civ_widget_t *w)

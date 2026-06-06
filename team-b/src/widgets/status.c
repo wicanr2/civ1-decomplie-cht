@@ -28,17 +28,30 @@ static void status_render(civ_widget_t *w, civ_surface_t *fb)
      * 真實的 player state hook (金庫, 稅率, 政府) 等 M6-full / M7 才會接.
      */
 
-    /* 灰底 */
-    civ_fill_rect(fb, w->rect, 7);
-    civ_frame_rect(fb, w->rect, 8);
+    /* R4 (2026-06-06): 加 Win16 子視窗 chrome — title bar "Status" */
+    enum { SUB_TITLE_H = 12 };
+    civ_fill_rect(fb, (civ_rect_t){w->rect.x, w->rect.y, w->rect.w, SUB_TITLE_H}, 1);
+    if (w->game && w->game->font_body) {
+        const char *title = "Status";
+        int tw = civ_text_measure(w->game->font_body, title);
+        int tx = w->rect.x + (w->rect.w - tw) / 2;
+        civ_text_out(fb, w->game->font_body, tx, w->rect.y + SUB_TITLE_H - 3,
+                     title, 15, 1, CIV_TEXT_BK_TRANSPARENT);
+    }
+    civ_rect_t inner_rect = { w->rect.x, w->rect.y + SUB_TITLE_H,
+                              w->rect.w, w->rect.h - SUB_TITLE_H };
+
+    /* 灰底 (用 inner_rect 不擋 title bar) */
+    civ_fill_rect(fb, inner_rect, 7);
+    civ_frame_rect(fb, inner_rect, 8);
 
     if (!w->game) return;
     civ_font_t *font = w->game->font_body;
     if (!font) return;
 
     char buf[64];
-    int x = w->rect.x + 6;
-    int y = w->rect.y + 16;
+    int x = inner_rect.x + 6;
+    int y = inner_rect.y + 12;
 
     /* 1. 西元年 */
     int year = w->game->civ_year;
@@ -114,8 +127,8 @@ static void status_render(civ_widget_t *w, civ_surface_t *fb)
         y += 14;
     }
 
-    /* 8. 回合計數 (底部, RE 期保留) */
-    int y_bottom = w->rect.y + w->rect.h - 30;
+    /* 8. 回合計數 (底部, RE 期保留) — 用 inner_rect 算 (w->rect 含 title bar) */
+    int y_bottom = inner_rect.y + inner_rect.h - 30;
     snprintf(buf, sizeof buf, "Turn %u  Tick %llu",
              (unsigned)w->game->turn_number,
              (unsigned long long)w->game->tick_count);

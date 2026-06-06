@@ -4,33 +4,35 @@
 #include "widgets/minimap.h"
 #include "widgets/status.h"
 
-/* M5-B layout (2026-06-06 第二輪 C-B 修):
- *   原版 1991/1993 Civ1 小地圖在「左上」不在「右上」, 頂部是窄 menu bar
- *   (Game/Orders/Advisors/World/Civilopedia) 不是大紅 title bar. 改:
+/* R4 layout (2026-06-06): 對齊原版 1993 Civ Windows
+ *   docs/screenshots/reference/civ1_win_civilopedia_dropdown.png
  *
  *     ┌─────────────────────────────┐ 0,0
- *     │  menu bar (16)              │
- *     ├──────────┬──────────────────┤ 0,16
+ *     │  CIVILIZATION title bar (16)│
+ *     │  File Edit Orders ... (16)  │  menu bar 8 items
+ *     ├──────────┬──────────────────┤ 0,32   ← CHROME_H=32
  *     │ minimap  │                  │
- *     │ 160×120  │   主地圖 480     │
+ *     │ 160×128  │   主地圖 480     │
  *     ├──────────┤   ×448           │
  *     │ status   │                  │
- *     │ 160×344  │                  │
+ *     │ 160×320  │                  │
  *     └──────────┴──────────────────┘ 640,480
  */
+#define TITLE_H  16
 #define MENU_H   16
+#define CHROME_H (TITLE_H + MENU_H)
 #define MMAP_W   160
-#define MMAP_H   120
+#define MMAP_H   128
 #define MAP_W    480
 #define SCREEN_W 640
 #define SCREEN_H 480
 
 int civ_widgets_register(struct civ_game *g)
 {
-    civ_rect_t minimap_rect = { 0,      MENU_H,         MMAP_W, MMAP_H };
-    civ_rect_t status_rect  = { 0,      MENU_H + MMAP_H,
-                                MMAP_W, SCREEN_H - MENU_H - MMAP_H };
-    civ_rect_t map_rect     = { MMAP_W, MENU_H, MAP_W, SCREEN_H - MENU_H };
+    civ_rect_t minimap_rect = { 0,      CHROME_H,         MMAP_W, MMAP_H };
+    civ_rect_t status_rect  = { 0,      CHROME_H + MMAP_H,
+                                MMAP_W, SCREEN_H - CHROME_H - MMAP_H };
+    civ_rect_t map_rect     = { MMAP_W, CHROME_H, MAP_W, SCREEN_H - CHROME_H };
 
     g->map_w     = civ_map_widget_new(g, map_rect);
     g->minimap_w = civ_minimap_widget_new(g, minimap_rect);

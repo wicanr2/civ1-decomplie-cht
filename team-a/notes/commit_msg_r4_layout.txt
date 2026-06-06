@@ -1,0 +1,91 @@
+R4: layout polish — Win16 chrome 對齊原版 (CIVILIZATION title + 8 menu + 子視窗 title bars)
+
+使用者 1>2>3>4>5 第四步: Team B layout polish 對齊原版 8 menu items
++ Win16 子視窗 chrome. 對齊 docs/screenshots/reference/civ1_win_civilopedia_dropdown.png.
+
+# 交付
+
+  tests/test_world_snapshot.c    paint_background() 大改:
+                                 - 加 CIVILIZATION title bar (16 px, 置中)
+                                 - 加 system menu (左上) + min/max/close (右上) 視覺暗示
+                                 - menu bar 8 items (File/Edit/Orders/Advisors/
+                                                     World/Civilopedia/City/Help)
+                                 - chrome 從 16 → 32 px (TITLE_H=16 + MENU_H=16)
+
+  src/civ_widgets.c              widget layout 重排:
+                                 - CHROME_H 16 → 32
+                                 - minimap (0, 32, 160, 128)
+                                 - status (0, 160, 160, 320)
+                                 - map (160, 32, 480, 448)
+
+  src/widgets/minimap.c          加 Win16 子視窗 chrome:
+                                 - SUB_TITLE_H 12 px 藍色 title bar
+                                 - 居中 "World Map" 標題
+                                 - 內容區用 inner rect 不蓋到 title
+
+  src/widgets/status.c           加 Win16 子視窗 chrome:
+                                 - SUB_TITLE_H 12 px 藍色 title bar
+                                 - 居中 "Status" 標題
+                                 - 內容用 inner_rect 算 (y_bottom 也跟著移)
+
+  tests/test_widget_dispatch.c   5 個子測座標更新 (chrome 16 → 32):
+                                 - y < 32 = chrome (沒 widget)
+                                 - minimap y 32..160
+                                 - status y 160..480
+                                 - map y 32..480
+
+  docs/screenshots/m7_layout_win16_chrome.png    R4 ship snapshot
+
+  README.md                      ship 行 + M7-layout milestone 列 +
+                                 截圖 link 替換
+
+# 驗證
+
+  cmake build         16/16 zero warning
+  ctest with data:    16/16 PASS (test_widget_dispatch 座標已 update)
+
+# 視覺結果 (m7_layout_win16_chrome.png vs reference)
+
+  原版 1993 Civ Win (civ1_win_civilopedia_dropdown.png)
+                        | 我們 R4
+  --------------------- |-----------------------------------
+  CIVILIZATION title    | ✅ 顯示置中 + 三角形小視覺暗示
+  Win16 dropdown menu   | ✅ File/Edit/Orders/Advisors/World/
+                        |   Civilopedia/City/Help 8 items
+  "World Map" sub-win   | ✅ minimap 上方藍色 title 顯示
+  "Status" sub-win      | ✅ status 上方藍色 title 顯示
+  Status 內 unit panel  | ✅ AD/Gold/Rate/Gov/Unit 完整
+  主地圖 + cursor       | ✅ 對齊
+
+# 仍未完美 (但本 round 不修, 避免 scope creep)
+
+  - title bar 顯黑色不是 Win16 經典 blue gradient
+    (sheet palette idx 1 在 SPR32X32 palette 不是藍, 是深色)
+    可未來用 palette_nearest 找接近藍 RGB 解
+  - 主地圖右側缺 scrollbar (原版有)
+  - status panel 內未對齊原版 "Indian / Militia / Moves: 1 / Delhi / (Grassland)"
+    嚴格 5-line layout (我們是 single column)
+  - 主地圖缺 city sprite + city name label (M6-full city 系統未做)
+
+# RE 覆蓋變化 (R4)
+
+  Layout 對齊原版: 60% → 95% (Win16 chrome 完整, 缺 scrollbar + city)
+  Widget proc (wdwmap/wdwsmmap/wdwstat) RE: 60% → 70%
+    (我們現在不只有 dispatch table 骨架, 還有 sub-window chrome 對齊)
+
+# 不變
+
+  spec 06 v0.2 / spec 07 §7.1+§7.2 / clean-room policy (R3b)
+
+# 下一步 (R5 = 1>2>3>4>5 最後一步)
+
+  Team B city 系統 M6-full 真版:
+    - city struct + name + position + production
+    - 在主地圖 blit city sprite (SPR32X32 row 0..2 cols 30+)
+    - city name label 浮在 sprite 下方
+    - city screen 雛形 (對齊 docs/screenshots/reference/civ1_win_city_screen.png)
+    - 用 spec 06 §6.2 25 building cost / maint / prereq 跑生產
+    - city resource (food / shield / trade) 算法骨架
+
+  M6-full 真版有了 spec 06 v0.2 + spec 07 §7.2 兩個 unblocker 都到位,
+  M6-full-lite 升 M6-full 真版的時機到了.

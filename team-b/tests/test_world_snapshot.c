@@ -24,7 +24,18 @@
 
 #define FB_W 640
 #define FB_H 480
-#define MENU_H 16    /* C-B-2: 窄 menu bar 取代大紅標題列 */
+
+/* R4 (2026-06-06): 對齊原版 1993 Civ Windows layout
+ *   docs/screenshots/reference/civ1_win_civilopedia_dropdown.png
+ *
+ *   主視窗 title bar  16 px  "CIVILIZATION" (Win16 blue)
+ *   主視窗 menu bar   16 px  8 items (File/Edit/Orders/Advisors/World/
+ *                                    Civilopedia/City/Help)
+ *   total chrome     32 px
+ */
+#define TITLE_H 16
+#define MENU_H  16
+#define CHROME_H (TITLE_H + MENU_H)
 
 #ifndef CIV_DEFAULT_FONT_PATH
 #define CIV_DEFAULT_FONT_PATH "/usr/share/fonts/truetype/arphic/uming.ttc"
@@ -36,19 +47,40 @@ static void paint_background(struct civ_game *g)
 {
     civ_surface_t *fb = g->framebuffer;
     civ_surface_clear(fb, 15);
-    /* 窄 menu bar - 對應原版 Civ1 1993 Win 頂部 dropdown 列 */
-    civ_fill_rect(fb, (civ_rect_t){0, 0, FB_W, MENU_H}, 15);  /* 亮灰底 */
-    civ_hline(fb, 0, MENU_H - 1, FB_W, 0);                    /* 底部隔線 */
+
+    /* === Win16 主視窗 title bar @ y=0 (16 px) === */
+    /* 標準 Win16 active title 是 blue (idx 1 in standard VGA, but in sheet
+     * palette we approximate). 用 sheet palette idx 1 通常是深色 */
+    civ_fill_rect(fb, (civ_rect_t){0, 0, FB_W, TITLE_H}, 1);
+    civ_hline(fb, 0, TITLE_H - 1, FB_W, 0);
     if (g->font_body) {
-        /* 五個 menu item 從左到右排,原版選項 */
+        const char *t = "CIVILIZATION";
+        int w = civ_text_measure(g->font_body, t);
+        int x = (FB_W - w) / 2;
+        civ_text_out(fb, g->font_body, x, TITLE_H - 4, t,
+                     15, 1, CIV_TEXT_BK_TRANSPARENT);
+        /* min/max/close 三個小框右上角 (簡化視覺暗示) */
+        for (int i = 0; i < 3; i++) {
+            int bx = FB_W - 4 - (3 - i) * 14;
+            civ_frame_rect(fb, (civ_rect_t){bx, 3, 10, 10}, 15);
+        }
+        /* system menu (左上角) */
+        civ_frame_rect(fb, (civ_rect_t){4, 3, 10, 10}, 15);
+    }
+
+    /* === menu bar @ y=16 (16 px) - 對齊原版 8 items === */
+    civ_fill_rect(fb, (civ_rect_t){0, TITLE_H, FB_W, MENU_H}, 15);
+    civ_hline(fb, 0, CHROME_H - 1, FB_W, 0);
+    if (g->font_body) {
         const char *items[] = {
-            "Game", "Orders", "Advisors", "World", "Civilopedia"
+            "File", "Edit", "Orders", "Advisors",
+            "World", "Civilopedia", "City", "Help",
         };
         int x = 8;
         for (size_t i = 0; i < sizeof items / sizeof items[0]; i++) {
-            civ_text_out(fb, g->font_body, x, MENU_H - 4, items[i],
+            civ_text_out(fb, g->font_body, x, TITLE_H + MENU_H - 4, items[i],
                          0, 15, CIV_TEXT_BK_TRANSPARENT);
-            x += civ_text_measure(g->font_body, items[i]) + 14;
+            x += civ_text_measure(g->font_body, items[i]) + 12;
         }
     }
 }

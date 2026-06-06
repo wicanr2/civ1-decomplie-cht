@@ -10,7 +10,7 @@
 
 ## 目前 ship 狀態 (2026-06-06)
 
-最後 ship: spec 06 v0.2 — 28 unit (修 manual Fighter 3-3 → 4-2) + 25 building + 22 wonder + 47 tech + 24 terrain (OpenCivOne MIT ground-truth)
+最後 ship: R4 layout polish — Win16 chrome (CIVILIZATION title + 8 menu items + World Map/Status 子視窗 title bars) 對齊原版
 
 | Milestone | 範圍 | 狀態 | 證據 |
 |---|---|---|---|
@@ -28,6 +28,7 @@
 | **M6-lite** | turn loop + 西元年 + AI mock counter | ✅ | `m6_status.png` |
 | **M6-full-lite** | unit 系統 (5 類型) + 8 player slot + placeholder 戰鬥 + selection panel + 方向鍵移動 | ✅ | `m6_full_lite_units.png` |
 | **M6-minimap** | minimap 真實 60×30 → 160×120 縮圖 + per-terrain palette-nearest RGB + view rect overlay + unit owner dots | ✅ | `m6_minimap_real.png` |
+| **M7-layout** | Win16 chrome 對齊原版: CIVILIZATION title bar + 8 menu items (File/Edit/Orders/Advisors/World/Civilopedia/City/Help) + World Map / Status 子視窗 title bars | ✅ | `m7_layout_win16_chrome.png` |
 | **M6-full** | 真實戰鬥公式 (spec 07) + 城市生產 + RLL 存讀檔 | 🟡 阻 spec 06+07 | — |
 | **M7** | 奇蹟 + 外交 + 勝利條件 | ❌ | — |
 
@@ -165,7 +166,8 @@ tools/                         共用資產抽取工具（MIT）
 - [`docs/ASSETS_INDEX.md`](docs/ASSETS_INDEX.md) — **185 個 sprite 完整分類索引**（領袖 14 / 科技 ~65 / 單位 ~28 / 奇蹟 / 政府 / 太空 / 動畫 / UI），含縮圖
 - [`docs/screenshots/cvpc_spr32x32_decoded.png`](docs/screenshots/cvpc_spr32x32_decoded.png) — 主 sprite sheet 1472×400
 - [`docs/screenshots/cvpc_king00_elizabeth.png`](docs/screenshots/cvpc_king00_elizabeth.png) — Queen Elizabeth I 領袖肖像示意
-- [`docs/screenshots/m6_minimap_real.png`](docs/screenshots/m6_minimap_real.png) — 最新 ship 截圖 (M6-minimap: 真實縮圖 + view rect + unit dots)
+- [`docs/screenshots/m7_layout_win16_chrome.png`](docs/screenshots/m7_layout_win16_chrome.png) — 最新 ship 截圖 (R4: Win16 chrome 對齊原版 1993 layout)
+- [`docs/screenshots/m6_minimap_real.png`](docs/screenshots/m6_minimap_real.png) — M6-minimap: 真實縮圖 + view rect + unit dots
 - [`docs/screenshots/reference/`](docs/screenshots/reference/) — **1993 Civ Windows 原版視覺 reference** (使用者 2026-06-06 提供): 主畫面 + 城市畫面 + 主選單 + layout gap notes
 - [`team-a/external/`](team-a/external/) — **外部 RE 研究資料 (Team A only)**: Honza Havlicek 2008 *CivWin File Format demonstrator* (RSC parser + Civ1 LZW + SAV RLE) + **OpenCivOne (MIT, 2023-)** (28 unit/25 imp/22 wonder/47 tech ground-truth) — Team B 不可直接讀, 經 spec 03/06/07 萃取後才接觸. 詳見 [`docs/CLEAN_ROOM.md`](docs/CLEAN_ROOM.md)
 - **1991 官方 Manual** (使用者提供, 126 頁): spec 06 v0.1 的 ground-truth 來源 (28 unit + 21 building + 6 government). 不入 repo (版權), 使用者本機保留
