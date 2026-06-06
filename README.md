@@ -10,7 +10,7 @@
 
 ## 目前 ship 狀態 (2026-06-06)
 
-最後 ship: R7 turn-tick city 生產推進 — shield 累積 / 建造完工 auto-pick 下個 / food 累積 / pop 成長
+最後 ship: R8 spec 06 v0.3 — 16 nation AI personality 完整 (Mood / Policy / Ideology 三軸) from OpenCivOne NationDefinition
 
 | Milestone | 範圍 | 狀態 | 證據 |
 |---|---|---|---|
@@ -58,7 +58,7 @@
 | [`03`](team-a/specs/03_asset_formats_and_tiles.md) | 5 個 `.RSC` 完整 breakdown / CvPc 格式 / LZW 解通 (185/199 sprite) | **沒有 .PIC 檔** (Track A 誤判)。所有資產在 5 個 Mac Resource Fork: CIVDATA0..4 + CIVHELP |
 | [`04`](team-a/specs/04_dialogs_and_controls.md) | 24 個 RT_DIALOG 完整 parse + 控制項家族 | 全 dialog 用 `CIVDIALOG` 自製類別；caption 空字串自繪 |
 | [`05`](team-a/specs/05_game_data_and_strings.md) | 33 STR# + 399 TEXT master tables 定位 | **master tables 不在 CIV.EXE** 而在 `Civdata0.RSC`；72 科技 / 46 建築 / 28 單位 / 24 地形 / 14 文明 / 14 領袖 / 6 政府 全名清單已抽出 |
-| [`06` v0.2](team-a/specs/06_game_data_tables.md) | **28 unit + 25 building + 22 wonder + 47 tech + 24 terrain** ground-truth | 主要源自 [OpenCivOne](https://codeberg.org/rhorvat/OpenCivOne) (MIT, FOSS preservation of 1991 DOS Civ v475.05). 揭穿 34-byte unit struct + 連 manual P41 Fighter 3-3 都是錯的 (真值 4-2). Binary offset 仍 TBD — 1993 Win port struct 可能拆 name 進 STR# 132, 純數值欄位 ~22 byte. v0.3 補 14 civ AI personality + SETI/Cure for Cancer 兩個 wonder + STR# 130 剩 20 entry. |
+| [`06` v0.3](team-a/specs/06_game_data_tables.md) | **28 unit + 25 building + 22 wonder + 47 tech + 24 terrain + 16 nation** ground-truth | 主要源自 [OpenCivOne](https://codeberg.org/rhorvat/OpenCivOne) (MIT). 揭穿 34-byte unit struct + manual P41 Fighter 印錯 (真值 4-2). v0.3 加 16 nation AI personality 三軸 (Mood / Policy / Ideology): Gandhi −1/−1/0 / Genghis +1/+1/−1 / Lincoln −1/0/+1 等. Binary offset 仍 TBD. v0.4 待補 72-tech 完整 + SETI/Cancer Wonder + binary offset. |
 | [`07`](team-a/specs/07_save_format_and_rle.md) | **SAV file RLE 壓縮** (`load.c::RLLEncode/Decode`) §7.1 完整 + §7.2 v0.1 SAV layout map | §7.1 取自 [Honza Havlicek 2008](team-a/external/). §7.2 R2 cross-compare 3 HAM*.SAV (107 KB fixed-size) 對位 header / king names / civ names / player table / city table / 256 city pool. |
 
 ### 待寫 spec ❌
@@ -81,7 +81,7 @@
 | 存讀檔 | `load.c` | 70% — RLE 完整 + §7.2 v0.1 layout map: header 12 byte / king names 256 / civ plural+singular 512 / player stats table 0x314 area / 32-byte city records 0x8A0 area / STR# 135 256 city pool @ 0x07D4A | 細部 byte→struct field 對位 (treasury / known_techs bitmap / world map terrain) 待 R3 Ghidra walk |
 | Dialog system | `dialogs.c` | 100% (spec 04) | — |
 | 視窗 proc | `wdwmap/wdwsmmap/wdwstat/windows` | dispatch table 骨架 (7/22 + 7/9 + 7/9) | 個別 message handler 待補 |
-| AI / 外交 | location 不確定 | 5% | 只確認 `FUN_10e8_2d46` 是 "AI 策略表 init"，其他演算法未抽 |
+| AI / 外交 | location 不確定 | 20% — spec 06 §6.7 16 nation 三軸個性 (Mood/Policy/Ideology) 完整 ground-truth | AI 決策 function 未抽 (從 Ghidra `FUN_10e8_2d46` 起 walk) + 外交決策樹 |
 | 音效 | MMSYSTEM 4 call | 0% | API call 統計過但語義未分析 |
 | Game state machine | 推測 `wdwmap` + WinMain D 段 | turn 推進骨架 (M6-lite) + unit 系統 (M6-full-lite) | city growth / tech research 演算法未抽 |
 | Combat | location 不確定 | 50% — manual P35 公式 ground-truth (`A/(A+D)` 機率) + spec 06 §6.1.1 修飾 (veteran ×1.5 / walls ×3 / terrain) | 真正 RNG seed + 攻擊推進規則 + 命中分配 |

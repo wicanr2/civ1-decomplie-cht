@@ -1,6 +1,6 @@
-# Spec 06 — 28 unit + 25 建築 + 22 奇蹟 + 47 科技 + 24 地形 數值表
+# Spec 06 — 28 unit + 25 建築 + 22 奇蹟 + 47 科技 + 24 地形 + 16 nation 數值表
 
-> **Team A 規格 (v0.2, 2026-06-06 R3b)**.
+> **Team A 規格 (v0.3, 2026-06-06 R8)**.
 >
 > **主要來源**: [**OpenCivOne**](https://codeberg.org/rhorvat/OpenCivOne) (2023-, Rajko Horvat, MIT license) — FOSS preservation 專案, 直接從 1991 DOS Civilization v475.05 反組譯而成. **絕大部分數值表 ground-truth 來自此**.
 >
@@ -10,7 +10,7 @@
 >
 > **Clean-room 狀態**: OpenCivOne 從 2026-06-06 起放寬政策, 列為 Team A 可參考的 external research (跟 Honza 2008 一樣). Team B 仍不直接讀 OpenCivOne source. 詳見 [`docs/CLEAN_ROOM.md`](../../docs/CLEAN_ROOM.md).
 >
-> **狀態**: §6.1 unit 28/28 ✅; §6.2 improvement 25/25 ✅; §6.3 government 6/6 ✅; §6.4 wonder 22/22 ✅; §6.5 tech 47/72 ✅ (核心 47); §6.6 terrain 24/24 ✅.
+> **狀態**: §6.1 unit 28/28 ✅; §6.2 improvement 25/25 ✅; §6.3 government 6/6 ✅; §6.4 wonder 22/22 ✅; §6.5 tech 47/72 ✅ (核心 47); §6.6 terrain 24/24 ✅; §6.7 nation 16/16 ✅ (R8 新).
 
 ## 6.0  本 spec 解答什麼
 
@@ -379,28 +379,94 @@ Future tech (5): FutureTechnology 1/2/3/4/5 ("1", "2", "3", "4", "Future Tech.")
 
 7-tuple: `(terrain, irrigation_food, irrigation_turns, mining_shield, mining_turns, ?, ?)`. 完整對位待 v0.3.
 
-## 6.7  Player / Civilization Data
+## 6.7  Player / Civilization Data (16 個, OpenCivOne `GameData.cs:37-86` ground-truth, v0.3 R8)
 
-| # | Civ | Leader | Color (slot) | Aggression (推測) |
-|---:|---|---|---|---|
-| 0 | Barbarian | — | red | — (野蠻) |
-| 1 | Roman | Caesar | yellow | medium |
-| 2 | Babylonian | Hammurabi | blue | low |
-| 3 | German | Frederick | green | high |
-| 4 | Egyptian | Ramesses | cyan | low |
-| 5 | American | Abraham Lincoln | purple | low (defensive) |
-| 6 | Greek | Alexander | grey | medium |
-| 7 | Indian | M. Gandhi | white | very low |
-| 8 | (NONE) | — | — | — |
-| 9 | Russian | Stalin | dark red? | high |
-| 10 | Zulu | Shaka | brown | high |
-| 11 | French | Napoleon | sky blue | medium |
-| 12 | Aztec | Montezuma | gold | medium |
-| 13 | Chinese | Mao Tse Tung | red | medium |
-| 14 | English | Elizabeth I | navy | low |
-| 15 | Mongol | (?) | — | very high |
+### 6.7.0  NationDefinition struct (OpenCivOne)
 
-「Aggression」是 AI 個性參數, manual 沒明示, 推測在 GDAT 7 個 record 內 (per civ slot? 但只有 7 而非 14). 待 spec 06 v0.2 + GDAT 反推.
+每筆 58 byte: `(id, leader, nation, nationality, mood, policy, ideology, short_tune, long_tune, cities[])`
+
+**三軸個性編碼** (manual 沒提, OpenCivOne 唯一文獻):
+- **Mood**: −1 = Friendly / 0 = Neutral / 1 = Aggressive
+- **Policy**: −1 = Perfectionist (少城少強) / 0 = Neutral / 1 = Expansionistic (多城)
+- **Ideology**: −1 = Militaristic / 0 = Neutral / 1 = Civilized
+
+ShortTune / LongTune 是該 civ 對應的音樂 ID (對齊 23 個 WAV 中的兩個變體).
+
+### 6.7.1  完整 16 nation 表
+
+| # | 中文 | English | Leader | 中文領袖 | Mood | Policy | Ideology | ShortTune | LongTune |
+|---:|---|---|---|---|---:|---:|---:|---:|---:|
+| 0 | 野蠻 | Barbarians | Attila | 阿提拉 | 0 | 0 | 0 | 36 | 36 |
+| 1 | 羅馬 | Romans | Caesar | 凱撒 | 0 | **+1** | **+1** | 24 | 10 |
+| 2 | 巴比倫 | Babylonians | Hammurabi | 漢摩拉比 | **−1** | **−1** | **+1** | 28 | 14 |
+| 3 | 德意志 | Germans | Frederick | 腓特烈 | **+1** | **−1** | **+1** | 32 | 18 |
+| 4 | 埃及 | Egyptians | Ramesses | 拉美西斯 | 0 | 0 | **+1** | 21 | 7 |
+| 5 | 美利堅 | Americans | Abe Lincoln | 林肯 | **−1** | 0 | **+1** | 19 | 5 |
+| 6 | 希臘 | Greeks | Alexander | 亞歷山大 | 0 | **+1** | **−1** | 26 | 12 |
+| 7 | 印度 | Indians | M.Gandhi | 甘地 | **−1** | **−1** | 0 | 31 | 17 |
+| 8 | (NONE) | (空 slot) | — | — | 0 | 0 | 0 | 36 | 36 |
+| 9 | 俄羅斯 | Russians | Stalin | 史達林 | **+1** | 0 | **−1** | 25 | 11 |
+| 10 | 祖魯 | Zulus | Shaka | 夏卡 | **+1** | 0 | 0 | 22 | 8 |
+| 11 | 法蘭西 | French | Napoleon | 拿破崙 | **+1** | **+1** | **+1** | 23 | 9 |
+| 12 | 阿茲特克 | Aztecs | Montezuma | 蒙特蘇馬 | 0 | **−1** | **+1** | 20 | 6 |
+| 13 | 中華 | Chinese | Mao Tse Tung | 毛澤東 | 0 | 0 | **+1** | 29 | 15 |
+| 14 | 英格蘭 | English | Elizabeth I | 伊莉莎白一世 | 0 | **+1** | 0 | 27 | 13 |
+| 15 | 蒙古 | Mongols | Genghis Khan | 成吉思汗 | **+1** | **+1** | **−1** | 30 | 16 |
+
+### 6.7.2  個性聚類 (從上表推導)
+
+**最強硬侵略派** (Mood=+1, Policy=+1, Ideology=−1):
+- #15 Mongol/Genghis — 經典軍事擴張 (征服世界傾向)
+
+**強硬擴張派** (Mood=+1, Policy=+1, Ideology=+1):
+- #11 French/Napoleon — 拿破崙文化加軍事
+
+**侵略軍事派** (Mood=+1, Ideology=−1):
+- #9 Russian/Stalin
+
+**侵略派** (Mood=+1, Ideology=0..+1):
+- #3 German/Frederick (military 但 perfectionist)
+- #10 Zulu/Shaka
+
+**和善文明派** (Mood=−1, Ideology=+1):
+- #2 Babylonian/Hammurabi (法典之父 — perfectionist civilized)
+- #5 American/Lincoln (defensive civilized)
+
+**和善 perfectionist** (Mood=−1, Policy=−1):
+- #7 Indian/Gandhi (非暴力)
+
+**中庸擴張**:
+- #1 Roman/Caesar
+- #6 Greek/Alexander (但 Ideology −1 = 軍事)
+- #14 English/Elizabeth I (Policy +1)
+
+**中庸文明**:
+- #4 Egyptian, #13 Chinese (Ideology +1 = 文明)
+- #12 Aztec (Policy −1 perfectionist)
+
+### 6.7.3  AI 決策參數推測 (待 v0.4 從 Ghidra 抽 AI 決策 function 確認)
+
+各 axis 影響的可能 AI 行為:
+- **Mood +1 (Aggressive)** → 高機率宣戰 / 拒和談 / 主動侵略鄰邊
+- **Mood −1 (Friendly)** → 高機率提和談 / 共享 tech
+- **Policy +1 (Expansionistic)** → 早期 settler 偏好 / 多城少 build improvement
+- **Policy −1 (Perfectionist)** → 少城多 build / wonder 競爭
+- **Ideology +1 (Civilized)** → 偏好 happiness building / 科技 / 民主政體
+- **Ideology −1 (Militaristic)** → 偏好 barracks / 軍事 unit / 君主政體
+
+### 6.7.4  Cities[] 預設城市名單
+
+每個 civ 含一個 `string[] Cities` 陣列 (約 16 城市/civ), 為 STR# 135 (256 entries) 對應的子集. 已在 spec 05 §5.3 / civ_dict 翻譯範圍. v0.3 R8 暫不列, 對齊 STR# 135 即可.
+
+### 6.7.5  跟 SAV file (spec 07 §7.2) 對位
+
+SAV file 內含:
+- 0x00112 area: 8 civ plural names (STR# 144 子集 — barbarian + 7 civs)
+- 0x00212 area: 8 civ singular names (STR# 143 子集)
+
+對應 nationTypes 中 8 個 alive slot. **8 而非 14** — 1993 Win port 一場 game 最多 7 civ + barbarian. nationTypes 14 個是「可選」civ, runtime 隨機選 7 個 + 1 barb 進場.
+
+§6.7 已對齊 Team B `civs.c` 內 14 civ × 5 field 翻譯 (spec 05 已 ship).
 
 ## 6.8  Team B 整合介面契約
 
@@ -477,10 +543,11 @@ Team B 可立即依此 spec 實作 M6-full combat formula (spec 06 §6.1.1) + �
 
 未來 Team B `data/*.h` 內 stats 值 = ground-truth, 可自由實作. 中文翻譯沿用 spec 05 civ_dict.c (CC BY-SA 4.0).
 
-## 6.11  v0.3 (R4 預訂) 待補
+## 6.11  v0.4 (待 R9+) 待補
 
 - §6.4 SETI / Cure for Cancer 完整 (兩個 wonder 太晚出現, OpenCivOne 列表截在 idx 19)
 - §6.5 完整 72-tech 對齊 STR# 130 全部 entry (現在 47 + 5 future = 52, 缺 20)
 - §6.6 TerrainModification 7-tuple 解讀
-- §6.7 14 civ AI personality (OpenCivOne `NationDefinition` 待 R4 抽)
+- §6.7 R8 ✅ NationDefinition 抽完, AI 決策 function 從 Ghidra 抽 — 確認 §6.7.3 個性參數推論
 - §6.9 binary offset (22-byte numeric struct 重掃)
+- §6.7 §6.7.4 14 civ × 16 城市 = 224 城市名單對齊 STR# 135
