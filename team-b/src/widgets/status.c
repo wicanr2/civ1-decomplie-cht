@@ -127,6 +127,34 @@ static void status_render(civ_widget_t *w, civ_surface_t *fb)
         y += 14;
     }
 
+    /* 7b. R5 M6-full: cursor 上 city info */
+    if (w->game->world_ready) {
+        int cidx = civ_world_city_at(&w->game->world,
+                                     w->game->world.cursor_x,
+                                     w->game->world.cursor_y);
+        if (cidx >= 0) {
+            const civ_city_t *c = &w->game->world.cities[cidx];
+            civ_text_out(fb, font, x, y, "城市:", 0, 7, CIV_TEXT_BK_TRANSPARENT);
+            y += 12;
+            civ_text_out(fb, font, x, y, c->name, 14, 7, CIV_TEXT_BK_TRANSPARENT);
+            y += 12;
+            snprintf(buf, sizeof buf, "人口: %d", c->population);
+            civ_text_out(fb, font, x, y, buf, 0, 7, CIV_TEXT_BK_TRANSPARENT);
+            y += 12;
+            if (c->building_target >= 0) {
+                snprintf(buf, sizeof buf, "正在建造: %s",
+                         civ_building_name_zh(c->building_target));
+                civ_text_out(fb, font, x, y, buf, 0, 7, CIV_TEXT_BK_TRANSPARENT);
+                y += 12;
+                snprintf(buf, sizeof buf, "  %d/%d 盾",
+                         c->shield_stock,
+                         civ_building_cost(c->building_target));
+                civ_text_out(fb, font, x, y, buf, 0, 7, CIV_TEXT_BK_TRANSPARENT);
+                y += 12;
+            }
+        }
+    }
+
     /* 8. 回合計數 (底部, RE 期保留) — 用 inner_rect 算 (w->rect 含 title bar) */
     int y_bottom = inner_rect.y + inner_rect.h - 30;
     snprintf(buf, sizeof buf, "Turn %u  Tick %llu",

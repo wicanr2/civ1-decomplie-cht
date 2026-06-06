@@ -1,0 +1,124 @@
+R5: M6-full city 系統 — 25 building cost + 4 city spawn + map sprite + name label + status hook
+
+使用者 1>2>3>4>5 最後一步: Team B city 系統 M6-full 真版.
+有 spec 06 v0.2 (25 building ground-truth from OpenCivOne) 跟 spec 07 §7.2
+(SAV city table layout) 兩個 unblocker, 終於可以 ship M6-full city.
+
+# 交付
+
+  src/world/city.{h,c}            NEW:
+    civ_city_t struct:
+      name[24] (zh-TW UTF-8) / x,y / owner / population /
+      building_target / shield_stock / food_stock /
+      buildings_bitmap (25-bit) / alive
+    civ_building_cost(idx)        25 building cost lookup
+                                  (對齊 spec 06 §6.2.1 OpenCivOne ground-truth)
+    civ_building_name_zh(idx)     25 building zh-TW name
+                                  (對齊 spec 05 civ_dict.c STR# 131)
+
+  src/world/world.h               + civ_world_t.cities[CIV_MAX_CITIES=64]
+                                  + cities_count
+                                  + civ_world_spawn_city()
+                                  + civ_world_city_at()
+
+  src/world/world.c               init_demo 種 4 city:
+                                    羅馬     player 1 @ (28, 14) pop=3
+                                    巴比倫   player 2 @ (17, 11) pop=2
+                                    底比斯   player 3 @ (44, 13) pop=2
+                                    雅典     player 6 @ (22, 20) pop=1
+                                  默認帶 Palace (buildings_bitmap bit 1)
+
+  src/widgets/map.c               render city pass (在 unit pass 之前):
+                                  - SPR32X32 row 0 col 30+ 城市 sprite
+                                  - 按 population 選 size:
+                                      pop < 3:   col 30 (小村莊)
+                                      pop < 6:   col 31 (城鎮)
+                                      pop >= 6:  col 32 (大城)
+                                  - owner color frame (同 unit)
+                                  - city name label 浮在 sprite 下方
+                                    (黑底白字, 居中對齊)
+
+  src/widgets/status.c            +cursor-on-city hook:
+                                  cursor 上有 city 時 status panel 顯:
+                                    城市: <name>
+                                    人口: <population>
+                                    正在建造: <building name>
+                                      <shield_stock>/<cost> 盾
+
+  tests/test_city.c               NEW, 6 子測:
+                                    1. 25 building cost lookup
+                                    2. zh-TW name 對齊 STR# 131
+                                    3. init_demo 4 city
+                                    4. spawn 邊界 (negative / OOR)
+                                    5. spawn 超 CIV_MAX_CITIES cap
+                                    6. city_at lookup
+
+  CMakeLists.txt + tests/CMakeLists.txt   加 city.c + test_city
+
+  docs/screenshots/m7_full_cities.png     R5 ship snapshot
+
+  README.md                       ship 行 + M7-city milestone +
+                                  截圖 + 城市生產 RE 30% → 50%
+
+# 驗證
+
+  cmake build         16/16 zero warning
+  ctest with data:    17/17 PASS (新 test_city 6 子測)
+
+# 視覺結果
+
+  m7_full_cities.png 顯示 4 個城市中:
+    - 羅馬 (中右) 跟 雅典 (中下) 兩個在 view 內
+    - 巴比倫 (中左) 跟 底比斯 (右側) 在 view 外
+  City sprite 是 SPR32X32 col 30+ 橘紅花紋
+  Black-on-white name label 在 sprite 下方
+  Player 1 unit 跟 city 共存於同 view, owner color 一致 (黃)
+
+# 仍未完美 (defer 給 R6+ scope)
+
+  - city name label 黑底 idx 0 在 sheet palette 不是純黑 (是 red),
+    視覺上 partial blend. 改用 palette_nearest(black RGB) 解.
+  - city sprite owner color 沒 runtime 重染 (sheet palette idx 1-4
+    所有 owner 看起來一樣). spec 03 §3.5.1 提示用 sentinel pixel 動態替換.
+  - city screen 內部 UI (對齊 docs/screenshots/reference/civ1_win_city_screen.png)
+    完全沒做.
+  - turn-tick 生產推進 (shield_stock += per-turn shields) 沒接.
+  - food / trade 算法骨架沒做.
+  - building 建造完工觸發 (shield_stock >= cost → 設 buildings_bitmap bit) 沒接.
+
+# RE 覆蓋變化 (R5)
+
+  城市生產: 30% → 50% (city struct ship, building lookup 完整)
+  Game state machine: 30% → 50% (units + cities 都 ship)
+
+# 1>2>3>4>5 全 5 round 全 ship 完成
+
+  R1 = spec 07 §7.1 Team B RLE         ✅ d7bc4ad
+  R2 = spec 07 §7.2 v0.1 SAV layout    ✅ 7816665
+  R3 = spec 06 v0.1 manual ground-truth ✅ 6604b16
+  R3b = spec 06 v0.2 OpenCivOne ground-truth ✅ 048c0fe
+  R4 = layout polish Win16 chrome      ✅ 7238c3b
+  R5 = city 系統 M6-full              ✅ 本 commit
+
+# 全專案 RE 覆蓋盤點 (R5 結束)
+
+  Renderer:           80%
+  Loader:             70%
+  存讀檔:             70% (RLE 完整 + §7.2 layout map)
+  Dialog:             100%
+  視窗 proc:          70% (R4 chrome 對齊原版)
+  AI/外交:            5%
+  音效:               0%
+  Game state machine: 50% (units + cities)
+  Combat:             50%
+  城市生產:           50% (本 round 升)
+  數值表:             95% (R3b 跨 25 building / 22 wonder / 47 tech / 24 terrain)
+
+# 下一步 (使用者決定)
+
+  M6-full 真版完成度高, 可能候選:
+    M7-full city screen UI       (對齊 civ1_win_city_screen.png)
+    Turn-tick 生產推進           (city.shield_stock += per-turn)
+    spec 06 v0.3 + R4 city AI    (NationDefinition + 14 civ personality)
+    spec 09 victory + scoring    (STR# 155-157 已有翻譯)
+    M8 portable SFX              (對齊 PG-cht / OpenXcom 同模式 ship)

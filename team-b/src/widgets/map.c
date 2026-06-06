@@ -179,6 +179,51 @@ static void map_render(civ_widget_t *w, civ_surface_t *fb)
                 }
             }
         }
+        /* R5 M6-full: render cities (overlay terrain, before units).
+         *
+         * Civ1 city sprite 在 SPR32X32 row 0 cols 30..43 (14 個成長 stage).
+         * 我們依 population 選 col (1..2 = 小村莊 / 3..5 = 城鎮 / 6+ = 大城).
+         * 對齊 spec 03 §3.5.1 sentinel — owner color 是 runtime 替換,
+         * 但 sheet 上 cols 30+ city sprite 用 idx 1-4 (national + barb) 為主色,
+         * 我們直接 blit 不重映色, 各 owner 視覺相似可接受 (M7 polish 再修). */
+        for (int i = 0; i < wd->cities_count; i++) {
+            const civ_city_t *c = &wd->cities[i];
+            if (!c->alive) continue;
+            int rx = c->x - wd->view_x;
+            int ry = c->y - wd->view_y;
+            if (rx < 0 || ry < 0 || rx >= cols || ry >= rows) continue;
+            int dx = w->rect.x + rx * tile_w;
+            int dy = w->rect.y + ry * tile_h;
+
+            int city_col = 30;  /* 小村莊 */
+            if (c->population >= 6) city_col = 32;       /* 大城 */
+            else if (c->population >= 3) city_col = 31;  /* 城鎮 */
+            civ_rect_t src = civ_sprite_rect(sh, city_col, 0);
+            if (sh->lut_built)
+                civ_surface_blit_remap(fb, dx, dy, sh->sheet, &src, sh->lut);
+            else
+                civ_surface_blit(fb, dx, dy, sh->sheet, &src);
+
+            /* owner 色框 (跟 unit owner 一致) */
+            static const uint8_t CITY_OWNER_COLOR[CIV_NUM_PLAYERS] = {
+                12, 14, 9, 10, 11, 13, 6, 15,
+            };
+            uint8_t col = CITY_OWNER_COLOR[c->owner < CIV_NUM_PLAYERS ? c->owner : 0];
+            civ_frame_rect(fb, (civ_rect_t){dx, dy, tile_w, tile_h}, col);
+
+            /* city name label 浮在 sprite 下方 */
+            if (w->game->font_body && c->name[0]) {
+                int name_w = civ_text_measure(w->game->font_body, c->name);
+                int nx = dx + (tile_w - name_w) / 2;
+                int ny = dy + tile_h + 12;
+                /* 黑色底 (idx 0 typically 紅 in sheet palette,
+                 * 但 frame_rect 用 0 還是黑 fallback) */
+                civ_fill_rect(fb, (civ_rect_t){nx - 2, ny - 11, name_w + 4, 13}, 0);
+                civ_text_out(fb, w->game->font_body, nx, ny, c->name,
+                             15, 0, CIV_TEXT_BK_TRANSPARENT);
+            }
+        }
+
         /* M6-full-lite: render units (overlay on terrain).
          *
          * Unit sprite 取 SPR32X32 row 10 cols 0..15 (軍事單位橘框 icon),

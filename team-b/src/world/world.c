@@ -165,12 +165,53 @@ void civ_world_init_demo(civ_world_t *w)
     civ_world_spawn_unit(w, CIV_UNIT_MILITIA, 0, 38, 22);
     civ_world_spawn_unit(w, CIV_UNIT_MILITIA, 0, 21, 12);
 
+    /* R5 M6-full: spawn 4 cities (一個 per major player slot) ===== */
+    w->cities_count = 0;
+    civ_world_spawn_city(w, "羅馬",       1, 28, 14, 3);   /* Player 1 Caesar */
+    civ_world_spawn_city(w, "巴比倫",     2, 17, 11, 2);   /* Player 2 Hammurabi */
+    civ_world_spawn_city(w, "底比斯",     3, 44, 13, 2);   /* Player 3 Ramesses */
+    civ_world_spawn_city(w, "雅典",       6, 22, 20, 1);   /* Player 6 Alexander */
+
     /* 預設選 player 1 第一個 settler */
     w->selected_unit = 0;
     if (w->units_count > 0) {
         w->cursor_x = w->units[0].x;
         w->cursor_y = w->units[0].y;
     }
+}
+
+int civ_world_spawn_city(civ_world_t *w, const char *name_zh, uint8_t owner,
+                         int x, int y, int initial_pop)
+{
+    if (!w || w->cities_count >= CIV_MAX_CITIES) return -1;
+    if (x < 0 || x >= CIV_MAP_W || y < 0 || y >= CIV_MAP_H) return -1;
+    civ_city_t *c = &w->cities[w->cities_count];
+    memset(c, 0, sizeof *c);
+    if (name_zh) {
+        strncpy(c->name, name_zh, sizeof c->name - 1);
+        c->name[sizeof c->name - 1] = '\0';
+    }
+    c->x = (int16_t)x;
+    c->y = (int16_t)y;
+    c->owner = owner;
+    c->population = (uint8_t)initial_pop;
+    c->building_target = -1;
+    c->shield_stock = 0;
+    c->food_stock = 0;
+    c->buildings_bitmap = (1u << 1);  /* Palace built (Civ1 capitol 默認) */
+    c->alive = true;
+    return w->cities_count++;
+}
+
+int civ_world_city_at(const civ_world_t *w, int x, int y)
+{
+    if (!w) return -1;
+    for (int i = 0; i < w->cities_count; i++) {
+        if (w->cities[i].alive &&
+            w->cities[i].x == x && w->cities[i].y == y)
+            return i;
+    }
+    return -1;
 }
 
 int civ_world_spawn_unit(civ_world_t *w, civ_unit_type_t t,

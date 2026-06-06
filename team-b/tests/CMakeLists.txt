@@ -95,3 +95,8 @@ add_executable(test_rle test_rle.c)
 target_link_libraries(test_rle PRIVATE civ_core)
 add_test(NAME rle COMMAND test_rle)
 set_tests_properties(rle PROPERTIES TIMEOUT 10)
+
+add_executable(test_city test_city.c)
+target_link_libraries(test_city PRIVATE civ_core)
+add_test(NAME city COMMAND test_city)
+set_tests_properties(city PROPERTIES TIMEOUT 10)

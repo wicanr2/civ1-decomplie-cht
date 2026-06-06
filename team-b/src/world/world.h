@@ -9,6 +9,7 @@
 #ifndef CIV_WORLD_WORLD_H
 #define CIV_WORLD_WORLD_H
 
+#include "city.h"
 #include "unit.h"
 
 #include <stdbool.h>
@@ -45,6 +46,10 @@ typedef struct civ_world {
 
     /* M6-full-lite: 最近一次戰鬥結果 (給 status panel 顯示) ----- */
     char       last_combat_msg[96];
+
+    /* R5 M6-full city: city roster (spec 06 §6.2) -------- */
+    civ_city_t cities[CIV_MAX_CITIES];
+    int        cities_count;
 } civ_world_t;
 
 /* 把 terrain enum 對應到 SPR32X32 內的 (col, row)。
@@ -86,5 +91,12 @@ bool civ_world_move_selected(civ_world_t *w, int dx, int dy,
 
 /* TAB 鍵循環 player 1 (slot 0) 還有 moves_left > 0 的 unit. */
 void civ_world_cycle_selection(civ_world_t *w, int player_slot);
+
+/* R5: 在 (x, y) 放城市. 回 index, 失敗回 -1. */
+int civ_world_spawn_city(civ_world_t *w, const char *name_zh, uint8_t owner,
+                         int x, int y, int initial_pop);
+
+/* 找 (x, y) 上 alive city, 沒找到回 -1. */
+int civ_world_city_at(const civ_world_t *w, int x, int y);
 
 #endif /* CIV_WORLD_WORLD_H */
