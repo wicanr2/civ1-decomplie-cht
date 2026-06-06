@@ -51,4 +51,13 @@ void civ_surface_blit_remap(civ_surface_t *dst, int dst_x, int dst_y,
                             const civ_rect_t *src_rect,
                             const uint8_t lut[256]);
 
+/* R14: blit + transparent (palette idx 0 跳過, 不蓋 dst pixel).
+ * 對應 spec 03 §3.5.1 SPR32X32 palette idx 0 = transparent background.
+ * 給 terrain overlay (RIVER / FOREST / MOUNTAIN sprite 透明處) 用,
+ * 配合 base GRASS 雙 layer render. */
+void civ_surface_blit_remap_skip0(civ_surface_t *dst, int dst_x, int dst_y,
+                                  const civ_surface_t *src,
+                                  const civ_rect_t *src_rect,
+                                  const uint8_t lut[256]);
+
 #endif /* CIV_GFX_SURFACE_H */

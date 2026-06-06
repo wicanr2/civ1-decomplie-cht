@@ -174,6 +174,12 @@ static void map_render(civ_widget_t *w, civ_surface_t *fb)
         int tile_w = sh->tile_w, tile_h = sh->tile_h;
         int cols = w->rect.w / tile_w;
         int rows = w->rect.h / tile_h;
+        /* R14: 雙 layer render — base GRASS 先打底 (對 land tiles), 再 overlay
+         * 用 skip0 模式不蓋 transparent. 解 RIVER/MOUNTAIN sprite 露 palette-0
+         * 紅的問題. OCEAN 仍直接 blit (本身就是水底). */
+        int grass_col = 22, grass_row = 2;  /* spec 06 §6.6 GRASS sprite */
+        civ_rect_t grass_src = civ_sprite_rect(sh, grass_col, grass_row);
+
         for (int ry = 0; ry < rows; ry++) {
             for (int rx = 0; rx < cols; rx++) {
                 int wx = wd->view_x + rx;
@@ -186,13 +192,44 @@ static void map_render(civ_widget_t *w, civ_surface_t *fb)
                 civ_terrain_sprite_coord(kind, &sc, &sr);
                 if (sc < 0 || sc >= sh->cols) sc = 0;
                 if (sr < 0 || sr >= sh->rows) sr = 0;
-                civ_rect_t src = civ_sprite_rect(sh, sc, sr);
                 int dx = w->rect.x + rx * tile_w;
                 int dy = w->rect.y + ry * tile_h;
-                if (sh->lut_built) {
-                    civ_surface_blit_remap(fb, dx, dy, sh->sheet, &src, sh->lut);
+
+                /* Step 1: 對非 OCEAN tile, 先 blit GRASS base 打底 */
+                if (kind != CIV_TERRAIN_OCEAN) {
+                    if (sh->lut_built)
+                        civ_surface_blit_remap(fb, dx, dy, sh->sheet, &grass_src, sh->lut);
+                    else
+                        civ_surface_blit(fb, dx, dy, sh->sheet, &grass_src);
+                }
+
+                /* Step 2: blit terrain sprite. GRASS / PLAINS / DESERT / OCEAN
+                 * 用 full blit (本身就是 base color); 其他 (FOREST/MOUNTAIN/
+                 * HILLS/JUNGLE/SWAMP/RIVER 等) 用 skip0 不蓋 transparent */
+                civ_rect_t src = civ_sprite_rect(sh, sc, sr);
+                bool is_base = (kind == CIV_TERRAIN_OCEAN ||
+                                kind == CIV_TERRAIN_GRASS ||
+                                kind == CIV_TERRAIN_PLAINS ||
+                                kind == CIV_TERRAIN_DESERT);
+                if (is_base) {
+                    if (sh->lut_built)
+                        civ_surface_blit_remap(fb, dx, dy, sh->sheet, &src, sh->lut);
+                    else
+                        civ_surface_blit(fb, dx, dy, sh->sheet, &src);
                 } else {
-                    civ_surface_blit(fb, dx, dy, sh->sheet, &src);
+                    /* overlay: skip palette-0 transparent */
+                    if (sh->lut_built)
+                        civ_surface_blit_remap_skip0(fb, dx, dy, sh->sheet, &src, sh->lut);
+                    else {
+                        /* fallback: 沒 LUT 時 build identity LUT 後用 skip0 */
+                        static uint8_t identity_lut[256];
+                        static int identity_built = 0;
+                        if (!identity_built) {
+                            for (int i = 0; i < 256; i++) identity_lut[i] = (uint8_t)i;
+                            identity_built = 1;
+                        }
+                        civ_surface_blit_remap_skip0(fb, dx, dy, sh->sheet, &src, identity_lut);
+                    }
                 }
             }
         }

@@ -99,9 +99,11 @@ static void minimap_render(civ_widget_t *w, civ_surface_t *fb)
     civ_rect_t orig_rect = w->rect;
     w->rect = inner;
 
-    /* 深藍底佔位 */
-    civ_fill_rect(fb, w->rect, 9);
-    civ_frame_rect(fb, w->rect, 7);
+    /* R14: body 黃底 (sheet idx 9) 改用 palette_nearest 找真黑 */
+    uint8_t c_body_bg = w->game ? civ_palette_nearest_rgb(&w->game->palette, 0,0,0) : 0;
+    uint8_t c_border  = w->game ? civ_palette_nearest_rgb(&w->game->palette, 0x80,0x80,0x80) : 7;
+    civ_fill_rect(fb, w->rect, c_body_bg);
+    civ_frame_rect(fb, w->rect, c_border);
 
     if (!w->game || !w->game->world_ready) {
         /* 沒地圖時退占位 + 文字 */
