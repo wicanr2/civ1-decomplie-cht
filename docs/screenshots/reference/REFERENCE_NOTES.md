@@ -6,15 +6,18 @@
 
 | 檔名 | 來源 | 內容 | 對應 spec |
 |---|---|---|---|
-| `civ1_win_civilopedia_dropdown.png` | 使用者 2026-06-06 提供 | 主畫面 + Civilopedia menu 下拉 | spec 04 + R4 layout |
-| `civ1_win_city_screen.png` | 使用者 2026-06-06 提供 | 城市畫面 (PARIS POP:10,000) | R6 city_screen |
-| `civ1_win_main_menu.jpg` | 使用者 2026-06-06 提供 | 主選單 (CIVILIZATION logo + 6 entries) | M4 (新局精靈, 已 ship) |
+| `civ1_win_civilopedia_dropdown.png` | 使用者 2026-06-06 | 主畫面 + Civilopedia menu 下拉 | spec 04 + R4 layout |
+| `civ1_win_city_screen.png` | 使用者 2026-06-06 | 城市畫面 (PARIS POP:10,000) | R6 city_screen |
+| `civ1_win_main_menu.jpg` | 使用者 2026-06-06 | 主選單 (CIVILIZATION logo + 6 entries) | M4 (新局精靈, 已 ship) |
+| `civ1_win_tech_discovery.png` | 使用者 2026-06-07 | tech discovery modal (BRONZE WORKING) | M-techscreen (R16+, design 已寫) |
+| `civ1_win_city_screen_rome.png` | 使用者 2026-06-07 | ROME 城市 (POP:100,000) w/ Pyramids + Great Library | R15 city_screen ocean tile bg |
+| `civ1_poster_collage.jpg` | 使用者 2026-06-07 | 多 era 大幅 marketing collage (logo + maps + Civilopedia) | 整體美術風格參考 |
 
-## 2026-06-07 使用者新提供 (待手動存檔)
+## 2026-06-07 使用者新提供 ✅ 已存
 
-使用者透過 chat 提供 2 張新 reference. 因 chat inline 圖檔無法自動存盤, 請使用者本機:
+使用者 2026-06-07 提供 3 張新 reference, 已存進 `docs/screenshots/reference/`:
 
-### 1. Tech Discovery Screen — `civ1_win_tech_discovery.png`
+### 1. Tech Discovery Screen — `civ1_win_tech_discovery.png` ✅
 
 科技研發完成 modal 截圖. 內容:
 - **大鍋火** (cauldron) 圖示 @ 左上
@@ -30,7 +33,7 @@
 
 **設計文件**: 完整 layout + zh-TW 對齊 + R16+ milestone 拆解見 [`../../TECH_DISCOVERY_SCREEN.md`](../../TECH_DISCOVERY_SCREEN.md).
 
-### 2. City Screen w/ Embedded Tile Background — `civ1_win_city_screen_rome.png`
+### 2. City Screen w/ Embedded Tile Background — `civ1_win_city_screen_rome.png` ✅
 
 ROME 城市畫面 (有 Pyramids + Great Library). 比 `civ1_win_city_screen.png` (PARIS) 更完整:
 - **"ROME (POP:100,000)"** 標題列
@@ -48,24 +51,18 @@ ROME 城市畫面 (有 Pyramids + Great Library). 比 `civ1_win_city_screen.png`
 - 對應修正: R15 改 `paint_tile_repeat()` 用 OCEAN sprite (col 22 row 9) repeat
 - 之前 R10 的 2x2 stipple checker 不夠像
 
-## 如何手動存檔
+### 3. Civ1 Poster Collage — `civ1_poster_collage.jpg` ✅
 
-從 chat 截圖到 `docs/screenshots/reference/` (跟既有 3 張同位置):
+3.9 MB 大幅 marketing collage, 含多個原版截圖:
+- Sid Meier's CIVILIZATION 主 logo
+- 鐵路 (Railroad) map 範例
+- ROMAN EMPIRE Democracy 1990 A.D. map
+- PRE-GAME OPTIONS 設定
+- Civilopedia screenshots
+- Terrain charts
+- 各種 era / unit / city 樣本
 
-```bash
-# Windows: 右鍵 chat 內圖 → 另存新檔
-# 存到: D:\03_game_tmp\civ1-decomplie-cht\docs\screenshots\reference\
-# 檔名:
-#   civ1_win_tech_discovery.png        (BRONZE WORKING 截圖)
-#   civ1_win_city_screen_rome.png      (ROME 城市截圖)
-```
-
-存完後可加進 git:
-```bash
-git add docs/screenshots/reference/civ1_win_tech_discovery.png
-git add docs/screenshots/reference/civ1_win_city_screen_rome.png
-git commit -m "docs: 2 張新 reference (tech discovery + ROME city screen)"
-```
+用作多重 era / 文明擴張視覺對比參考, 不對齊單一畫面 但提供整體美術風格 ground-truth.
 
 ## License
 
