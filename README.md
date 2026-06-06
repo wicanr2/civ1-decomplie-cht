@@ -10,7 +10,7 @@
 
 ## 目前 ship 狀態 (2026-06-06)
 
-最後 ship: D-spec06 terrain ground-truth 對位
+最後 ship: D-#3 i18n catalog 第二波 (241 → 376 條,22/33 STR# 表覆蓋)
 
 | Milestone | 範圍 | 狀態 | 證據 |
 |---|---|---|---|
@@ -84,7 +84,7 @@
 |---|---|---|---|
 | CvPc sprite | 199 | 185 解通 ✅ + 14 ❌ | 14 個有 LZW variant 差異 |
 | SPR32X32 terrain (col,row) 對位 | 12 種 | 11 個 ground-truth ✅ + HILLS 暫共用 mountain | 真 HILLS tile + base+overlay 雙 layer renderer 是後續工作 |
-| STR# 文字 list | 33 | 解通 ✅ | 翻譯進度 241/433 條 |
+| STR# 文字 list | 33 | 解通 ✅ | 翻譯進度 376/731 條 (22/33 表覆蓋,52%) |
 | TEXT (Civilopedia 條目) | 399 | 識別 ✅ 文字未全 dump | M7 i18n 範圍 |
 | GDAT | 7 | ❌ 格式未碰 | 推測動畫 |
 | KDAT | 14 | ❌ 格式未碰 | 推測 keymap 或動畫 |

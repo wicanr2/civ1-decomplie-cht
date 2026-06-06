@@ -41,6 +41,8 @@ enum {
     CIV_STR_LEADERS_CIV_PLUR  = 149,
     CIV_STR_DOCK              = 150,
     CIV_STR_INPUT_TITLES      = 151,
+    CIV_STR_ORDERS_MENU       = 152,
+    CIV_STR_CUSTOMIZE_WORLD   = 153,
     CIV_STR_SPACE_1           = 155,
     CIV_STR_SPACE_2           = 156,
     CIV_STR_ARCHEOLOGIST      = 157,

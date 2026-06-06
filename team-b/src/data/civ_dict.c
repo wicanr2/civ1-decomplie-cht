@@ -1,10 +1,15 @@
 /*
- * civ_dict.c — 241 條 zh-TW 翻譯 hard-coded catalog
+ * civ_dict.c — 376 條 zh-TW 翻譯 hard-coded catalog
  *
  * 來源：spec 05 §5.3 + extract_strings.py 對 Civdata0.RSC 的完整 dump。
  * 編碼：UTF-8（spec 02 編碼總則）。
  *
  * 註：部分 STR# 有重複條目（地形 / 君主稱號），翻譯尊重原順序不去重。
+ *
+ * Round 2026-06-06 D-#3: 補 11 個 STR# 共 135 條 — Tax/Lux rate 格式、Misc
+ * Prompts (UI 詞)、Leaders (16) + Army Sing/Plur (8+8) + King Text (8) +
+ * Leaders Civ Sing/Plur (16+16) + Input Titles (3) + Orders Menu (19) +
+ * Alert Text (10)。
  */
 #include "civ_dict.h"
 
@@ -102,6 +107,155 @@ static const char *const DOCK[10] = {
     "無", "居住", "維生", "太陽能板", "支援",
 };
 
+/* ── STR# 128 — 11 Tax Rates（稅率格式字串） ──────────────── */
+static const char *const TAX_RATES[11] = {
+    "    0% 稅率, (100% 科技)",
+    "  10% 稅率, (  90% 科技)",
+    "  20% 稅率, (  80% 科技)",
+    "  30% 稅率, (  70% 科技)",
+    "  40% 稅率, (  60% 科技)",
+    "  50% 稅率, (  50% 科技)",
+    "  60% 稅率, (  40% 科技)",
+    "  70% 稅率, (  30% 科技)",
+    "  80% 稅率, (  20% 科技)",
+    "  90% 稅率, (  10% 科技)",
+    "100% 稅率, (    0% 科技)",
+};
+
+/* ── STR# 129 — 6 Lux Rates（奢侈率格式字串） ─────────────── */
+static const char *const LUX_RATES[6] = {
+    "  0% 奢侈品, (50% 科技)",
+    "10% 奢侈品, (40% 科技)",
+    "20% 奢侈品, (30% 科技)",
+    "30% 奢侈品, (20% 科技)",
+    "40% 奢侈品, (10% 科技)",
+    "50% 奢侈品, (  0% 科技)",
+};
+
+/* ── STR# 136 — 14 Misc Prompts（UI 詞彙） ────────────────── */
+static const char *const MISC_PROMPTS[14] = {
+    "遊戲設定", "請命名這場遊戲:", "存檔 1",
+    "顯示", "隱藏",
+    "地圖", "世界地圖", "狀態",
+    "購買建築", "購買奇蹟", "購買單位",
+    "名人堂",
+    "隱藏單位", "顯示單位",
+};
+
+/* ── STR# 140 — 16 Leaders（領袖名,含 2 個 NONE 空 slot） ── */
+static const char *const LEADERS[16] = {
+    "",                /* slot 0: empty */
+    "凱撒",            /* 1 Caesar */
+    "漢摩拉比",        /* 2 Hammurabi */
+    "腓特烈",          /* 3 Frederick */
+    "拉美西斯",        /* 4 Ramesses */
+    "林肯",            /* 5 Abe Lincoln */
+    "亞歷山大",        /* 6 Alexander */
+    "甘地",            /* 7 M.Gandhi */
+    "",                /* 8: empty (no Mongol slot in 1993 Win port) */
+    "史達林",          /* 9 Stalin */
+    "夏卡",            /* 10 Shaka */
+    "拿破崙",          /* 11 Napoleon */
+    "蒙特蘇馬",        /* 12 Montezuma */
+    "毛澤東",          /* 13 Mao Tse Tung */
+    "伊莉莎白一世",    /* 14 Elizabeth I */
+    "成吉思汗",        /* 15 Genghis Khan (extra) */
+};
+
+/* ── STR# 143 — 8 Army Singular（8 player slot 文明形容詞） ─ */
+static const char *const ARMY_SING[8] = {
+    "野蠻人", "羅馬", "巴比倫", "德意志",
+    "埃及", "美利堅", "希臘", "蒙古",
+};
+
+/* ── STR# 144 — 8 Armies Plural ─────────────────────────── */
+static const char *const ARMY_PLUR[8] = {
+    "野蠻人", "羅馬人", "巴比倫人", "德意志人",
+    "埃及人", "美國人", "希臘人", "蒙古人",
+};
+
+/* ── STR# 145 — 8 King Text（歷史名君引用） ─────────────── */
+static const char *const KING_TEXT[8] = {
+    "阿提拉",            /* Attila */
+    "凱撒",              /* Caesar */
+    "夏卡",              /* Shaka */
+    "成吉思汗",          /* Genghis Khan */
+    "蒙特蘇馬",          /* Montezuma */
+    "薛西斯",            /* Xerxes */
+    "薩拉丁",            /* Saladin */
+    "蘇皮盧利烏馬斯",    /* Suppiluliumas */
+};
+
+/* ── STR# 148 — 16 Leaders Civ Singular（slot 文明名 16 slot 版） ── */
+static const char *const LEADERS_CIV_SING[16] = {
+    "無",      /* 0 NONE */
+    "羅馬",    /* 1 Roman */
+    "巴比倫",  /* 2 Babylonian */
+    "德意志",  /* 3 German */
+    "埃及",    /* 4 Egyptian */
+    "美利堅",  /* 5 American */
+    "希臘",    /* 6 Greek */
+    "印度",    /* 7 Indian */
+    "無",      /* 8 NONE */
+    "俄羅斯",  /* 9 Russian */
+    "祖魯",    /* 10 Zulu */
+    "法蘭西",  /* 11 French */
+    "阿茲特克",/* 12 Aztec */
+    "中華",    /* 13 Chinese */
+    "英格蘭",  /* 14 English */
+    "蒙古",    /* 15 Mongol */
+};
+
+/* ── STR# 149 — 16 Leaders Civ Plural ─────────────────────── */
+static const char *const LEADERS_CIV_PLUR[16] = {
+    "無", "羅馬人", "巴比倫人", "德意志人",
+    "埃及人", "美國人", "希臘人", "印度人",
+    "無", "俄羅斯人", "祖魯人", "法國人",
+    "阿茲特克人", "中國人", "英國人", "蒙古人",
+};
+
+/* ── STR# 151 — 3 Input Titles ──────────────────────────── */
+static const char *const INPUT_TITLES[3] = {
+    "城市名稱...", "您的名字...", "您的部族名稱...",
+};
+
+/* ── STR# 152 — 19 Orders Menu（&X 為 Win16 mnemonic） ────── */
+static const char *const ORDERS_MENU[19] = {
+    "無命令",
+    "加入城市(&A)",
+    "建立新城市(&F)",
+    "建造道路(&R)",
+    "建造鐵路(&R)",
+    "建造灌溉(&I)",
+    "改變為 (&C)",
+    "建造礦坑(&M)",
+    "清除污染",
+    "建造堡壘(&F)",
+    "駐守(&F)",
+    "等候",
+    "哨兵",
+    "前往",
+    "掠奪",
+    "母城",
+    "卸載",
+    "解散單位",
+    " brimpfwsgPhu ct D",  /* 原 slot 18 為 garbage,保留 raw 不譯 */
+};
+
+/* ── STR# 158 — 10 Alert Text（錯誤訊息） ──────────────────── */
+static const char *const ALERT_TEXT[10] = {
+    "遊戲未存檔。",
+    "選擇的磁碟已滿。",
+    "選擇的磁碟已鎖定。",
+    "發生未預期的 I/O 錯誤。",
+    "Civilization™ 只支援 8 位元色彩 (256 色) 與黑白。",
+    "您目前處於 4 位元模式 (16 色)。將以黑白顯示。",
+    "您目前處於 16 位元模式 (65,536 色)。",
+    "您目前處於 24 位元模式 (16,777,216 色)。",
+    "您目前處於未知顯示模式。",
+    "您目前處於 2 位元模式 (4 色)。將以黑白顯示。",
+};
+
 /* ── 主 lookup ──────────────────────────────────────── */
 
 const char *civ_dict_lookup(int str_id, int index)
@@ -114,17 +268,29 @@ const char *civ_dict_lookup(int str_id, int index)
         return NULL;
 
     switch (str_id) {
+    LOOKUP(CIV_STR_TAX_RATES,         TAX_RATES);
+    LOOKUP(CIV_STR_LUX_RATES,         LUX_RATES);
     LOOKUP(CIV_STR_TECH_ADVANCES,     TECH);
     LOOKUP(CIV_STR_IMPROVEMENTS,      IMPROVEMENT);
     LOOKUP(CIV_STR_PEOPLE_UNITS,      UNIT);
     LOOKUP(CIV_STR_TERRAINS,          TERRAIN);
     LOOKUP(CIV_STR_MISC,              MISC);
+    LOOKUP(CIV_STR_MISC_PROMPTS,      MISC_PROMPTS);
     LOOKUP(CIV_STR_REPORT_TITLES,     REPORT);
+    LOOKUP(CIV_STR_LEADERS,           LEADERS);
     LOOKUP(CIV_STR_GOVERNMENTS,       GOV);
     LOOKUP(CIV_STR_CARAVAN_GOODS,     GOOD);
+    LOOKUP(CIV_STR_ARMY_SING,         ARMY_SING);
+    LOOKUP(CIV_STR_ARMY_PLUR,         ARMY_PLUR);
+    LOOKUP(CIV_STR_KING_TEXT,         KING_TEXT);
     LOOKUP(CIV_STR_KING_TITLE,        KING_TITLE);
     LOOKUP(CIV_STR_CIVPEDIA_SUBTITLE, PEDIA_SUB);
+    LOOKUP(CIV_STR_LEADERS_CIV_SING,  LEADERS_CIV_SING);
+    LOOKUP(CIV_STR_LEADERS_CIV_PLUR,  LEADERS_CIV_PLUR);
     LOOKUP(CIV_STR_DOCK,              DOCK);
+    LOOKUP(CIV_STR_INPUT_TITLES,      INPUT_TITLES);
+    LOOKUP(CIV_STR_ORDERS_MENU,       ORDERS_MENU);
+    LOOKUP(CIV_STR_ALERT_TEXT,        ALERT_TEXT);
     default:
         return NULL;
     }

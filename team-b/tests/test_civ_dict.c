@@ -1,12 +1,15 @@
 /*
- * test_civ_dict.c — 驗 zh-TW catalog 241 條翻譯
+ * test_civ_dict.c — 驗 zh-TW catalog 376 條翻譯
  *
- * 對所有 11 個 STR# 翻譯陣列做：
+ * 對所有 22 個 STR# 翻譯陣列做：
  *   1. 起首 / 結尾條目正確
  *   2. 中間抽樣
  *   3. 越界 / 不存在 str_id 回 NULL
  *
  * 不需要 CIV1_DATA_DIR — 純 catalog 自驗證。
+ *
+ * D-#3 第二波 (2026-06-06): 加 11 個 STR# 表共 135 條 (128/129/136/140/
+ * 143/144/145/148/149/151/152/158)。
  */
 #include "data/civ_dict.h"
 #include "data/strings.h"
@@ -83,11 +86,62 @@ int main(void)
     EXPECT(strcmp(civ_dict_lookup(CIV_STR_DOCK, 3), "推進") == 0);
     EXPECT(strcmp(civ_dict_lookup(CIV_STR_DOCK, 8), "太陽能板") == 0);
 
+    /* ── D-#3 第二波 (2026-06-06) 加 11 個 STR# 共 135 條 ────────── */
+
+    /* STR# 128 — 11 稅率 */
+    EXPECT(strstr(civ_dict_lookup(CIV_STR_TAX_RATES, 0), "100% 科技") != NULL);
+    EXPECT(strstr(civ_dict_lookup(CIV_STR_TAX_RATES, 10), "100% 稅率") != NULL);
+    EXPECT(civ_dict_lookup(CIV_STR_TAX_RATES, 11) == NULL);
+
+    /* STR# 129 — 6 奢侈率 */
+    EXPECT(strstr(civ_dict_lookup(CIV_STR_LUX_RATES, 0), "奢侈品") != NULL);
+    EXPECT(civ_dict_lookup(CIV_STR_LUX_RATES, 6) == NULL);
+
+    /* STR# 136 — 14 UI 提示 */
+    EXPECT(strcmp(civ_dict_lookup(CIV_STR_MISC_PROMPTS, 0), "遊戲設定") == 0);
+    EXPECT(strcmp(civ_dict_lookup(CIV_STR_MISC_PROMPTS, 5), "地圖") == 0);
+    EXPECT(strcmp(civ_dict_lookup(CIV_STR_MISC_PROMPTS, 13), "顯示單位") == 0);
+
+    /* STR# 140 — 16 領袖 */
+    EXPECT(strcmp(civ_dict_lookup(CIV_STR_LEADERS, 1),  "凱撒") == 0);
+    EXPECT(strcmp(civ_dict_lookup(CIV_STR_LEADERS, 11), "拿破崙") == 0);
+    EXPECT(strcmp(civ_dict_lookup(CIV_STR_LEADERS, 15), "成吉思汗") == 0);
+    EXPECT(civ_dict_lookup(CIV_STR_LEADERS, 16) == NULL);
+
+    /* STR# 143/144 — 8 軍 sing/plur */
+    EXPECT(strcmp(civ_dict_lookup(CIV_STR_ARMY_SING, 0), "野蠻人") == 0);
+    EXPECT(strcmp(civ_dict_lookup(CIV_STR_ARMY_SING, 1), "羅馬") == 0);
+    EXPECT(strcmp(civ_dict_lookup(CIV_STR_ARMY_PLUR, 1), "羅馬人") == 0);
+    EXPECT(strcmp(civ_dict_lookup(CIV_STR_ARMY_PLUR, 7), "蒙古人") == 0);
+
+    /* STR# 145 — 8 歷史名君 */
+    EXPECT(strcmp(civ_dict_lookup(CIV_STR_KING_TEXT, 0), "阿提拉") == 0);
+    EXPECT(strcmp(civ_dict_lookup(CIV_STR_KING_TEXT, 3), "成吉思汗") == 0);
+
+    /* STR# 148/149 — 16 文明 sing/plur */
+    EXPECT(strcmp(civ_dict_lookup(CIV_STR_LEADERS_CIV_SING, 1),  "羅馬") == 0);
+    EXPECT(strcmp(civ_dict_lookup(CIV_STR_LEADERS_CIV_SING, 13), "中華") == 0);
+    EXPECT(strcmp(civ_dict_lookup(CIV_STR_LEADERS_CIV_PLUR, 13), "中國人") == 0);
+
+    /* STR# 151 — 3 輸入標題 */
+    EXPECT(strcmp(civ_dict_lookup(CIV_STR_INPUT_TITLES, 0), "城市名稱...") == 0);
+    EXPECT(strcmp(civ_dict_lookup(CIV_STR_INPUT_TITLES, 2), "您的部族名稱...") == 0);
+
+    /* STR# 152 — 19 Orders menu */
+    EXPECT(strcmp(civ_dict_lookup(CIV_STR_ORDERS_MENU, 0), "無命令") == 0);
+    EXPECT(strstr(civ_dict_lookup(CIV_STR_ORDERS_MENU, 11), "等候") != NULL);
+    EXPECT(strcmp(civ_dict_lookup(CIV_STR_ORDERS_MENU, 17), "解散單位") == 0);
+
+    /* STR# 158 — 10 錯誤訊息 */
+    EXPECT(strcmp(civ_dict_lookup(CIV_STR_ALERT_TEXT, 0), "遊戲未存檔。") == 0);
+    EXPECT(strstr(civ_dict_lookup(CIV_STR_ALERT_TEXT, 4), "256 色") != NULL);
+
     /* ── 不存在的 str_id ──────────────────────────── */
     EXPECT(civ_dict_lookup(9999, 0) == NULL);
 
     /* 計總翻譯條目數 — 對齊 spec 05 §5.3 */
-    int total = 72 + 46 + 28 + 24 + 21 + 7 + 6 + 8 + 13 + 6 + 10;
-    printf("PASS test_civ_dict (%d 條 zh-TW 翻譯全驗)\n", total);
+    int total = 72 + 46 + 28 + 24 + 21 + 7 + 6 + 8 + 13 + 6 + 10    /* 舊 241 */
+              + 11 + 6 + 14 + 16 + 8 + 8 + 8 + 16 + 16 + 3 + 19 + 10; /* 新 135 */
+    printf("PASS test_civ_dict (%d 條 zh-TW 翻譯全驗,22 個 STR# 表)\n", total);
     return 0;
 }

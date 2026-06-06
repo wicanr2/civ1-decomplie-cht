@@ -1,0 +1,62 @@
+D-#3: i18n catalog 第二波 — 241 → 376 條 zh-TW, 22/33 STR# 表覆蓋
+
+使用者 C → D 路線第二步 (D-spec06 已 ship 24bfe64). 本次 D-#3:
+擴充 civ_dict.c hardcoded zh-TW 翻譯 catalog 從 11 個 STR# 表 / 241 條
+→ 22 個 STR# 表 / 376 條, 涵蓋 Civdata0.RSC 約 52% 字串.
+
+# 新增 11 個 STR# 表 (135 條)
+
+  STR# 128 Tax Rates       11 — 稅率格式字串 (X% 稅率, (Y% 科技))
+  STR# 129 Lux Rates        6 — 奢侈率格式字串
+  STR# 136 Misc Prompts    14 — 遊戲設定/世界地圖/購買建築/名人堂等 UI 詞
+  STR# 140 Leaders         16 — 凱撒/漢摩拉比/腓特烈/.../成吉思汗 (14 + 2 NONE)
+  STR# 143 Army Singular    8 — 8 player slot 文明形容詞 (野蠻人/羅馬/巴比倫/...)
+  STR# 144 Armies Plural    8 — 野蠻人/羅馬人/...
+  STR# 145 King Text        8 — 阿提拉/凱撒/夏卡/成吉思汗/蒙特蘇馬/薛西斯
+                                /薩拉丁/蘇皮盧利烏馬斯
+  STR# 148 Leaders Civ Sing 16 — 文明名 16 slot 版 (slot 0/8 為 NONE)
+  STR# 149 Leaders Civ Plur 16 — 文明複數
+  STR# 151 Input Titles     3 — 城市名稱.../您的名字.../您的部族名稱...
+  STR# 152 Orders Menu     19 — 加入城市/建造道路/掠奪/解散單位等遊戲命令
+                                (含 Win16 & mnemonic 保留)
+  STR# 158 Alert Text      10 — 錯誤訊息 (磁碟已滿/I/O 錯誤/8-bit 色彩警告)
+
+# 交付
+
+  src/data/strings.h        加 CIV_STR_ORDERS_MENU=152, CUSTOMIZE_WORLD=153 enum
+  src/data/civ_dict.c       + 11 個 STR# 表 (135 條) + dispatch case
+  src/data/civ_dict.h       更新總計 376 條 + 對應 spec 05 §5.3 文件
+  tests/test_civ_dict.c     加 ~25 個新 assertion 覆蓋 11 個新表
+  README.md                 更新 ship 狀態 + 資產解碼欄 (376/731 = 52%)
+
+# 驗證
+
+  cmake build         33/33 zero warning
+  ctest with data:    14/14 PASS
+  test_civ_dict:      "PASS test_civ_dict (376 條 zh-TW 翻譯全驗, 22 個 STR# 表)"
+
+# 範圍考量
+
+  優先翻譯 UI 可見 + master tables: 領袖 / 軍 sing/plur / 政府 / Orders /
+  錯誤訊息 / 稅率, 都是玩家立即可見的字串.
+
+  Defer 下一輪:
+    STR# 135 (256 城市名)  — 14 文明 × ~18 城市,工作量大,優先排在 D-M6-full
+    STR# 137 (10 Credits)   — 1993 開發團隊名單,IP 敏感保留英文
+    STR# 139 (44 開場故事)  — 長散文,需斟酌
+    STR# 153 (16 自訂世界)  — 小地圖/大地圖等,M6-full 用時再翻
+    STR# 155-160 (49 太空+磁碟+結局) — 終局相關,M7 階段
+
+# 翻譯選擇
+
+  - "Civ Preferences" → "遊戲設定" (對應 Track A 翻譯選擇)
+  - "Despotism/Monarchy/Republic" 沿用既有 STR# 141 翻譯
+  - "Caesar"/"Hammurabi" 等領袖音譯沿用 civs.c 對齊
+  - Win16 mnemonic (& 字元) 在 ORDERS_MENU 保留以兼容 Win16 menu accelerator
+  - 太空船零件 "Structure1/Structure2/Structure3" 譯 "結構 1/2/3" 一致
+
+# 下一步
+
+  D-M6-full: unit move / 戰鬥 / 城市生產 / 存讀檔
+  阻擋: spec 06 (數值表) + spec 07 (combat 公式 + RLL save format) 都需 Ghidra.
+  視範圍可走 M6-full-lite (placeholder 數值) 或先寫 spec 06/07.
