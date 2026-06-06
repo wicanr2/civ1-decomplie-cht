@@ -246,18 +246,26 @@ python extract_tiles.py CIVDATA4.RSC --resource-id 200 \
 
 ## 3.9  待解問題
 
-### 9.1  CvPc LZW 變體與標準 GIF89a 的差異
+### 9.1  CvPc LZW 變體 — ✅ 已解開 (2026-06-06)
 
-**症狀**：所有 199 個 CvPc 用標準 GIF89a Appendix F decoder（含 LSB-first bit reader、CLEAR/EOI sentinel、`code_size` 在 `dict_size == 1<<code_size` 升級）跑下去，前 1-17 個 code 解出**完全正確**的灰階 ramp 起始 pattern（CLEAR + `0,0,0,32,32,32,64,64,64,...`），第 N 個 code 撞到「code 值 > 當時字典大小 + 1」立刻 abort。Pillow 自家的 giflib 也報 "broken data stream"。
+**結論**：CvPc LZW **就是標準 GIF89a Appendix F**，沒任何變體。
 
-**可能解釋（待確認）**：
-1. **早升級**：MicroProse 的 LZW encoder 在 `dict_size == (1<<code_size) - 1` 就升 N→N+1 bit code（標準 GIF 是 `== 1<<code_size`）。已實作測試，不通過。
-2. **字典 pre-seed**：dict init 不只 `[0..CLEAR-1] + sentinels`，可能多 seed 一些「常見 run-length pattern」。
-3. **RLE + LZW 混合**：Track B 的 PROJECT_MEMORY 第 219 行寫 1991 DOS Civ `.pic` codec 是「`RLE + LZW + 18-bit palette`」。1993 Windows port 可能繼承這個混合策略 — header `lzwMinCodeSize` byte 其實是某種「mode byte」，bit 0..2 = LZW root size，bit 3..7 = RLE control。
-4. **MSB-first bit packing**：標準 GIF 是 LSB-first，但 Macintosh 寫的工具有可能 MSB-first；已測試 MSB 兩條路徑都更早 fail，排除。
-5. **`gr_pic.c::LoadGifPicture` 的具體實作**：1993 Windows port 可能在原版 GIF reader 上加了私有 patch。要解開唯有 disassemble 該 function（在 CIV.EXE 內，spec 01 §1.2 標出該 source file 存在）。
+之前撞牆是**初始 decoder bug**：所有 199 個 CvPc 用「標準 GIF」decoder 都在 1..20 byte 處撞「code 159 > dict size 130」abort。但 Track A `extract_tiles.py` 初版把 CvPc header byte at offset 4 當成某種「mode byte」而非 LZW `min_code_size`。**正確解讀**：
 
-**建議下一步**：spec 05 Ghidra-only verification oracle phase 中，把 `LoadGifPicture` 在 disassembly 上找到、reverse 出 LZW state machine，直接 1:1 移植到 Python 重做 `gif_lzw_decode()`。
+- offset 4 byte = LZW `min_code_size` **直接**（不是 ±1，不是 mode byte）
+- offset 5 byte = `palette_count - 1`
+- offset 6 起 `palette_count * 3` bytes = palette (RGB triples)
+- 剩餘 = 標準 GIF89a sub-block 串流（length-prefixed）+ 標準 LSB-first LZW (CLEAR = `1 << min_code`, END = CLEAR + 1)
+
+**反推路徑**：透過 `team-a/tools/ghidra_byte_pattern_scan.py` 掃 `PUSH 0x2372` (LoadGifPicture assert string offset) 找到 `LoadGifPicture @ 10b8:11bc`。decompile (`team-a/dumps/03a_loadgifpicture.c`) 顯示 byte at offset 4 (`uVar1`) 直接被當參數傳給 `PicDecompress @ 10b8:158c`（即 LZW decoder 本人）。`PicDecompress` 線 118 `CLEAR = 2 << (param & 0x1f)` 看起來像 `min+1`，但實際呼叫 site 的 calling convention 偏移分析顯示 `param` 點到的是 `param_4` (y-offset) 而非 byte4 — Ghidra 對 cdecl16far 的 stack frame 解讀有誤導性。最終以 SPR32X32 樣本回歸測試確認：`min_code_size = byte4 = 7` → CLEAR = 128 → 第一個 9-bit code = 128 = CLEAR ✓。
+
+**完整解開驗證**（2026-06-06）：
+- 4 個 .RSC 內 **185 個 CvPc 全部 decode 成功，0 fail**
+- SPR32X32（最大；1472×400 = 588800 pixel）byte-exact 全解
+- 視覺：地形 sprite sheet、Pyramids/Mausoleum 奇蹟、14 個 KING* 領袖肖像、單位 sprite（trireme/cavalry/tank/battleship）全部肉眼可辨
+- 截圖見 `docs/screenshots/cvpc_spr32x32_decoded.png` 與 `docs/screenshots/cvpc_king00_elizabeth.png`
+
+**Production tool**：`team-a/tools/extract_tiles.py`（同檔案；CLI `--list / --id / --out-dir`）。輸出 PNG（PIL）或 PPM（PIL 缺時 fallback）。
 
 ### 9.2  256-color VGA palette 在哪？
 

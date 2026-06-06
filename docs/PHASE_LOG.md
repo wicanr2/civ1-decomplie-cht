@@ -23,6 +23,40 @@
 - 寫第一份簽核 spec `team-a/specs/00_ne_structure.md`：binary 身分、記憶體模型、133 segments（約 69 code + 約 63 data + 1 autodata 在 segment 133）、6 個 Win16 import（KERNEL / USER / GDI / WIN87EM / MMSYSTEM / COMMDLG）、11 個導出 callback（`WDWMAPPROC`、`TIMERPROC`、`CIVDIALOGPROC`…）、resource directory（24 `RT_DIALOG`、1 `RT_MENU`、16 `RT_CURSOR`、1 `RT_ICON`、無 `RT_STRING`、無 `RT_RCDATA`、無 `RT_VERSION`）。
 - Spec 00 簽核待 Team A 與 Team B 各別覆核。
 
+## 2026-06-06 — Spec 03 §9.1 CvPc LZW 解開（M3 解除阻塞）
+
+### byte-pattern scan 找到 `gr_pic.c` 家族 5 個函式
+之前 `ghidra_extract_loadgifpicture.py` 失敗（Ghidra auto-analysis 沒建立 data references）。改用 byte-pattern scan：找 `PUSH imm16` 指令、imm16 對應 assert string offset。
+
+新工具 `team-a/tools/ghidra_byte_pattern_scan.py` 一輪找到：
+- `GR_PicRead @ 10b8:079d` (779B)
+- `GR_PortDataToBitmap @ 10b8:0e36` (902B)
+- **`LoadGifPicture @ 10b8:11bc` (717B)** — LZW decoder caller
+- `InvertBitmap @ 10b8:1489` (259B)
+- **`PicDecompress @ 10b8:158c` (1474B)** — LZW decoder 本人
+
+全在同一個 code segment `10b8` 連續，符合「一個 .c 檔編成一個 segment」的 Borland C 16-bit 慣例。Decompile 在 `team-a/dumps/03a_*.c`（5 個檔，合計 ~38 KB）。
+
+### LZW 變體 — 其實沒有變體
+LoadGifPicture 拿 CvPc 第 5 個 byte 直接傳給 PicDecompress 作 `min_code_size`。我之前看 PicDecompress 線 118 `CLEAR = 2 << (param & 0x1f)` 看起來像 `byte+1` 變體，**但實際是 Ghidra 對 cdecl16far stack frame 的解讀偏移誤導** — 該 `param` 對應的不是 byte4 而是 y-offset (`param_4`)。
+
+正確解讀：**標準 GIF89a Appendix F**，header byte at offset 4 = `min_code_size` 直接。之前撞牆是初版 decoder 把 byte4 當 mode byte 而非 min_code_size。
+
+### 全部 185 個 CvPc 抽出驗證
+4 個 .RSC 全跑：
+- `Civdata0`: 4 個 (NUKE1 / DOCKER / SPY / EARTH)
+- `CIVDATA2`: 31 個 (含 14 個 `KING00..13` 領袖肖像 / `GOVT*M` 政府圖 / SPACEST / ARCH)
+- `Civdata3`: 149 個 (WRITING / ARMOR 等科技 icon、單位 sprite、奇蹟圖)
+- `CIVDATA4`: 1 個 (SPR32X32.GIF 1472×400 主 sprite sheet)
+- 共 185 個 PNG，2.4 MB，**0 fail**
+- 視覺證據：[`cvpc_spr32x32_decoded.png`](screenshots/cvpc_spr32x32_decoded.png) (主 sprite sheet) + [`cvpc_king00_elizabeth.png`](screenshots/cvpc_king00_elizabeth.png) (Queen Elizabeth I 領袖肖像 + 表情變化集)
+
+### Spec 03 §9.1 標 ✅ 解開
+原版 §9.1 描述「LZW 變體待解」改為「2026-06-06 已解開」+ 反推流程紀錄。
+
+### 對 M3 的解除阻塞
+[SDL_IMPLEMENTATION_PLAN §13](../team-b/SDL_IMPLEMENTATION_PLAN.md) M3 範圍包含「載入 .RSC + CvPc decode + blit」。spec 03 §9.1 已解，**M3 可立即動工**。Team B 直接從 [spec 03 §3.10 介面契約](../team-a/specs/03_asset_formats_and_tiles.md) 寫 `res/rsrcfork.c` + `gfx/cvpc.c`，演算法用 `extract_tiles.py` 的 spec 版本（Python 程式碼僅供 Team A 驗證，Team B 從 spec 重寫 C 版）。
+
 ## 2026-06-06 — M2：3 個 widget skeleton + dispatch table + modal lock
 
 ### 編碼總則新增到 SDL plan

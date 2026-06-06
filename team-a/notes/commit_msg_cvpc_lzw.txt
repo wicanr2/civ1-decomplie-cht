@@ -1,0 +1,100 @@
+Spec 03 §9.1: CvPc LZW 解開 (185 PNG 0 fail)，M3 解除阻塞
+
+# byte-pattern scan 找到 gr_pic.c 家族
+
+之前 ghidra_extract_loadgifpicture.py 失敗 (Ghidra auto-analysis
+沒建立 data references)。改寫 ghidra_byte_pattern_scan.py 找
+PUSH imm16 指令、imm16 對應 assert string offset。一輪找到 5 個:
+
+  GR_PicRead          @ 10b8:079d (779B)
+  GR_PortDataToBitmap @ 10b8:0e36 (902B)
+  LoadGifPicture      @ 10b8:11bc (717B)   <- LZW caller
+  InvertBitmap        @ 10b8:1489 (259B)
+  PicDecompress       @ 10b8:158c (1474B)  <- LZW decoder
+
+全在 code segment 10b8 連續, 符合「一個 .c 檔一個 segment」的
+Borland C 16-bit 慣例。Decompile 在 team-a/dumps/03a_*.c。
+
+# LZW 其實沒變體 — 標準 GIF89a
+
+LoadGifPicture 拿 CvPc byte at offset 4 直接傳給 PicDecompress
+作 min_code_size。PicDecompress 線 118 顯示
+CLEAR = 2 << (param & 0x1f) 看起來像 byte+1 變體, 但實際是
+Ghidra 對 cdecl16far stack frame 解讀偏移誤導 (該 param 對應
+不是 byte4 而是 y-offset)。
+
+正確: 標準 GIF89a Appendix F:
+  offset 0-1: width (BE16)
+  offset 2-3: height (BE16)
+  offset 4:   min_code_size (直接, 例 7 -> CLEAR=128)
+  offset 5:   palette_count - 1
+  offset 6+:  palette RGB triples
+  剩餘:       GIF89a sub-block 串流 (length-prefixed) +
+              LSB-first LZW (CLEAR = 1 << min_code, END = CLEAR + 1)
+
+之前撞牆是初版 decoder 把 byte4 當 mode byte 而非
+min_code_size。
+
+# 全部 185 個 CvPc 抽出驗證
+
+4 個 .RSC 全跑:
+  Civdata0: 4 個 (NUKE1, DOCKER, SPY, EARTH)
+  CIVDATA2: 31 個 (含 14 個 KING00..13 領袖肖像, GOVT*M, ARCH,
+                   SPACEST)
+  Civdata3: 149 個 (科技 icon, 單位 sprite, 奇蹟圖)
+  CIVDATA4: 1 個 (SPR32X32 1472x400 主 sprite sheet)
+  總計 185 個 PNG, 2.4 MB, **0 fail**
+
+SPR32X32 byte-exact 全解 (1472 * 400 = 588800 byte 完全 match)。
+肉眼可辨: 地形 tiles, 城牆, Pyramids/Mausoleum 奇蹟,
+trireme/cavalry/tank/battleship 單位, 14 國領袖肖像。
+
+# 交付
+
+  team-a/tools/ghidra_byte_pattern_scan.py
+    - Ghidra Jython 2.7 post-script
+    - 掃所有 PUSH imm16 指令, imm16 match 則記錄該 function
+    - 對 GR_PicRead / GR_PortDataToBitmap / LoadGifPicture /
+      InvertBitmap / PicDecompress 五個目標全找到並 decompile
+
+  team-a/tools/lzw_variant_poc.py
+    - 反推階段的 PoC; 嘗試不同 min_code_size 解釋
+    - 確認 byte4 直接是 min_code_size 後即停 (保留作回歸測試)
+
+  team-a/tools/extract_tiles.py (重寫)
+    - production 版本
+    - Mac Resource Fork parser (重用) + 修正的 CvPc decoder
+    - CLI: --list / --id / --out-dir
+    - 自動 Pillow PNG 輸出, fallback PPM
+
+  team-a/notes/extract_all_cvpc.sh
+    - 對 4 個 .RSC 跑全套抽取的 batch script
+
+  team-a/dumps/03a_*.c (5 個)
+    - GR_PicRead / GR_PortDataToBitmap / LoadGifPicture /
+      InvertBitmap / PicDecompress decompile
+
+  docs/screenshots/cvpc_spr32x32_decoded.png (122 KB)
+    - SPR32X32 主 sprite sheet, 1472x400
+    - 地形 + 單位 + 奇蹟 + 領袖肖像
+
+  docs/screenshots/cvpc_king00_elizabeth.png
+    - Queen Elizabeth I 領袖肖像 + 表情變化集
+    - 14 個 KING0X 之一示意
+
+  team-a/specs/03_asset_formats_and_tiles.md
+    - §9.1 從「待解問題」改為「2026-06-06 已解開」
+    - 加上完整反推路徑紀錄與驗證結果
+
+  docs/PHASE_LOG.md 新增條目
+
+# 對 M3 的解除阻塞
+
+M3 (.RSC + CvPc decode + blit) 之前等 spec 03 §9.1。現已解,
+**M3 可立即動工**。Team B 從 spec 03 §3.10 寫 res/rsrcfork.c +
+gfx/cvpc.c, 演算法重寫 (clean-room: 不抄 extract_tiles.py 的
+Python 實作, 從 spec 描述重做 C 版本)。
+
+# 不需執行 #2 (試其他 LZW variants) 與 #3 (stub fallback)
+
+#1 (Ghidra walk LoadGifPicture) 成功後 #2 #3 都不必走。
