@@ -58,10 +58,13 @@ tools/                         Asset extraction scripts (EDILZSS2 etc., MIT)
 
 ## Provenance
 
-`CIV.EXE` SHA/MD5 reference (user-supplied binary, never committed):
-- Size: 832,512 bytes
-- MD5: `336FF64650F6391C65A8B804ADFC31C9`
-- NE signature confirmed at offset `0x60`
+`CIV.EXE` reference (user-supplied binary, never committed):
+- Size: 833,024 bytes (pristine 1993 original)
+- MD5: `DCC4399E57AEFE490914AC2F5A95CD92`
+- SHA-256: `F606568096376F8ED8989D74D17F36AB3B18ADFA7A2D56D89A4F29BEE5D94672`
+- NE signature confirmed at offset `0x60`; module name `WINCIV`; description `CIVILIZATION for Windows`
+
+The Track A Big5-patched build (`MODULE_DESC = '文明帝國 視窗版'`, 832,512 bytes, MD5 `336FF646…`) is **not** the work-of-record and is never disassembled for this project.
 
 ## What this project does **not** do
 

@@ -1,0 +1,38 @@
+Spec 00: NE structure, dependencies, exported callbacks
+
+Pristine 1993 CIVILIZATION for Windows binary identified at
+D:\03_game_tmp\win31\C\MPS\CIVWIN\CIV.EXE
+  size 833,024 bytes
+  MD5  DCC4399E57AEFE490914AC2F5A95CD92
+  SHA  F606568096376F8ED8989D74D17F36AB3B18ADFA7A2D56D89A4F29BEE5D94672
+
+Team A spec 00 covers, from the NE header alone:
+
+- 133 segments (~69 code + ~63 data + 1 autodata at segment 133)
+- 6 Win16 imports (KERNEL, USER, GDI, WIN87EM, MMSYSTEM, COMMDLG) -
+  the complete external surface the SDL2 reimplementation must
+  replace
+- 11 exported callbacks: WDWMAPPROC / WDWSMMAPPROC / WDWSTATUSPROC
+  (three top-level windows), TIMERPROC, DLGPROC / CIVDIALOGPROC, plus
+  the RANDOM* subclasses and REGIONPROC
+- Resource directory: 24 RT_DIALOG (IDs 129-151 plus 666, 999, 2000),
+  1 RT_MENU, 16 RT_CURSOR, 1 RT_ICON, 1 RT_ACCELERATOR; no RT_STRING,
+  no RT_RCDATA, no RT_VERSION
+
+Companion artifacts:
+
+- team-a/tools/ne_dump.py - public-format NE dumper, no derivation
+  from the input binary beyond format-prescribed reads
+- team-a/tools/ghidra_analyze.sh - reproducible Ghidra headless run
+- team-a/dumps/00_ne_structure.txt - raw dumper output on pristine
+  CIV.EXE
+
+Also discovered the binary initially supplied at
+_sfx_build_civ1/game/CIV.EXE is the Track A Big5-patched build
+(MODULE_DESC reads "文明帝國 視窗版" in Big5; file size 832,512;
+MD5 336FF646...). README and PHASE_LOG corrected; the patched
+binary is not the work-of-record.
+
+Spec 00 sign-off pending. Ghidra auto-analysis of the pristine
+binary will feed spec 01 (compiler identification + per-API call
+inventory).
