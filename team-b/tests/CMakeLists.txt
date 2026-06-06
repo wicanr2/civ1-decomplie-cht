@@ -105,3 +105,8 @@ add_executable(test_tech test_tech.c)
 target_link_libraries(test_tech PRIVATE civ_core)
 add_test(NAME tech COMMAND test_tech)
 set_tests_properties(tech PROPERTIES TIMEOUT 10)
+
+add_executable(test_diplomat test_diplomat.c)
+target_link_libraries(test_diplomat PRIVATE civ_core)
+add_test(NAME diplomat COMMAND test_diplomat)
+set_tests_properties(diplomat PROPERTIES TIMEOUT 10)

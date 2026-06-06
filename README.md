@@ -6,6 +6,12 @@
 
 > 🎉 **科技研發完成 modal — 紀念中文化全條目皆完成**：花邊 frame + 36 px serif 「青銅器」標題 + 銅 1 字 icon + 「文明進展 / (取自埃及)」+ 解鎖列表 (貨幣 / 鐵器 / 方陣兵單位 / 巨像奇蹟)。對應 [`docs/TECH_DISCOVERY_SCREEN.md`](docs/TECH_DISCOVERY_SCREEN.md) design.
 
+| 伊莉莎白一世 (英格蘭) | 腓特烈大帝 (日耳曼) |
+|---|---|
+| ![](docs/screenshots/m11_diplomat_elizabeth_zh.png) | ![](docs/screenshots/m11_diplomat_frederick_zh.png) |
+
+> 🤝 **R18 M-diplomat — 外交訪問畫面繁中化**：對齊使用者提供的 `Elizabeth_I_PC_29.webp` / `Frederick_PC_29.webp` reference。3 段 layout (sky+mountain horizon → 領袖肖像+兩側 advisor → 棕色 parchment 對話框 + 兩側 spear ornament). 14 領袖 enum + 5 mood (Greeting/Demand Tribute/Offer Peace/Declare War/Propose Trade) + 客製對話文字 (「英格蘭女皇伊莉莎白一世向您致意……」/「我等至明智之日耳曼皇帝腓特烈大帝向您致意……」). 鍵盤 `D` 鍵 demo 觸發 Elizabeth GREETING.
+
 ## 專案目的
 
 從 1993 Windows 版 *Sid Meier's Civilization* 的二進位檔從頭反組譯並重寫。不參考任何 upstream 的 open source 程式庫（特別是不看 [OpenCiv1](https://codeberg.org/rhorvat/OpenCiv1) 或其衍生分支）。不 patch 原始 `CIV.EXE`。也不依賴任何 Win16 API（GDI / USER / MMSYSTEM 全部由 SDL2 取代）。
@@ -46,10 +52,11 @@
 | **M9-citytile** | city screen 背景升級: 外大底用 SPR32X32 真 ocean tile 重複貼 (`paint_tile_repeat`), 內 panel 仍 stipple (文字易讀). 對齊使用者新 reference 「背景有真 tile pattern 不是單色」 | ✅ | `m9_city_screen_ocean_tile.png` |
 | **M-techscreen** | tech discovery modal: 雙層花邊 frame (clean-room 自畫 8×8 pattern) + 大標題 (青銅器) + subtitle 文明進展 + (取自XX/自家研發) source 短語 + Allows 列表 (藍 後續 tech / 紅 unit / 綠 wonder/imp 各帶 16×16 mini sprite). 13 tech enum + 7 種 prereq DAG fill. 鍵盤 T 鍵 demo 觸發 BRONZE WORKING. ESC/Enter 關. | ✅ | `m9_tech_screen.png` |
 | **M10-i18n** | 全面繁中化 + UI polish: title 「文明帝國」 + 8 menu items 中文 + minimap 「世界地圖」 + status panel 雙層重排 (青/灰底, 中文欄位, 行距 18px) + city screen 背景純藍+微 stipple (取代 R15 ocean tile, 對齊 ROME reference) + tech screen 36px serif showcase + 銅 1字 icon + 雙寫粗體紀念版 | ✅ | `m10_main_zhtw.png` / `m10_city_screen_speckle.png` / `m10_tech_screen_showcase.png` |
+| **M11-diplomat** | 外交訪問畫面 (對齊 Elizabeth_I_PC_29 / Frederick_PC_29 reference): 3 段 layout (山地 horizon 自畫 + sky gradient + 領袖肖像 + 兩側 advisor; 棕 parchment 對話 + 兩側 spear ornament; 暗紅 serif 雙寫加粗對話文字). 14 領袖 enum + 5 mood + 領袖代表色 (Elizabeth 紅華服 / Frederick 藍軍服 + 銀白假髮) + 1 字 icon (英/德/羅/巴/法/埃...). 鍵盤 D 鍵 demo 觸發. test_diplomat 7 testcases. | ✅ | `m11_diplomat_elizabeth_zh.png` / `m11_diplomat_frederick_zh.png` |
 | **M6-full** | 真實戰鬥公式 (spec 07) + 城市生產 + RLL 存讀檔 | 🟡 阻 spec 06+07 | — |
 | **M7** | 奇蹟 + 外交 + 勝利條件 | ❌ | — |
 
-最後 ctest: 18/18 PASS，build 39/39 zero warning。
+最後 ctest: 19/19 PASS，build 41/41 zero warning。
 
 ## Clean-room 雙隊制度
 

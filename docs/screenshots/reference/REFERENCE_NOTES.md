@@ -12,6 +12,8 @@
 | `civ1_win_tech_discovery.png` | 使用者 2026-06-07 | tech discovery modal (BRONZE WORKING) | M-techscreen (R16+, design 已寫) |
 | `civ1_win_city_screen_rome.png` | 使用者 2026-06-07 | ROME 城市 (POP:100,000) w/ Pyramids + Great Library | R15 city_screen ocean tile bg |
 | `civ1_poster_collage.jpg` | 使用者 2026-06-07 | 多 era 大幅 marketing collage (logo + maps + Civilopedia) | 整體美術風格參考 |
+| `civ1_diplomat_elizabeth_pc29.webp` | 使用者 2026-06-07 | 伊莉莎白一世 GREETING (英格蘭領袖 PC #29) | R18 M-diplomat |
+| `civ1_diplomat_frederick_pc29.webp` | 使用者 2026-06-07 | 腓特烈大帝 GREETING (日耳曼領袖 PC #29) | R18 M-diplomat |
 
 ## 2026-06-07 使用者新提供 ✅ 已存
 
@@ -50,6 +52,24 @@ ROME 城市畫面 (有 Pyramids + Great Library). 比 `civ1_win_city_screen.png`
 - **背景不是單色 stipple** — 是**真實 SPR32X32 ocean/coast tile 重複貼**形成的紋路
 - 對應修正: R15 改 `paint_tile_repeat()` 用 OCEAN sprite (col 22 row 9) repeat
 - 之前 R10 的 2x2 stipple checker 不夠像
+
+### 4. Diplomat Visit — `civ1_diplomat_elizabeth_pc29.webp` / `civ1_diplomat_frederick_pc29.webp` ✅ (2026-06-07 第二批)
+
+外交訪問畫面 (PC #29 — Personality Constant 29 對應 first GREETING):
+
+**Layout 觀察** (對應 R18 M-diplomat 實作):
+- y 0..360 上半: 山地 horizon + sky gradient
+- 中央領袖大頭像 (Elizabeth 紅華服 / Frederick 藍軍服 + 銀白假髮)
+- 兩側 advisor 占位 (兩種裝束 — 灰袍 / 棕袍)
+- y 360..480 下半: 對話區
+  - 左右 spear (黑底 + 紅斜紋 + 銀色矛頭)
+  - 中央棕色 parchment + 暗紅 serif 對話文字
+  - parchment 底部劍紋 ornament
+
+**對應實作**:
+- 文字輸出: 對齊原英文 "Greetings from..." → "XX 向您致意……"
+- 領袖代表色: spec 06 §6.7 16 nation personality 配色
+- icon 字: 「英」/「德」(對齊 R17 tech_icon_char_zh 設計)
 
 ### 3. Civ1 Poster Collage — `civ1_poster_collage.jpg` ✅
 

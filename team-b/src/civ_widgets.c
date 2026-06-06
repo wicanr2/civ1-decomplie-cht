@@ -1,6 +1,7 @@
 #include "civ_widgets.h"
 #include "civ_game.h"
 #include "widgets/city_screen.h"
+#include "widgets/diplomat_screen.h"
 #include "widgets/map.h"
 #include "widgets/minimap.h"
 #include "widgets/status.h"
@@ -66,9 +67,11 @@ void civ_widgets_render_all(struct civ_game *g)
     if (g->status_w && g->status_w->visible && g->status_w->vt->render)
         g->status_w->vt->render(g->status_w, g->framebuffer);
 
-    /* R6 + R16: modal overlays — 蓋在所有 widget 上 */
+    /* R6 + R16 + R18: modal overlays — 蓋在所有 widget 上 */
     if (g->city_screen_open)
         civ_city_screen_render(g, g->framebuffer);
     if (g->tech_screen_open)
         civ_tech_screen_render(g, g->framebuffer);
+    if (g->diplomat_screen_open)
+        civ_diplomat_screen_render(g, g->framebuffer);
 }

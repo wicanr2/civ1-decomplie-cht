@@ -12,6 +12,7 @@
 #include "gfx/present.h"
 #include "gfx/surface.h"
 #include "text/glyph_cache.h"
+#include "world/diplomat.h"
 #include "world/sprite_sheet.h"
 #include "world/tech.h"
 #include "world/world.h"
@@ -70,6 +71,10 @@ struct civ_game {
     /* R16 M-techscreen: tech discovery modal ────────── */
     bool                        tech_screen_open;   /* true 時 tech_screen 蓋全螢幕 */
     civ_tech_discovery_event_t  tech_screen_event;  /* 當前顯示的 event payload */
+
+    /* R18 M-diplomat: diplomat visit modal ───────────── */
+    bool                        diplomat_screen_open;  /* true 時 diplomat_screen 蓋全螢幕 */
+    civ_diplomat_event_t        diplomat_screen_event; /* 當前顯示的 領袖 + mood */
 };
 
 #endif /* CIV_GAME_H */

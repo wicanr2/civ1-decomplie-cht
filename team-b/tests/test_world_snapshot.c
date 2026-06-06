@@ -16,7 +16,9 @@
 #include "text/glyph_cache.h"
 #include "text/text_out.h"
 #include "widgets/city_screen.h"
+#include "widgets/diplomat_screen.h"
 #include "widgets/tech_screen.h"
+#include "world/diplomat.h"
 #include "world/tech.h"
 
 #include <SDL.h>
@@ -206,10 +208,32 @@ int main(int argc, char **argv)
         g.modal_lock       = true;
     }
 
+    /* R18 demo: 若 argv 帶 "diplomat-XXX" 則打開 diplomat visit modal */
+    if (argc > 2 && strncmp(argv[2], "diplomat-", 9) == 0) {
+        if (file_exists(CIV_DEFAULT_FONT_PATH)) {
+            if (g.font_title) civ_font_close(g.font_title);
+            g.font_title = civ_font_open(CIV_DEFAULT_FONT_PATH, 36);
+        }
+        civ_diplomat_event_t *dev = &g.diplomat_screen_event;
+        memset(dev, 0, sizeof *dev);
+        if (strcmp(argv[2], "diplomat-elizabeth") == 0)
+            dev->leader = CIV_LEADER_ELIZABETH;
+        else if (strcmp(argv[2], "diplomat-frederick") == 0)
+            dev->leader = CIV_LEADER_FREDERICK;
+        else if (strcmp(argv[2], "diplomat-tzu_hsi") == 0)
+            dev->leader = CIV_LEADER_TZU_HSI;
+        else
+            dev->leader = CIV_LEADER_CAESAR;
+        dev->mood = CIV_DIPLOMAT_GREETING;
+        g.diplomat_screen_open = true;
+        g.modal_lock           = true;
+    }
+
     paint_background(&g);
     civ_widgets_render_all(&g);
     civ_city_screen_render(&g, g.framebuffer);
     civ_tech_screen_render(&g, g.framebuffer);
+    civ_diplomat_screen_render(&g, g.framebuffer);
 
     const char *out_path = argc > 1 ? argv[1] : "m5_world.ppm";
     write_ppm(out_path, g.framebuffer, &g.palette);

@@ -3,6 +3,7 @@
 #include "../gfx/primitive.h"
 #include "../gfx/surface.h"
 #include "../text/text_out.h"
+#include "../world/diplomat.h"
 #include "../world/sprite_sheet.h"
 #include "../world/tech.h"
 #include "../world/world.h"
@@ -105,6 +106,12 @@ static civ_evt_result_t on_key_down(civ_widget_t *w, SDL_Event *ev)
             break;
         case SDLK_RETURN:
         case SDLK_KP_ENTER: {
+            /* R18: diplomat_screen 開啟時 Enter 關閉 */
+            if (w->game->diplomat_screen_open) {
+                w->game->diplomat_screen_open = false;
+                w->game->modal_lock           = false;
+                break;
+            }
             /* R16: tech_screen 開啟時 Enter 關閉 */
             if (w->game->tech_screen_open) {
                 w->game->tech_screen_open = false;
@@ -132,8 +139,21 @@ static civ_evt_result_t on_key_down(civ_widget_t *w, SDL_Event *ev)
             w->game->modal_lock       = true;
             break;
         }
+        case SDLK_d: {
+            /* R18 demo: 按 D → 伊莉莎白 GREETING modal */
+            civ_diplomat_event_t *dev = &w->game->diplomat_screen_event;
+            memset(dev, 0, sizeof *dev);
+            dev->leader = CIV_LEADER_ELIZABETH;
+            dev->mood   = CIV_DIPLOMAT_GREETING;
+            w->game->diplomat_screen_open = true;
+            w->game->modal_lock           = true;
+            break;
+        }
         case SDLK_ESCAPE:
-            if (w->game->tech_screen_open) {
+            if (w->game->diplomat_screen_open) {
+                w->game->diplomat_screen_open = false;
+                w->game->modal_lock           = false;
+            } else if (w->game->tech_screen_open) {
                 w->game->tech_screen_open = false;
                 w->game->modal_lock       = false;
             } else if (w->game->city_screen_open) {
