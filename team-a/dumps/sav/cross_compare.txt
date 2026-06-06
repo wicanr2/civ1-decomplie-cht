@@ -1,0 +1,573 @@
+# Cross-compare 107194 byte dumps from 3 SAVs
+# Sources: HAM1000B.bin, HAM2000B.bin, HAM3000B.bin
+
+## Byte category stats
+  C (constant across 3):  105926 (98.8%)
+  V (all different):         127 (0.1%)
+  M (mixed 2-of-3):         1141 (1.1%)
+
+## Long constant stretches (>= 16 byte, top 20 by length)
+  0x0E0C5 len=22811  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00...
+  0x156DF len=19419  00 00 00 0B 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00...
+  0x03AE0 len= 8545  00 00 00 00 00 FF 00 00 00 00 00 00 00 00 00 00 00 FF 00 00 00 00 00 00...
+  0x06A95 len= 8373  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00...
+  0x0186A len= 5669  00 00 00 00 00 00 FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF 00...
+  0x0A893 len= 5272  00 00 00 02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00...
+  0x08C29 len= 4440  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00...
+  0x034CA len= 1498  00 00 00 FF 00 00 00 00 00 00 00 00 00 00 00 FF 00 00 00 00 00 00 00 00...
+  0x0A0A3 len= 1477  00 00 00 00 00 00 00 00 00 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF...
+  0x02EE2 len= 1464  00 00 00 FF 00 00 00 00 00 00 00 00 00 00 00 FF 00 00 00 00 00 00 00 00...
+  0x14032 len= 1279  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00...
+  0x06447 len= 1155  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00...
+  0x00EAE len= 1125  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00...
+  0x01316 len=  979  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00...
+  0x00011 len=  771  00 41 74 74 69 6C 61 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00...
+  0x14670 len=  639  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00...
+  0x09E2A len=  602  FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF 00 FF FF FF FF FF FF FF...
+  0x00BC5 len=  543  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00...
+  0x13D9E len=  335  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00...
+  0x003DF len=  331  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00...
+
+## Long all-different stretches (>= 8 byte, top 20)
+
+## Candidate monotone LE16 fields (HAM3<HAM2<HAM1 = earlier→later, diff > 0 < 1024)
+  0x00002 LE16: HAM3=50 HAM2=100 HAM1=150  Δ=100
+  0x0000B LE16: HAM3=244 HAM2=248 HAM1=252  Δ=8
+  0x00314 LE16: HAM3=32 HAM2=104 HAM1=286  Δ=254
+  0x00316 LE16: HAM3=146 HAM2=447 HAM1=875  Δ=729
+  0x00318 LE16: HAM3=8 HAM2=61 HAM1=189  Δ=181
+  0x00324 LE16: HAM3=16 HAM2=36 HAM1=117  Δ=101
+  0x00326 LE16: HAM3=12 HAM2=43 HAM1=92  Δ=80
+  0x003DB LE16: HAM3=511 HAM2=512 HAM1=1023  Δ=512
+  0x003DC LE16: HAM3=1 HAM2=2 HAM1=3  Δ=2
+  0x006B4 LE16: HAM3=2 HAM2=5 HAM1=9  Δ=7
+  0x006B6 LE16: HAM3=4 HAM2=10 HAM1=17  Δ=13
+  0x006B8 LE16: HAM3=3 HAM2=6 HAM1=10  Δ=7
+  0x006CC LE16: HAM3=1 HAM2=129 HAM1=163  Δ=162
+  0x006CE LE16: HAM3=0 HAM2=3 HAM1=579  Δ=579
+  0x006E0 LE16: HAM3=0 HAM2=3 HAM1=163  Δ=163
+  0x006E2 LE16: HAM3=1 HAM2=513 HAM1=579  Δ=578
+  0x008A3 LE16: HAM3=256 HAM2=512 HAM1=768  Δ=512
+  0x008A4 LE16: HAM3=1 HAM2=2 HAM1=3  Δ=2
+  0x008A5 LE16: HAM3=768 HAM2=1024 HAM1=1536  Δ=768
+  0x008A6 LE16: HAM3=3 HAM2=4 HAM1=6  Δ=3
+  0x008A8 LE16: HAM3=1 HAM2=2 HAM1=5  Δ=4
+  0x008B8 LE16: HAM3=1 HAM2=2 HAM1=5  Δ=4
+  0x008C3 LE16: HAM3=256 HAM2=768 HAM1=1024  Δ=768
+  0x008C4 LE16: HAM3=1 HAM2=3 HAM1=4  Δ=3
+  0x008C8 LE16: HAM3=1 HAM2=3 HAM1=5  Δ=4
+  0x008E4 LE16: HAM3=2 HAM2=6 HAM1=8  Δ=6
+  0x008E6 LE16: HAM3=5 HAM2=10 HAM1=24  Δ=19
+  0x008F8 LE16: HAM3=2 HAM2=5 HAM1=12  Δ=10
+  0x00924 LE16: HAM3=2 HAM2=6 HAM1=8  Δ=6
+  0x00926 LE16: HAM3=5 HAM2=10 HAM1=24  Δ=19
+  0x009C4 LE16: HAM3=1 HAM2=3 HAM1=7  Δ=6
+  0x00AC4 LE16: HAM3=1 HAM2=2 HAM1=5  Δ=4
+  0x00B83 LE16: HAM3=256 HAM2=512 HAM1=768  Δ=512
+  0x00B84 LE16: HAM3=1 HAM2=2 HAM1=3  Δ=2
+  0x00BA7 LE16: HAM3=768 HAM2=1024 HAM1=1536  Δ=768
+  0x00BA8 LE16: HAM3=3 HAM2=4 HAM1=6  Δ=3
+  0x00BC4 LE16: HAM3=1 HAM2=2 HAM1=5  Δ=4
+  0x016EB LE16: HAM3=768 HAM2=1022 HAM1=1274  Δ=506
+  0x016F2 LE16: HAM3=22 HAM2=72 HAM1=200  Δ=178
+  0x0170A LE16: HAM3=4 HAM2=7 HAM1=24  Δ=20
+  0x0171A LE16: HAM3=1 HAM2=5 HAM1=37  Δ=36
+  0x01726 LE16: HAM3=10 HAM2=41 HAM1=52  Δ=42
+  0x01736 LE16: HAM3=0 HAM2=2 HAM1=51  Δ=51
+  0x0173D LE16: HAM3=1 HAM2=4 HAM1=6  Δ=5
+  0x01740 LE16: HAM3=514 HAM2=516 HAM1=522  Δ=8
+  0x01742 LE16: HAM3=20 HAM2=30 HAM1=33  Δ=13
+  0x01758 LE16: HAM3=266 HAM2=778 HAM1=1034  Δ=768
+  0x01759 LE16: HAM3=1 HAM2=3 HAM1=4  Δ=3
+  0x0175C LE16: HAM3=515 HAM2=516 HAM1=519  Δ=4
+  0x01760 LE16: HAM3=7 HAM2=31 HAM1=77  Δ=70
+  0x01763 LE16: HAM3=4096 HAM2=4097 HAM1=4225  Δ=129
+  0x0177A LE16: HAM3=0 HAM2=8 HAM1=58  Δ=58
+  0x0177C LE16: HAM3=0 HAM2=61 HAM1=115  Δ=115
+  0x01790 LE16: HAM3=255 HAM2=266 HAM1=778  Δ=523
+  0x01791 LE16: HAM3=0 HAM2=1 HAM1=3  Δ=3
+  0x01794 LE16: HAM3=0 HAM2=770 HAM1=772  Δ=772
+  0x01796 LE16: HAM3=0 HAM2=8 HAM1=48  Δ=48
+  0x01798 LE16: HAM3=0 HAM2=8 HAM1=50  Δ=50
+  0x0179A LE16: HAM3=0 HAM2=64 HAM1=68  Δ=68
+  0x0179C LE16: HAM3=0 HAM2=16 HAM1=20  Δ=20
+  0x017A5 LE16: HAM3=0 HAM2=255 HAM1=767  Δ=767
+  0x017AC LE16: HAM3=255 HAM2=256 HAM1=1024  Δ=769
+  0x017AD LE16: HAM3=0 HAM2=1 HAM1=4  Δ=4
+  0x017B0 LE16: HAM3=0 HAM2=514 HAM1=519  Δ=519
+  0x017B2 LE16: HAM3=0 HAM2=2 HAM1=36  Δ=36
+  0x017B4 LE16: HAM3=0 HAM2=1 HAM1=61  Δ=61
+  0x034B4 LE16: HAM3=65280 HAM2=65311 HAM1=65323  Δ=43
+  0x060E1 LE16: HAM3=0 HAM2=2 HAM1=514  Δ=514
+  0x06A3E LE16: HAM3=0 HAM2=8 HAM1=10  Δ=10
+  0x08B4A LE16: HAM3=58 HAM2=119 HAM1=221  Δ=163
+  0x0A084 LE16: HAM3=4 HAM2=10 HAM1=17  Δ=13
+  0x0A891 LE16: HAM3=256 HAM2=512 HAM1=768  Δ=512
+  0x0A892 LE16: HAM3=1 HAM2=2 HAM1=3  Δ=2
+  0x0BD80 LE16: HAM3=0 HAM2=1 HAM1=257  Δ=257
+  0x0C001 LE16: HAM3=0 HAM2=9 HAM1=257  Δ=257
+  0x0C003 LE16: HAM3=0 HAM2=9 HAM1=257  Δ=257
+  0x0C23E LE16: HAM3=0 HAM2=768 HAM1=771  Δ=771
+  0x0C50E LE16: HAM3=0 HAM2=768 HAM1=771  Δ=771
+  0x0C64E LE16: HAM3=0 HAM2=768 HAM1=771  Δ=771
+  0x0C78E LE16: HAM3=0 HAM2=768 HAM1=771  Δ=771
+  0x0C78F LE16: HAM3=0 HAM2=3 HAM1=771  Δ=771
+  0x0C8CE LE16: HAM3=0 HAM2=768 HAM1=771  Δ=771
+  0x0CEA3 LE16: HAM3=0 HAM2=2 HAM1=514  Δ=514
+  0x0CF0F LE16: HAM3=0 HAM2=3 HAM1=771  Δ=771
+  0x0CFE3 LE16: HAM3=0 HAM2=2 HAM1=514  Δ=514
+  0x15411 LE16: HAM3=0 HAM2=8 HAM1=12  Δ=12
+  0x15461 LE16: HAM3=0 HAM2=8 HAM1=12  Δ=12
+
+## Reverse: HAM1<HAM2<HAM3 (in case filename ordering is forward)
+
+## Candidate monotone LE32 fields (any direction, diff > 0 < 65536)
+  0x00002 LE32 HAM3<2<1: 131122 → 131172 → 131222
+  0x0000A LE32 HAM3<2<1: 62536 → 63536 → 64536
+  0x00317 LE32 HAM3<2<1: 2048 → 15617 → 48387
+  0x00318 LE32 HAM3<2<1: 8 → 61 → 189
+  0x006B7 LE32 HAM3<2<1: 768 → 1536 → 2560
+  0x006B8 LE32 HAM3<2<1: 3 → 6 → 10
+  0x008A7 LE32 HAM3<2<1: 256 → 512 → 1280
+  0x008A8 LE32 HAM3<2<1: 1 → 2 → 5
+  0x008B7 LE32 HAM3<2<1: 256 → 512 → 1280
+  0x008B8 LE32 HAM3<2<1: 1 → 2 → 5
+  0x008C8 LE32 HAM3<2<1: 65537 → 65539 → 65541
+  0x008F7 LE32 HAM3<2<1: 512 → 1280 → 3072
+  0x008F8 LE32 HAM3<2<1: 2 → 5 → 12
+  0x009C3 LE32 HAM3<2<1: 256 → 768 → 1792
+  0x009C4 LE32 HAM3<2<1: 1 → 3 → 7
+  0x00AC3 LE32 HAM3<2<1: 256 → 512 → 1280
+  0x00AC4 LE32 HAM3<2<1: 1 → 2 → 5
+  0x00B83 LE32 HAM3<2<1: 256 → 512 → 768
+  0x00B84 LE32 HAM3<2<1: 1 → 2 → 3
+  0x00BA7 LE32 HAM3<2<1: 768 → 1024 → 1536
+  0x00BA8 LE32 HAM3<2<1: 3 → 4 → 6
+  0x00BC3 LE32 HAM3<2<1: 256 → 512 → 1280
+  0x00BC4 LE32 HAM3<2<1: 1 → 2 → 5
+  0x016F2 LE32 HAM3<2<1: 1048598 → 1048648 → 1048776
+  0x01719 LE32 HAM3<2<1: 511 → 1535 → 9727
+  0x0171A LE32 HAM3<2<1: 1 → 5 → 37
+  0x01735 LE32 HAM3<2<1: 255 → 767 → 13311
+  0x01747 LE32 HAM3<2<1: 4096 → 5248 → 5280
+  0x01762 LE32 HAM3<2<1: 1048578 → 1048850 → 1081618
+  0x01763 LE32 HAM3<2<1: 4096 → 4097 → 4225
+  0x034B3 LE32 HAM3<2<1: 16711680 → 16719639 → 16722713
+  0x034B4 LE32 HAM3<2<1: 65280 → 65311 → 65323
+  0x0A083 LE32 HAM3<2<1: 1024 → 2560 → 4352
+  0x0A084 LE32 HAM3<2<1: 4 → 10 → 17
+  0x0A891 LE32 HAM3<2<1: 256 → 512 → 768
+  0x0A892 LE32 HAM3<2<1: 1 → 2 → 3
+
+## All variable (V-category) byte positions and values
+  0x00002: HAM1=0x96 HAM2=0x64 HAM3=0x32
+  0x0000A: HAM1=0x18 HAM2=0x30 HAM3=0x48
+  0x0000B: HAM1=0xFC HAM2=0xF8 HAM3=0xF4
+  0x00010: HAM1=0x19 HAM2=0x02 HAM3=0x07
+  0x00314: HAM1=0x1E HAM2=0x68 HAM3=0x20
+  0x00316: HAM1=0x6B HAM2=0xBF HAM3=0x92
+  0x00317: HAM1=0x03 HAM2=0x01 HAM3=0x00
+  0x00318: HAM1=0xBD HAM2=0x3D HAM3=0x08
+  0x00324: HAM1=0x75 HAM2=0x24 HAM3=0x10
+  0x00326: HAM1=0x5C HAM2=0x2B HAM3=0x0C
+  0x00328: HAM1=0x2D HAM2=0x0E HAM3=0x1B
+  0x003DC: HAM1=0x03 HAM2=0x02 HAM3=0x01
+  0x0059A: HAM1=0x02 HAM2=0x00 HAM3=0x01
+  0x006B4: HAM1=0x09 HAM2=0x05 HAM3=0x02
+  0x006B6: HAM1=0x11 HAM2=0x0A HAM3=0x04
+  0x006B8: HAM1=0x0A HAM2=0x06 HAM3=0x03
+  0x006CC: HAM1=0xA3 HAM2=0x81 HAM3=0x01
+  0x006CE: HAM1=0x43 HAM2=0x03 HAM3=0x00
+  0x006D6: HAM1=0x87 HAM2=0x83 HAM3=0x01
+  0x006D7: HAM1=0x12 HAM2=0x02 HAM3=0x00
+  0x006D8: HAM1=0x5F HAM2=0x43 HAM3=0x01
+  0x006E0: HAM1=0xA3 HAM2=0x03 HAM3=0x00
+  0x008A4: HAM1=0x03 HAM2=0x02 HAM3=0x01
+  0x008A6: HAM1=0x06 HAM2=0x04 HAM3=0x03
+  0x008A8: HAM1=0x05 HAM2=0x02 HAM3=0x01
+  0x008B8: HAM1=0x05 HAM2=0x02 HAM3=0x01
+  0x008C4: HAM1=0x04 HAM2=0x03 HAM3=0x01
+  0x008C8: HAM1=0x05 HAM2=0x03 HAM3=0x01
+  0x008E4: HAM1=0x08 HAM2=0x06 HAM3=0x02
+  0x008E6: HAM1=0x18 HAM2=0x0A HAM3=0x05
+  0x008F6: HAM1=0x06 HAM2=0x04 HAM3=0x07
+  0x008F8: HAM1=0x0C HAM2=0x05 HAM3=0x02
+  0x00924: HAM1=0x08 HAM2=0x06 HAM3=0x02
+  0x00926: HAM1=0x18 HAM2=0x0A HAM3=0x05
+  0x009C4: HAM1=0x07 HAM2=0x03 HAM3=0x01
+  0x00AA8: HAM1=0x04 HAM2=0x01 HAM3=0x05
+  0x00AC4: HAM1=0x05 HAM2=0x02 HAM3=0x01
+  0x00B84: HAM1=0x03 HAM2=0x02 HAM3=0x01
+  0x00BA8: HAM1=0x06 HAM2=0x04 HAM3=0x03
+  0x00BC4: HAM1=0x05 HAM2=0x02 HAM3=0x01
+  0x016EB: HAM1=0xFA HAM2=0xFE HAM3=0x00
+  0x016EE: HAM1=0x1A HAM2=0x2B HAM3=0x10
+  0x016F0: HAM1=0x18 HAM2=0x0C HAM3=0x10
+  0x016F2: HAM1=0xC8 HAM2=0x48 HAM3=0x16
+  0x01705: HAM1=0x04 HAM2=0x02 HAM3=0x03
+  0x01707: HAM1=0xFB HAM2=0xFA HAM3=0x0A
+  0x01708: HAM1=0x06 HAM2=0x03 HAM3=0x04
+  0x0170A: HAM1=0x18 HAM2=0x07 HAM3=0x04
+  0x0171A: HAM1=0x25 HAM2=0x05 HAM3=0x01
+  0x01726: HAM1=0x34 HAM2=0x29 HAM3=0x0A
+  0x01728: HAM1=0x09 HAM2=0x04 HAM3=0x28
+  0x01736: HAM1=0x33 HAM2=0x02 HAM3=0x00
+  0x0173D: HAM1=0x06 HAM2=0x04 HAM3=0x01
+  0x0173F: HAM1=0xE4 HAM2=0xFF HAM3=0xFE
+  0x01740: HAM1=0x0A HAM2=0x04 HAM3=0x02
+  0x01742: HAM1=0x21 HAM2=0x1E HAM3=0x14
+  0x01744: HAM1=0x60 HAM2=0xB3 HAM3=0x14
+  0x01746: HAM1=0x4A HAM2=0x48 HAM3=0x40
+  0x01747: HAM1=0xA0 HAM2=0x80 HAM3=0x00
+  0x01759: HAM1=0x04 HAM2=0x03 HAM3=0x01
+  0x0175B: HAM1=0xF2 HAM2=0xFE HAM3=0x00
+  0x0175C: HAM1=0x07 HAM2=0x04 HAM3=0x03
+  0x0175E: HAM1=0x04 HAM2=0x00 HAM3=0x0E
+  0x01760: HAM1=0x4D HAM2=0x1F HAM3=0x07
+  0x01763: HAM1=0x81 HAM2=0x01 HAM3=0x00
+  0x01777: HAM1=0xFA HAM2=0xFD HAM3=0x00
+  0x0177A: HAM1=0x3A HAM2=0x08 HAM3=0x00
+  0x0177C: HAM1=0x73 HAM2=0x3D HAM3=0x00
+  0x01791: HAM1=0x03 HAM2=0x01 HAM3=0x00
+  0x01794: HAM1=0x04 HAM2=0x02 HAM3=0x00
+  0x01796: HAM1=0x30 HAM2=0x08 HAM3=0x00
+  0x01798: HAM1=0x32 HAM2=0x08 HAM3=0x00
+  0x0179A: HAM1=0x44 HAM2=0x40 HAM3=0x00
+  0x0179C: HAM1=0x14 HAM2=0x10 HAM3=0x00
+  0x017AD: HAM1=0x04 HAM2=0x01 HAM3=0x00
+  0x017AF: HAM1=0xF8 HAM2=0xFE HAM3=0x00
+  0x017B0: HAM1=0x07 HAM2=0x02 HAM3=0x00
+  0x017B2: HAM1=0x24 HAM2=0x02 HAM3=0x00
+  0x017B4: HAM1=0x3D HAM2=0x01 HAM3=0x00
+  0x017B7: HAM1=0x24 HAM2=0x04 HAM3=0x00
+  0x02EBF: HAM1=0x36 HAM2=0x29 HAM3=0x00
+  0x02EC0: HAM1=0x15 HAM2=0x12 HAM3=0x00
+  0x02EC4: HAM1=0xFF HAM2=0x37 HAM3=0x00
+  0x02EC5: HAM1=0x25 HAM2=0x15 HAM3=0x00
+  0x02EC6: HAM1=0xFF HAM2=0x04 HAM3=0x00
+  0x02ECB: HAM1=0x2C HAM2=0x27 HAM3=0x00
+  0x02ED1: HAM1=0x13 HAM2=0x12 HAM3=0x00
+  0x034A6: HAM1=0x28 HAM2=0xA0 HAM3=0x20
+  0x034A7: HAM1=0x1B HAM2=0x19 HAM3=0x1A
+  0x034A8: HAM1=0x24 HAM2=0x22 HAM3=0x23
+  0x034A9: HAM1=0x03 HAM2=0x00 HAM3=0x0A
+  0x034B3: HAM1=0x19 HAM2=0x17 HAM3=0x00
+  0x034B4: HAM1=0x2B HAM2=0x1F HAM3=0x00
+  0x034BD: HAM1=0x0C HAM2=0x01 HAM3=0x00
+  0x034BF: HAM1=0x14 HAM2=0x17 HAM3=0x00
+  0x034C0: HAM1=0x27 HAM2=0x25 HAM3=0x00
+  0x03AA7: HAM1=0x33 HAM2=0x37 HAM3=0x00
+  0x03AA8: HAM1=0x14 HAM2=0x15 HAM3=0x00
+  0x03AAD: HAM1=0x12 HAM2=0x1B HAM3=0x00
+  0x03AB3: HAM1=0x3A HAM2=0x35 HAM3=0x00
+  0x03AB4: HAM1=0x25 HAM2=0x1C HAM3=0x00
+  0x03AB5: HAM1=0x01 HAM2=0x00 HAM3=0xFF
+  0x03AB8: HAM1=0xFF HAM2=0x38 HAM3=0x00
+  0x03AB9: HAM1=0x15 HAM2=0x23 HAM3=0x00
+  0x03ABA: HAM1=0xFF HAM2=0x04 HAM3=0x00
+  0x03ABE: HAM1=0x18 HAM2=0x04 HAM3=0x00
+  0x062D7: HAM1=0x0A HAM2=0x08 HAM3=0x00
+  0x06309: HAM1=0x0A HAM2=0x08 HAM3=0x00
+  0x0630A: HAM1=0x0A HAM2=0x08 HAM3=0x00
+  0x0633A: HAM1=0x0A HAM2=0x08 HAM3=0x00
+  0x0633B: HAM1=0x0A HAM2=0x08 HAM3=0x00
+  0x0633C: HAM1=0x0A HAM2=0x08 HAM3=0x00
+  0x0636C: HAM1=0x0A HAM2=0x08 HAM3=0x00
+  0x0636D: HAM1=0x0A HAM2=0x08 HAM3=0x00
+  0x0636E: HAM1=0x0B HAM2=0x09 HAM3=0x00
+  0x06A3E: HAM1=0x0A HAM2=0x08 HAM3=0x00
+  0x08B4A: HAM1=0xDD HAM2=0x77 HAM3=0x3A
+  0x0A084: HAM1=0x11 HAM2=0x0A HAM3=0x04
+  0x0A892: HAM1=0x03 HAM2=0x02 HAM3=0x01
+  0x0C001: HAM1=0x01 HAM2=0x09 HAM3=0x00
+  0x0C003: HAM1=0x01 HAM2=0x09 HAM3=0x00
+  0x0C0FF: HAM1=0x03 HAM2=0x08 HAM3=0x0B
+  0x0C741: HAM1=0x03 HAM2=0x08 HAM3=0x0C
+  0x0D3F3: HAM1=0x02 HAM2=0x0A HAM3=0x00
+  0x0D7B1: HAM1=0x02 HAM2=0x0A HAM3=0x00
+  0x15411: HAM1=0x0C HAM2=0x08 HAM3=0x00
+  0x15461: HAM1=0x0C HAM2=0x08 HAM3=0x00
+
+## ASCII string-like regions in HAM1 (>= 4 printable ASCII chars)
+  0x00012 len=6: 'Attila'
+  0x00032 len=6: 'Caesar'
+  0x00052 len=9: 'Hammurabi'
+  0x00072 len=8: 'Napoleon'
+  0x00092 len=9: 'Montezuma'
+  0x000B2 len=6: 'Xerxes'
+  0x000D2 len=7: 'Saladin'
+  0x000F2 len=13: 'Suppiluliumas'
+  0x00112 len=10: 'Barbarians'
+  0x00132 len=6: 'Romans'
+  0x00152 len=11: 'Babylonians'
+  0x00172 len=6: 'French'
+  0x00192 len=9: 'Egyptians'
+  0x001B2 len=9: 'Americans'
+  0x001D2 len=6: 'Greeks'
+  0x001F2 len=7: 'Mongols'
+  0x00212 len=9: 'Barbarian'
+  0x00232 len=5: 'Roman'
+  0x00252 len=10: 'Babylonian'
+  0x00272 len=6: 'French'
+  0x00292 len=8: 'Egyptian'
+  0x002B2 len=8: 'American'
+  0x002D2 len=5: 'Greek'
+  0x002F2 len=9: 'Mongolian'
+  0x06B4A len=4: 'Rome'
+  0x06B6A len=8: 'Caesarea'
+  0x06B8A len=8: 'Carthage'
+  0x06BAA len=9: 'Nicopolis'
+  0x06BCA len=9: 'Byzantium'
+  0x06BEA len=10: 'Brundisium'
+  0x06C0A len=8: 'Syracuse'
+  0x06C2A len=7: 'Antioch'
+  0x06C4A len=7: 'Palmyra'
+  0x06C6A len=6: 'Cyrene'
+  0x06C8A len=7: 'Gordion'
+  0x06CAA len=5: 'Tyrus'
+  0x06CCA len=9: 'Jerusalem'
+  0x06CEA len=8: 'Seleucia'
+  0x06D0A len=7: 'Ravenna'
+  0x06D2A len=8: 'Artaxata'
+  0x06D4A len=7: 'Babylon'
+  0x06D6A len=5: 'Sumer'
+  0x06D8A len=4: 'Uruk'
+  0x06DAA len=7: 'Nineveh'
+  0x06DCA len=5: 'Ashur'
+  0x06DEA len=6: 'Ellipi'
+  0x06E0A len=5: 'Akkad'
+  0x06E2A len=5: 'Eridu'
+  0x06E4A len=4: 'Kish'
+  0x06E6A len=6: 'Nippur'
+  0x06E8A len=9: 'Shuruppak'
+  0x06EAA len=7: 'Zariqum'
+  0x06ECA len=6: 'Izibia'
+  0x06EEA len=6: 'Nimrud'
+  0x06F0A len=6: 'Arbela'
+  0x06F2A len=5: 'Zamua'
+  0x06F4A len=6: 'Berlin'
+  0x06F6A len=7: 'Leipzig'
+  0x06F8A len=7: 'Hamburg'
+  0x06FAA len=6: 'Bremen'
+  0x06FCA len=9: 'Frankfurt'
+  0x06FEA len=4: 'Bonn'
+  0x0700A len=9: 'Nuremberg'
+  0x0702A len=7: 'Cologne'
+  0x0704A len=8: 'Hannover'
+  0x0706A len=6: 'Munich'
+  0x0708A len=9: 'Stuttgart'
+  0x070AA len=10: 'Heidelburg'
+  0x070CA len=8: 'Salzburg'
+  0x070EA len=10: 'Konigsberg'
+  0x0710A len=8: 'Dortmund'
+  0x0712A len=11: 'Brandenburg'
+  0x0714A len=6: 'Thebes'
+  0x0716A len=7: 'Memphis'
+  0x0718A len=4: 'Oryx'
+  0x071AA len=10: 'Heliopolis'
+  0x071CA len=4: 'Gaza'
+  0x071EA len=10: 'Alexandria'
+  0x0720A len=6: 'Byblos'
+  0x0722A len=5: 'Cairo'
+  0x0724A len=6: 'Coptos'
+  0x0726A len=4: 'Edfu'
+  0x0728A len=6: 'Pithom'
+  0x072AA len=7: 'Busiris'
+  0x072CA len=8: 'Athribis'
+  0x072EA len=6: 'Mendes'
+  0x0730A len=5: 'Tanis'
+  0x0732A len=6: 'Abydos'
+  0x0734A len=10: 'Washington'
+  0x0736A len=8: 'New York'
+  0x0738A len=6: 'Boston'
+  0x073AA len=12: 'Philadelphia'
+  0x073CA len=7: 'Atlanta'
+  0x073EA len=7: 'Chicago'
+  0x0740A len=7: 'Buffalo'
+  0x0742A len=8: 'St.Louis'
+  0x0744A len=7: 'Detroit'
+  0x0746A len=11: 'New Orleans'
+  0x0748A len=9: 'Baltimore'
+  0x074AA len=6: 'Denver'
+  0x074CA len=10: 'Cincinnati'
+  0x074EA len=6: 'Dallas'
+  0x0750A len=11: 'Los Angeles'
+  0x0752A len=9: 'Las Vegas'
+  0x0754A len=6: 'Athens'
+  0x0756A len=6: 'Sparta'
+  0x0758A len=7: 'Corinth'
+  0x075AA len=6: 'Delphi'
+  0x075CA len=7: 'Eretria'
+  0x075EA len=9: 'Pharsalos'
+  0x0760A len=5: 'Argos'
+  0x0762A len=7: 'Mycenae'
+  0x0764A len=9: 'Herakleia'
+  0x0766A len=7: 'Antioch'
+  0x0768A len=7: 'Ephesos'
+  0x076AA len=6: 'Rhodes'
+  0x076CA len=7: 'Knossos'
+  0x076EA len=4: 'Troy'
+  0x0770A len=8: 'Pergamon'
+  0x0772A len=7: 'Miletos'
+  0x0774A len=5: 'Delhi'
+  0x0776A len=6: 'Bombay'
+  0x0778A len=6: 'Madras'
+  0x077AA len=9: 'Bangalore'
+  0x077CA len=8: 'Calcutta'
+  0x077EA len=6: 'Lahore'
+  0x0780A len=7: 'Karachi'
+  0x0782A len=8: 'Kolhapur'
+  0x0784A len=6: 'Jaipur'
+  0x0786A len=9: 'Hyderabad'
+  0x0788A len=6: 'Bengal'
+  0x078AA len=10: 'Chittagong'
+  0x078CA len=6: 'Punjab'
+  0x078EA len=5: 'Dacca'
+  0x0790A len=5: 'Indus'
+  0x0792A len=6: 'Ganges'
+  0x0794A len=6: 'Moscow'
+  0x0796A len=9: 'Leningrad'
+  0x0798A len=4: 'Kiev'
+  0x079AA len=5: 'Minsk'
+  0x079CA len=8: 'Smolensk'
+  0x079EA len=6: 'Odessa'
+  0x07A0A len=10: 'Sevastopol'
+  0x07A2A len=6: 'Tblisi'
+  0x07A4A len=10: 'Sverdlovsk'
+  0x07A6A len=7: 'Yakutsk'
+  0x07A8A len=11: 'Vladivostok'
+  0x07AAA len=8: 'Novograd'
+  0x07ACA len=11: 'Krasnoyarsk'
+  0x07AEA len=4: 'Riga'
+  0x07B0A len=6: 'Rostov'
+  0x07B2A len=9: 'Astrakhan'
+  0x07B4A len=8: 'Zimbabwe'
+  0x07B6A len=6: 'Ulundi'
+  0x07B8A len=6: 'Bapedi'
+  0x07BAA len=7: 'Hlobane'
+  0x07BCA len=11: 'Isandhlwana'
+  0x07BEA len=7: 'Intombe'
+  0x07C0A len=6: 'Mpondo'
+  0x07C2A len=5: 'Ngome'
+  0x07C4A len=5: 'Swazi'
+  0x07C6A len=6: 'Tugela'
+  0x07C8A len=6: 'Umtata'
+  0x07CAA len=8: 'Umfolozi'
+  0x07CCA len=9: 'Ibabanago'
+  0x07CEA len=7: 'Isipezi'
+  0x07D0A len=9: 'Amatikulu'
+  0x07D2A len=7: 'Zunguin'
+  0x07D4A len=5: 'Paris'
+  0x07D6A len=7: 'Orleans'
+  0x07D8A len=5: 'Lyons'
+  0x07DAA len=5: 'Tours'
+  0x07DCA len=8: 'Chartres'
+  0x07DEA len=8: 'Bordeaux'
+  0x07E0A len=5: 'Rouen'
+  0x07E2A len=7: 'Avignon'
+  0x07E4A len=10: 'Marseilles'
+  0x07E6A len=8: 'Grenoble'
+  0x07E8A len=5: 'Dijon'
+  0x07EAA len=6: 'Amiens'
+  0x07ECA len=9: 'Cherbourg'
+  0x07EEA len=8: 'Poitiers'
+  0x07F0A len=8: 'Toulouse'
+  0x07F2A len=7: 'Bayonne'
+  0x07F4A len=12: 'Tenochtitlan'
+  0x07F6A len=9: 'Chiauhtia'
+  0x07F8A len=11: 'Chapultepec'
+  0x07FAA len=8: 'Coatepec'
+  0x07FCA len=9: 'Ayotzinco'
+  0x07FEA len=10: 'Itzapalapa'
+  0x0800A len=7: 'Iztapam'
+  0x0802A len=8: 'Mitxcoac'
+  0x0804A len=8: 'Tacubaya'
+  0x0806A len=7: 'Tecamac'
+  0x0808A len=9: 'Tepezinco'
+  0x080AA len=7: 'Ticoman'
+  0x080CA len=8: 'Tlaxcala'
+  0x080EA len=8: 'Xaltocan'
+  0x0810A len=9: 'Xicalango'
+  0x0812A len=8: 'Zumpanco'
+  0x0814A len=6: 'Peking'
+  0x0816A len=8: 'Shanghai'
+  0x0818A len=6: 'Canton'
+  0x081AA len=7: 'Nanking'
+  0x081CA len=8: 'Tsingtao'
+  0x081EA len=8: 'Hangchow'
+  0x0820A len=8: 'Tientsin'
+  0x0822A len=6: 'Tatung'
+  0x0824A len=5: 'Macao'
+  0x0826A len=6: 'Anyang'
+  0x0828A len=8: 'Shantung'
+  0x082AA len=6: 'Chinan'
+  0x082CA len=7: 'Kaifeng'
+  0x082EA len=6: 'Ningpo'
+  0x0830A len=7: 'Paoting'
+  0x0832A len=8: 'Yangchow'
+  0x0834A len=6: 'London'
+  0x0836A len=8: 'Coventry'
+  0x0838A len=10: 'Birmingham'
+  0x083AA len=5: 'Dover'
+  0x083CA len=10: 'Nottingham'
+  0x083EA len=4: 'York'
+  0x0840A len=9: 'Liverpool'
+  0x0842A len=8: 'Brighton'
+  0x0844A len=6: 'Oxford'
+  0x0846A len=7: 'Reading'
+  0x0848A len=6: 'Exeter'
+  0x084AA len=9: 'Cambridge'
+  0x084CA len=8: 'Hastings'
+  0x084EA len=10: 'Canterbury'
+  0x0850A len=7: 'Banbury'
+  0x0852A len=9: 'Newcastle'
+  0x0854A len=9: 'Samarkand'
+  0x0856A len=7: 'Bokhara'
+  0x0858A len=8: 'Nishapur'
+  0x085AA len=9: 'Karakorum'
+  0x085CA len=7: 'Kashgar'
+  0x085EA len=6: 'Tabriz'
+  0x0860A len=6: 'Aleppo'
+  0x0862A len=5: 'Kabul'
+  0x0864A len=5: 'Ormuz'
+  0x0866A len=5: 'Basra'
+  0x0868A len=9: 'Khanbalyk'
+  0x086AA len=8: 'Khorasan'
+  0x086CA len=7: 'Shangtu'
+  0x086EA len=5: 'Kazan'
+  0x0870A len=7: 'Quinsay'
+  0x0872A len=6: 'Kerman'
+  0x0874A len=5: 'Mecca'
+  0x0876A len=6: 'Naples'
+  0x0878A len=5: 'Sidon'
+  0x087AA len=4: 'Tyre'
+  0x087CA len=6: 'Tarsus'
+  0x087EA len=5: 'Issus'
+  0x0880A len=6: 'Cunaxa'
+  0x0882A len=7: 'Cremona'
+  0x0884A len=6: 'Cannae'
+  0x0886A len=5: 'Capua'
+  0x0888A len=5: 'Turin'
+  0x088AA len=5: 'Genoa'
+  0x088CA len=5: 'Utica'
+  0x088EA len=5: 'Crete'
+  0x0890A len=8: 'Damascus'
+  0x0892A len=6: 'Verona'
+  0x0894A len=7: 'Salamis'
+  0x0896A len=6: 'Lisbon'
+  0x0898A len=7: 'Hamburg'
+  0x089AA len=6: 'Prague'
+  0x089CA len=8: 'Salzburg'
+  0x089EA len=6: 'Bergen'
+  0x08A0A len=6: 'Venice'
+  0x08A2A len=5: 'Milan'
+  0x08A4A len=5: 'Ghent'
+  0x08A6A len=4: 'Pisa'
+  0x08A8A len=7: 'Cordoba'
+  0x08AAA len=7: 'Seville'
+  0x08ACA len=6: 'Dublin'
+  0x08AEA len=7: 'Toronto'
+  0x08B0A len=9: 'Melbourne'
+  0x08B2A len=6: 'Sydney'
+  0x0A722 len=5: '67:73'
+

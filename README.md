@@ -10,7 +10,7 @@
 
 ## 目前 ship 狀態 (2026-06-06)
 
-最後 ship: spec 07 §7.1 Team B 接通 — `civ_rle_decode/encode` + golden HAM*.SAV decode 通過 (107 KB / 6.7x ratio)
+最後 ship: spec 07 §7.2 v0.1 草稿 — cross-compare 3 HAM*.SAV (固定 107 KB) 出 SAV layout map (header / king/civ names / player table / city table / 256 city pool)
 
 | Milestone | 範圍 | 狀態 | 證據 |
 |---|---|---|---|
@@ -61,7 +61,8 @@
 | spec | 範圍 | 為什麼 deferred |
 |---|---|---|
 | **`06`** | 14 文明 / 14 領袖 / 72 科技 / 28 單位 / 46 建築/奇蹟 **數值表** (attack / defense / cost / movement / production / 科技 prereq DAG) | spec 05 line 104 明點：推測 hardcoded 在 code segment `const` 陣列；M6-full 戰鬥/生產直接阻擋於此 |
-| **`07` §7.2** | SAV 解壓後內部結構 (city/unit/civ 表 byte layout) + combat 公式 + AI 決策 + 外交 | §7.1 RLE 壓縮已 ship (取自 Honza 2008). §7.2 Honza 也沒 RE — 需自家 SAV byte dump 手動分析 或 Ghidra walk `CivLoadGame` |
+| **`07` §7.2 v0.2** | byte→struct field 對位細部 (treasury / known_techs bitmap / world map terrain) | §7.2 v0.1 layout map 已 ship (R2 cross-compare 出); v0.2 待 Ghidra walk `CivLoadGame` decompile 看 `fread()` 順序 |
+| **`07` combat + AI** | combat 公式 + AI 決策 + 外交 | 與 SAV 無關, 等 spec 06 Ghidra 抽完 unit stats 順便 |
 | **`08`** | 音效 — MMSYSTEM 4 個 API call site + 23 個 WAV 資源未分類 | 不擋遊戲邏輯；可獨立後做 |
 | **`09`** | 勝利條件 / 結局 / scoring | STR# 155-157 (Space 1/2/Archeologist) 文字側已 RE，演算法未碰 |
 
@@ -71,7 +72,7 @@
 |---|---|---|---|
 | Renderer | `godpal/gr/gr_pic/gr_port/shape` | palette 模型、CvPc LZW、blit | tile blending 邊界規則；14/199 CvPc 仍 LZW variant fail |
 | Loader (Mac shim) | `mac/resmgr` | RSC parser + 5 個 archive | 436 個 `GLOBALLOCK` call site 個別語義 |
-| 存讀檔 | `load.c` | 60% — RLE 算法 + Team B 接通 (`save/rle.{h,c}`, ctest golden HAM1000B.SAV decode 16011 → 107194 byte 6.7x ratio) | §7.2 SAV 解壓後 city/unit/civ 表 byte layout 未抽 (Honza 2008 也沒抽通) |
+| 存讀檔 | `load.c` | 70% — RLE 完整 + §7.2 v0.1 layout map: header 12 byte / king names 256 / civ plural+singular 512 / player stats table 0x314 area / 32-byte city records 0x8A0 area / STR# 135 256 city pool @ 0x07D4A | 細部 byte→struct field 對位 (treasury / known_techs bitmap / world map terrain) 待 R3 Ghidra walk |
 | Dialog system | `dialogs.c` | 100% (spec 04) | — |
 | 視窗 proc | `wdwmap/wdwsmmap/wdwstat/windows` | dispatch table 骨架 (7/22 + 7/9 + 7/9) | 個別 message handler 待補 |
 | AI / 外交 | location 不確定 | 5% | 只確認 `FUN_10e8_2d46` 是 "AI 策略表 init"，其他演算法未抽 |

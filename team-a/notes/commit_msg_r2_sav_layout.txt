@@ -1,0 +1,85 @@
+R2: SAV §7.2 v0.1 — cross-compare 3 HAM*.SAV 出 layout map (107 KB fixed-size)
+
+使用者 1>2>3>4>5 第二步: Team A SAV §7.2 byte dump 手動分析.
+從 R1 ship 的 civ_rle_decode 接, 對 3 個真實 1993 Civ Win 存檔做
+三方 cross-compare, 大幅推進 §7.2 從 0% → v0.1 草稿.
+
+# 重大發現
+
+  1. **3 個 SAV 解壓後都剛好 107194 byte** → SAV 是 fixed-size 結構,
+     不是 variable. 大幅簡化 RE 工作.
+
+  2. **98.8% byte 三 SAV 完全一樣** → 主體是 master tables 預嵌入 +
+     大量 sparse 0-fill. 真正 game state 只佔 ~1%.
+
+  3. **Header layout 完全解出 (前 18 byte)**:
+     0x0000 FE FF magic
+     0x0002 turn LE16 (50/100/150 monotone!)
+     0x000A year LE16 signed (-3000/-2000/-1000 monotone!)
+     其他 fixed marker
+
+  4. **嵌入的 master tables**:
+     0x00012-256B: 8 historical king names (Attila/Caesar/Hammurabi/...)
+     0x00112-256B: 8 civ plural names (Barbarians/Romans/...)
+     0x00212-256B: 8 civ singular names (Barbarian/Roman/...)
+     0x07D4A-8192B: **256 城市名 pool** (STR# 135 直接嵌入)
+
+  5. **State tables 位置確認**:
+     0x00314 area: 8 player stats × ~24 byte (treasury/pop/...)
+     0x06B0 area: monotone counters (城市數/單位數)
+     0x06C8 area: city records 推測 (2 個 8-byte 一樣的結構)
+     0x08A0 area: 32-byte stride 城市 stat 表
+
+# 交付
+
+  team-a/tools/civ_sav_extract.c   CLI: SAV → bin via civ_rle_decode
+  team-a/tools/extract_3_savs.sh   batch dump 3 HAM*.SAV
+  team-a/tools/cross_compare_savs.py  Python 三方 byte 對比工具:
+                                   - 分類 C/V/M byte
+                                   - 長 constant stretches
+                                   - LE16/LE32 monotone 偵測
+                                   - ASCII string-like 區域
+  team-a/tools/hex_3savs.sh        快速 hex dump 前 256 byte
+  team-a/tools/hex_regions.sh      hex dump 關鍵 region
+
+  team-a/dumps/sav/HAM1000B.bin   解壓 dump (107194 byte 各)
+  team-a/dumps/sav/HAM2000B.bin
+  team-a/dumps/sav/HAM3000B.bin
+  team-a/dumps/sav/cross_compare.txt   分析結果報告
+
+  team-a/specs/07_save_format_and_rle.md
+    §7.2 從 TODO 升 v0.1 草稿:
+      §7.2.1 R2 對位方法
+      §7.2.2 已對位 layout map 表 (header / king / civ / player / city /
+              city pool / 0xFF stretch / 大塊 0)
+      §7.2.3 關鍵推斷 (5 點)
+      §7.2.4 仍未 RE (4 區塊)
+      §7.2.5 R3 task 預訂 (Ghidra walk CivLoadGame)
+
+  README.md  ship 行 + 存讀檔 60% → 70% + spec 07 §7.2 v0.1 ship
+
+# RE 覆蓋變化
+
+  存讀檔: 60% → 70%
+    spec 07 §7.2 從 0% → v0.1 草稿 (layout map 大致 ship,
+                                      byte→struct field 待 v0.2)
+
+# 證據
+
+  team-a/dumps/sav/cross_compare.txt 完整 ASCII dump:
+    - 城市名 (Paris/Tenochtitlan/Peking/London/...) 全 256 個位址列出
+    - 8 king names + 16 civ names 全位址列出
+    - monotone LE16 候選 30+ 個
+
+# 不變
+
+  ctest 16/16 PASS (R2 是 Team A 純研究, 沒動 Team B code)
+
+# 下一步 (R3, 1>2>3>4>5 第三步)
+
+  Team A spec 06 (Ghidra 抽 unit/civ/tech 數值表) — 純 Ghidra walk:
+    - find_string "Settlers" / "Phalanx" 等 STR# 132 字串
+    - 看 cross-reference 從 CIV.EXE 哪段 code 用這些字串
+    - 那段 code 周圍應該有 unit stats const 陣列
+    - 28 unit × N field (attack/defense/cost/move) 共 ~200 byte 陣列
+    - 同法處理 72 tech / 46 building / 14 civ
