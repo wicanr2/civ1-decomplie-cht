@@ -10,7 +10,7 @@
 
 ## 目前 ship 狀態 (2026-06-06)
 
-最後 ship: D-M6-full-lite — unit 系統 + placeholder 戰鬥 + selection panel
+最後 ship: D-minimap — minimap 真實 60×30 縮圖 + view rect overlay + unit dots
 
 | Milestone | 範圍 | 狀態 | 證據 |
 |---|---|---|---|
@@ -27,6 +27,7 @@
 | **M5-C** | terrain (col, row) ground-truth 對位 — 12 種 terrain → SPR32X32 真實座標 | ✅ | `m5c_terrain_groundtruth.png` |
 | **M6-lite** | turn loop + 西元年 + AI mock counter | ✅ | `m6_status.png` |
 | **M6-full-lite** | unit 系統 (5 類型) + 8 player slot + placeholder 戰鬥 + selection panel + 方向鍵移動 | ✅ | `m6_full_lite_units.png` |
+| **M6-minimap** | minimap 真實 60×30 → 160×120 縮圖 + per-terrain palette-nearest RGB + view rect overlay + unit owner dots | ✅ | `m6_minimap_real.png` |
 | **M6-full** | 真實戰鬥公式 (spec 07) + 城市生產 + RLL 存讀檔 | 🟡 阻 spec 06+07 | — |
 | **M7** | 奇蹟 + 外交 + 勝利條件 | ❌ | — |
 
@@ -159,7 +160,8 @@ tools/                         共用資產抽取工具（MIT）
 - [`docs/ASSETS_INDEX.md`](docs/ASSETS_INDEX.md) — **185 個 sprite 完整分類索引**（領袖 14 / 科技 ~65 / 單位 ~28 / 奇蹟 / 政府 / 太空 / 動畫 / UI），含縮圖
 - [`docs/screenshots/cvpc_spr32x32_decoded.png`](docs/screenshots/cvpc_spr32x32_decoded.png) — 主 sprite sheet 1472×400
 - [`docs/screenshots/cvpc_king00_elizabeth.png`](docs/screenshots/cvpc_king00_elizabeth.png) — Queen Elizabeth I 領袖肖像示意
-- [`docs/screenshots/m6_full_lite_units.png`](docs/screenshots/m6_full_lite_units.png) — 最新 ship 截圖 (M6-full-lite: unit 系統 + 多 player 場景)
+- [`docs/screenshots/m6_minimap_real.png`](docs/screenshots/m6_minimap_real.png) — 最新 ship 截圖 (M6-minimap: 真實縮圖 + view rect + unit dots)
+- [`docs/screenshots/m6_full_lite_units.png`](docs/screenshots/m6_full_lite_units.png) — M6-full-lite: unit 系統 + 多 player 場景
 - [`docs/screenshots/m5c_terrain_groundtruth.png`](docs/screenshots/m5c_terrain_groundtruth.png) — M5-C terrain 真實 SPR32X32 對位
 - [`docs/screenshots/m5b_layout_v2.png`](docs/screenshots/m5b_layout_v2.png) — M5-B layout 對齊原版
 - [`docs/screenshots/terrain_rows/`](docs/screenshots/terrain_rows/) — SPR32X32 row 0..11 強化縮放 strip + col 22 zoom 4x ground-truth 對位證據

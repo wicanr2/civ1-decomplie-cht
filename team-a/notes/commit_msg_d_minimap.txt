@@ -1,0 +1,75 @@
+D-minimap: 真實世界縮圖 + view rect + unit dots — RGB-nearest palette 抗
+
+使用者 C → D 路線最後一步 (D-minimap). 完成原本 4 個 D 路線都 ship.
+之前 minimap widget 只是黃底 "WDWSMMAP 小地圖" 文字占位, 本次接通
+60×30 world 真實 terrain 資料 + units[] roster.
+
+# 交付
+
+  src/widgets/minimap.c          minimap_render() 大改:
+                                 - 12 種 terrain 對應 hardcoded RGB (深藍
+                                   OCEAN / 草綠 GRASS / 沙黃 DESERT / ... )
+                                 - 8 個 owner 對應 hardcoded RGB (barbarian
+                                   紅 / p1 黃 / p2 藍 / p3 綠 / ...)
+                                 - palette_nearest(target_rgb, fb palette)
+                                   每幀對 sheet palette 找最近 idx,
+                                   不論 fb 用 standard 還是 sheet palette
+                                   都對得上色 (M6-minimap-1 用 sheet pixel
+                                   sample 看起來整片黃就是這個 issue)
+                                 - 60×30 → 156×116 縮放, tw=2 th=3 px/tile
+                                 - 加 view rect 白框 顯示 main map 視窗
+                                   在 minimap 的位置
+                                 - 加 cursor 白色點
+                                 - 加 unit owner-coloured dots
+
+  README.md                      加 M6-minimap milestone 列 + 更新 ship
+                                 截圖列
+
+  docs/screenshots/m6_minimap_real.png   ship snapshot
+
+# 驗證
+
+  cmake build      36/36 zero warning
+  ctest with data: 15/15 PASS
+
+# 視覺結果 (m6_minimap_real.png)
+
+  minimap (左上 160×120) 顯示:
+    - 深藍 OCEAN 包邊
+    - 綠 大陸 (含 jungle / forest / mountain 變化色)
+    - 白框 = main map 當前 view 範圍 (在大陸中央)
+    - 紅點 = 2 barbarian
+    - 黃點 = 3 player 1 unit (settler + phalanx)
+    - 散布其他 owner 色點 (player 2-5)
+
+# 為何 RGB-nearest 而非 sheet pixel sample (D-minimap iteration 1 失敗)
+
+  第一版用 sheet 中央 pixel 取色 (sheet->pixels[row*32+16][col*32+16]):
+    - OCEAN tile (col 22 row 9) 中央 pixel 撞到 green-blue 變體中
+      綠的部分 -> minimap OCEAN 顯示綠
+    - palette idx 9 在 sheet palette 是黃不是深藍 -> 整個 minimap
+      看起來黃
+  第二版用 hardcoded RGB + nearest match 解決:
+    - 不論 fb 用哪份 palette, palette_nearest 都會挑到最接近目標 RGB
+      的 idx (在 256 entry 內找最近)
+    - 每 row 計算一次 (12+8+1 次 nearest = 21 次 / frame), 微不足道
+
+# D 路線完整完成 (4 個 round 此 round 結束)
+
+  D-spec06 ✅ commit 24bfe64 — terrain (col, row) ground-truth
+  D-#3     ✅ commit 794588a — i18n catalog 241 → 376 條
+  D-M6-full-lite ✅ commit c196df9 — unit 系統 + 戰鬥
+  D-minimap ✅ 本 commit — 真實世界縮圖
+
+# 還剩什麼
+
+  阻 spec 06 (數值表 ground-truth) + spec 07 (combat 公式 + RLL save):
+    - M6-full 真版 (RNG 公式 + 老兵 + 地形 防禦)
+    - 城市 / 殖民 / build
+    - 存讀檔
+  阻 spec 08 (sound): 23 WAV 未載入
+  阻 spec 09 (victory): 終局結算 + scoring
+
+  D 路線結束 — 下個 round 由使用者決定 priority
+  (我建議: spec 06 ground-truth pass 抽 unit stats 表是 M6-full 真版的
+   blocker, 也是 RE 最重的 chunk; 可以單獨開 round 純粹做 Ghidra side)
