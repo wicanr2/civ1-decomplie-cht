@@ -36,6 +36,12 @@ void civ_palette_set(civ_palette_t *p, int index, civ_color_t c);
 /* 範圍動畫式 set — 對應 GDI ANIMATEPALETTE */
 void civ_palette_animate(civ_palette_t *p, int start, int count, const civ_color_t *src);
 
+/* R10 chrome polish: 找 palette 內最接近 target RGB 的 idx.
+ * 解 chrome UI 用 hardcoded VGA idx 但 fb palette 是 sheet palette (語意不同)
+ * 的根本問題. 對應設計師 R10 audit P0 修法. */
+uint8_t civ_palette_nearest_rgb(const civ_palette_t *p,
+                                uint8_t r, uint8_t g, uint8_t b);
+
 /* 建 256-byte LUT 把 src palette 內每個 entry 映到 dst palette 中
  * RGB 最近的 entry。對應 spec 03 §12 #3 「palette stomp」雷的解法 —
  * 載入 CvPc 影像（自帶 palette）時不蓋掉 base palette，而是把影像

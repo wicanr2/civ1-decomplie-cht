@@ -89,6 +89,20 @@ void civ_palette_animate(civ_palette_t *p, int start, int count, const civ_color
     p->generation++;
 }
 
+uint8_t civ_palette_nearest_rgb(const civ_palette_t *p,
+                                uint8_t r, uint8_t g, uint8_t b)
+{
+    int best = 0, best_d = 0x7fffffff;
+    for (int i = 0; i < 256; i++) {
+        int dr = (int)p->entries[i].r - (int)r;
+        int dg = (int)p->entries[i].g - (int)g;
+        int db = (int)p->entries[i].b - (int)b;
+        int d  = dr*dr + dg*dg + db*db;
+        if (d < best_d) { best_d = d; best = i; }
+    }
+    return (uint8_t)best;
+}
+
 void civ_palette_build_lut(const civ_color_t *src, int src_count,
                            const civ_palette_t *dst, uint8_t lut[256])
 {

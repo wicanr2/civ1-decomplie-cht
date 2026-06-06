@@ -45,17 +45,10 @@ static const rgb_t OWNER_RGB[CIV_NUM_PLAYERS] = {
     { 255, 255, 255 },  /* 7 白 */
 };
 
+/* R10: 改用 gfx/palette public civ_palette_nearest_rgb (跨 widget 共用) */
 static uint8_t palette_nearest(const civ_palette_t *pal, rgb_t target)
 {
-    int best = 0, best_d = 0x7fffffff;
-    for (int i = 0; i < 256; i++) {
-        int dr = pal->entries[i].r - target.r;
-        int dg = pal->entries[i].g - target.g;
-        int db = pal->entries[i].b - target.b;
-        int d  = dr*dr + dg*dg + db*db;
-        if (d < best_d) { best_d = d; best = i; }
-    }
-    return (uint8_t)best;
+    return civ_palette_nearest_rgb(pal, target.r, target.g, target.b);
 }
 
 static civ_evt_result_t on_click(civ_widget_t *w, SDL_Event *ev);
@@ -86,16 +79,17 @@ static civ_evt_result_t minimap_dispatch(civ_widget_t *w, SDL_Event *ev)
 
 static void minimap_render(civ_widget_t *w, civ_surface_t *fb)
 {
-    /* R4 (2026-06-06): 加 Win16 子視窗 chrome — title bar "World Map" */
+    /* R4+R10: Win16 子視窗 chrome 用 nearest 解 sheet palette idx 對不上 */
     enum { SUB_TITLE_H = 12 };
-    /* Win16 title bar (active blue) */
-    civ_fill_rect(fb, (civ_rect_t){w->rect.x, w->rect.y, w->rect.w, SUB_TITLE_H}, 1);
+    uint8_t c_t_bg = w->game ? civ_palette_nearest_rgb(&w->game->palette, 0x00,0x00,0x80) : 1;
+    uint8_t c_t_fg = w->game ? civ_palette_nearest_rgb(&w->game->palette, 0xFF,0xFF,0xFF) : 15;
+    civ_fill_rect(fb, (civ_rect_t){w->rect.x, w->rect.y, w->rect.w, SUB_TITLE_H}, c_t_bg);
     if (w->game && w->game->font_body) {
         const char *title = "World Map";
         int tw = civ_text_measure(w->game->font_body, title);
         int tx = w->rect.x + (w->rect.w - tw) / 2;
         civ_text_out(fb, w->game->font_body, tx, w->rect.y + SUB_TITLE_H - 3,
-                     title, 15, 1, CIV_TEXT_BK_TRANSPARENT);
+                     title, c_t_fg, c_t_bg, CIV_TEXT_BK_TRANSPARENT);
     }
     /* 縮小 w->rect 給內容區用, 但 widget 接 event 仍用完整 rect */
     civ_rect_t inner = { w->rect.x, w->rect.y + SUB_TITLE_H,

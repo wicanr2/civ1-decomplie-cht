@@ -47,31 +47,38 @@ static int file_exists(const char *p) { struct stat s; return stat(p,&s)==0; }
 static void paint_background(struct civ_game *g)
 {
     civ_surface_t *fb = g->framebuffer;
-    civ_surface_clear(fb, 15);
 
-    /* === Win16 主視窗 title bar @ y=0 (16 px) === */
-    /* 標準 Win16 active title 是 blue (idx 1 in standard VGA, but in sheet
-     * palette we approximate). 用 sheet palette idx 1 通常是深色 */
-    civ_fill_rect(fb, (civ_rect_t){0, 0, FB_W, TITLE_H}, 1);
-    civ_hline(fb, 0, TITLE_H - 1, FB_W, 0);
+    /* R10: 用 palette_nearest 解 chrome UI 在 sheet palette idx 對不上問題.
+     * 對應設計師 R10 audit P0 修法 (palette idx 1/9/0 在 sheet palette 意義
+     * 不是 Win16 標準). */
+    uint8_t c_title_bg = civ_palette_nearest_rgb(&g->palette, 0x00, 0x00, 0x80);
+    uint8_t c_title_fg = civ_palette_nearest_rgb(&g->palette, 0xFF, 0xFF, 0xFF);
+    uint8_t c_menu_bg  = civ_palette_nearest_rgb(&g->palette, 0xC0, 0xC0, 0xC0);
+    uint8_t c_menu_fg  = civ_palette_nearest_rgb(&g->palette, 0x00, 0x00, 0x00);
+
+    civ_surface_clear(fb, c_menu_bg);
+
+    /* === Win16 主視窗 title bar @ y=0 (16 px) — Win16 active blue === */
+    civ_fill_rect(fb, (civ_rect_t){0, 0, FB_W, TITLE_H}, c_title_bg);
+    civ_hline(fb, 0, TITLE_H - 1, FB_W, c_menu_fg);
     if (g->font_body) {
         const char *t = "CIVILIZATION";
         int w = civ_text_measure(g->font_body, t);
         int x = (FB_W - w) / 2;
         civ_text_out(fb, g->font_body, x, TITLE_H - 4, t,
-                     15, 1, CIV_TEXT_BK_TRANSPARENT);
-        /* min/max/close 三個小框右上角 (簡化視覺暗示) */
+                     c_title_fg, c_title_bg, CIV_TEXT_BK_TRANSPARENT);
+        /* min/max/close 三個小框右上角 (Win16 暗示) */
         for (int i = 0; i < 3; i++) {
             int bx = FB_W - 4 - (3 - i) * 14;
-            civ_frame_rect(fb, (civ_rect_t){bx, 3, 10, 10}, 15);
+            civ_frame_rect(fb, (civ_rect_t){bx, 3, 10, 10}, c_title_fg);
         }
         /* system menu (左上角) */
-        civ_frame_rect(fb, (civ_rect_t){4, 3, 10, 10}, 15);
+        civ_frame_rect(fb, (civ_rect_t){4, 3, 10, 10}, c_title_fg);
     }
 
-    /* === menu bar @ y=16 (16 px) - 對齊原版 8 items === */
-    civ_fill_rect(fb, (civ_rect_t){0, TITLE_H, FB_W, MENU_H}, 15);
-    civ_hline(fb, 0, CHROME_H - 1, FB_W, 0);
+    /* === menu bar @ y=16 (16 px) — Win16 灰底黑字 === */
+    civ_fill_rect(fb, (civ_rect_t){0, TITLE_H, FB_W, MENU_H}, c_menu_bg);
+    civ_hline(fb, 0, CHROME_H - 1, FB_W, c_menu_fg);
     if (g->font_body) {
         const char *items[] = {
             "File", "Edit", "Orders", "Advisors",
@@ -80,7 +87,7 @@ static void paint_background(struct civ_game *g)
         int x = 8;
         for (size_t i = 0; i < sizeof items / sizeof items[0]; i++) {
             civ_text_out(fb, g->font_body, x, TITLE_H + MENU_H - 4, items[i],
-                         0, 15, CIV_TEXT_BK_TRANSPARENT);
+                         c_menu_fg, c_menu_bg, CIV_TEXT_BK_TRANSPARENT);
             x += civ_text_measure(g->font_body, items[i]) + 12;
         }
     }
