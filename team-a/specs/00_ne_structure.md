@@ -174,5 +174,7 @@ NE 報的 linker version 是 **5.10**，1990 年代 linker 多家都有（Micros
 
 ## 簽核
 
-- [ ] Team A：這份 spec 準確描述 work-of-record `CIV.EXE`（MD5 `336FF64…`）在 `team-a/dumps/00_ne_structure.txt` 觀察到的結構事實。
-- [ ] Team B：這份 spec 可作為 scaffolding（build 設定、外部依賴計畫、callback module 邊界）的實作依據；不需要再回頭看 disassembly。
+- [x] Team A：這份 spec 準確描述 work-of-record `CIV.EXE`（MD5 `336FF64…`）在 `team-a/dumps/00_ne_structure.txt` 觀察到的結構事實。
+- [x] Team B：這份 spec 可作為 scaffolding（build 設定、外部依賴計畫、callback module 邊界）的實作依據；不需要再回頭看 disassembly。
+
+**使用者代簽 2026-06-06**：整體認可，授權進入實作階段。

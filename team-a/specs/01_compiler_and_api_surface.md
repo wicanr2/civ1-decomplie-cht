@@ -228,5 +228,7 @@ Team B 用 SDL2 自製 save/load dialog（反正其他 UI 也都自製）。
 
 ## 簽核
 
-- [ ] Team A：這份 spec 準確總結 `team-a/dumps/01*` 觀察到的編譯器、source 組織、Win16 API 表面。
-- [ ] Team B：這份 spec 可作為 build system / 外部依賴計畫與 API 替代邊界的實作依據，不需要再回頭看 disassembly。
+- [x] Team A：這份 spec 準確總結 `team-a/dumps/01*` 觀察到的編譯器、source 組織、Win16 API 表面。
+- [x] Team B：這份 spec 可作為 build system / 外部依賴計畫與 API 替代邊界的實作依據，不需要再回頭看 disassembly。
+
+**使用者代簽 2026-06-06**：整體認可，授權進入實作階段。

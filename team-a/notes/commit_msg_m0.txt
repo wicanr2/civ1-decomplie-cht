@@ -1,0 +1,68 @@
+M0: SDL 視窗起來 + ctest 1/1 PASS + 簽核 specs
+
+使用者代簽 spec 00 / 01 / 02 與 SDL 實作計畫, 授權進入實作階段。
+
+# M0 交付
+
+最薄 SDL2 骨架,對應 SDL_IMPLEMENTATION_PLAN §13 M0 範圍:
+
+  team-b/CMakeLists.txt          CMake 3.16+ / C99 / -Wall -Wextra
+                                  -Wpedantic / SDL2
+  team-b/tests/CMakeLists.txt
+  team-b/src/main.c              取代 Borland c0w + WinMain
+                                  - 640x480 SDL_Window
+                                  - 硬體 renderer 失敗 fallback 軟體
+  team-b/src/civ_loop.c          取代 spec 02 §2.1.2 H 段
+                                  while (DAT_12d8_24ee == 0) {
+                                    FUN_1088_0000();
+                                  }
+                                  - SDL_PollEvent 非阻塞 poll
+                                    (對應原版 PEEKMESSAGE 23 vs
+                                     GETMESSAGE 0 的設計)
+                                  - ~60 Hz present cap + SDL_Delay(1)
+                                  - ESC / SDL_QUIT 退出
+  team-b/src/civ_loop.h
+  team-b/src/civ_game.h          主結構 skeleton
+                                  - quit (原 DAT_12d8_24ee)
+                                  - timer_counter (原 DAT_12d8_24f0)
+                                  - tick_count, window, renderer
+  team-b/tests/test_window_lifecycle.c
+                                  M0 驗證點: headless dummy driver +
+                                  push SDL_QUIT + 驗證 civ_loop 1 秒
+                                  內結束且 g->quit 為 true
+  team-b/README.md               build / run / test 說明; milestone
+                                  進度表
+
+# 驗證結果
+
+WSL Ubuntu 22.04 + GCC 11.4 + SDL2 2.0.20:
+  cmake configure  OK
+  cmake build      6/6 zero warning
+  ctest            1/1 PASS (window_lifecycle 0.04 sec)
+  civ1 binary      SDL_VIDEODRIVER=dummy timeout 2 sec 結束無 crash
+
+# Ghidra LoadGifPicture 嘗試 (部分失敗,待續)
+
+寫 team-a/tools/ghidra_extract_loadgifpicture.py 想找 gr_pic.c
+家族 5 個函式 (GR_PicRead / GR_PortDataToBitmap / LoadGifPicture /
+InvertBitmap / PicDecompress) 的 caller。
+
+策略: 「ref Borland assert string 的 function 就是該函式自己」
+失敗原因: Ghidra auto-analysis 沒建立 segment 1420 assert string
+的 data reference, 5 個 string 全部 getReferencesTo() 回空。
+
+待續 strategy:
+  (a) byte pattern scan code segment 找 PUSH 0x2372 等 immediate
+  (b) 重跑 auto-analysis 並打開 data reference walker
+  (c) 跳過 Ghidra, 直接從 CvPc payload bytes 反推 LZW 變體
+      (RLE+LZW / 早字典 update / 9-bit forced 等多種試)
+
+不擋 M0 / M1 / M2; M3 之前 (RSC + CvPc decode) 必須解出 LZW 變體。
+
+# Specs 簽核狀態
+
+   spec 00 NE structure                  [x][x] 使用者代簽 2026-06-06
+   spec 01 Compiler ID + API surface     [x][x] 使用者代簽
+   spec 02 Startup + game loop           [x][x] 使用者代簽
+   SDL_IMPLEMENTATION_PLAN               [x][x] 使用者簽核, M0 開工
+   spec 03 Asset formats (Mac Resource)  ⏳ 待簽 (sign-off section 未加)

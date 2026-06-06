@@ -423,5 +423,7 @@ static const struct {
 
 ## 簽核
 
-- [ ] Team A：本 spec 準確描述 `team-a/dumps/02*` 觀察到的啟動序列、主迴圈形狀、11 個 callback 各別的職責。
-- [ ] Team B：本 spec 可作為 SDL2 main loop + 3 個 widget event handler 的實作依據；不需要再回頭看 disassembly。
+- [x] Team A：本 spec 準確描述 `team-a/dumps/02*` 觀察到的啟動序列、主迴圈形狀、11 個 callback 各別的職責。
+- [x] Team B：本 spec 可作為 SDL2 main loop + 3 個 widget event handler 的實作依據；不需要再回頭看 disassembly。
+
+**使用者代簽 2026-06-06**：整體認可，授權進入實作階段。

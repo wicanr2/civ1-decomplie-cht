@@ -642,5 +642,7 @@ void        civ_i18n_close(civ_i18n_t *t);
 
 ## Sign-off
 
-- [ ] Team B（實作側）：本計畫的目錄結構、widget 模型、繪圖層 API、milestone 排序與 §14「不做的事」一致，可作為 M0 開工依據。
-- [ ] 使用者（架構審核）：milestone 排序與「不做的事」清單符合預期；接受 M4+ 待 Team A spec 04+ 開展才能啟動。
+- [x] Team B（實作側）：本計畫的目錄結構、widget 模型、繪圖層 API、milestone 排序與 §14「不做的事」一致，可作為 M0 開工依據。
+- [x] 使用者（架構審核）：milestone 排序與「不做的事」清單符合預期；接受 M4+ 待 Team A spec 04+ 開展才能啟動。
+
+**使用者簽核 2026-06-06**：認可，M0 開工。

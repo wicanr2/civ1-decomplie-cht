@@ -23,6 +23,28 @@
 - 寫第一份簽核 spec `team-a/specs/00_ne_structure.md`：binary 身分、記憶體模型、133 segments（約 69 code + 約 63 data + 1 autodata 在 segment 133）、6 個 Win16 import（KERNEL / USER / GDI / WIN87EM / MMSYSTEM / COMMDLG）、11 個導出 callback（`WDWMAPPROC`、`TIMERPROC`、`CIVDIALOGPROC`…）、resource directory（24 `RT_DIALOG`、1 `RT_MENU`、16 `RT_CURSOR`、1 `RT_ICON`、無 `RT_STRING`、無 `RT_RCDATA`、無 `RT_VERSION`）。
 - Spec 00 簽核待 Team A 與 Team B 各別覆核。
 
+## 2026-06-06 — Specs 簽核 + M0 開工（SDL 視窗起來）
+
+使用者代簽 spec 00 / 01 / 02 與 SDL 實作計畫，授權進入實作階段。
+
+### M0 交付
+- `team-b/CMakeLists.txt` + `tests/CMakeLists.txt`：CMake 3.16+ / C99 / -Wall -Wextra -Wpedantic / SDL2
+- `team-b/src/main.c`：取代 Borland `c0w` stub + WinMain；640×480 視窗、硬體 renderer 失敗 fallback 軟體
+- `team-b/src/civ_loop.c`：取代 §2.1.2 H 段 `while (DAT_12d8_24ee == 0) { FUN_1088_0000(); }`；`SDL_PollEvent` 非阻塞 + ~60 Hz present + ESC / 視窗關閉退出
+- `team-b/src/civ_game.h`：主結構 skeleton；M0 階段含 quit / timer_counter / tick_count / window / renderer
+- `team-b/tests/test_window_lifecycle.c`：headless dummy driver + push SDL_QUIT + 驗證 `civ_loop` 1 秒內結束、`g->quit` 為 true
+
+### 驗證結果
+- WSL Ubuntu 22.04 + GCC 11.4 + SDL2 2.0.20：build 6/6 zero warning
+- ctest 1/1 PASS（`window_lifecycle` 0.04 秒）
+- `civ1` binary headless dummy driver 跑 2 秒被 SIGTERM 結束無 crash
+
+### Ghidra LoadGifPicture 嘗試（部分失敗）
+- 寫 `team-a/tools/ghidra_extract_loadgifpicture.py` 想找 5 個 `gr_pic.c` 函式（`GR_PicRead` / `GR_PortDataToBitmap` / `LoadGifPicture` / `InvertBitmap` / `PicDecompress`）的 caller — 假設「ref Borland assert 字串的 function 就是該函式自己」
+- Ghidra auto-analysis **沒建立** segment 1420 assert string 的 data reference，5 個 assert string 全部 `getReferencesTo()` 回空
+- 改 strategy 待續：(a) byte pattern scan code segment 找 `PUSH 0x2372` 之類 immediate；(b) 重跑 auto-analysis 加 reference walker；(c) 跳過 Ghidra 直接從 CvPc payload bytes 反推 LZW 變體（多試幾種 variant）
+- 不擋 M0 / M1 / M2，M3 之前要解
+
 ## 2026-06-06 — 平行 fork 兩個 agent：spec 03 資產格式 + Team B SDL 計畫
 
 依使用者指示同時開兩個 agent 推進：
