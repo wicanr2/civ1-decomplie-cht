@@ -106,44 +106,24 @@ int main(int argc, char **argv)
            g.sprite_sheet.sheet->w, g.sprite_sheet.sheet->h,
            g.sprite_sheet.cols, g.sprite_sheet.rows);
 
-    /* M5 demo（debug 模式）：直接把整張 SPR32X32 sheet 切片 blit 到主地圖
-     * widget 內，使用 sheet 自有 palette 當 framebuffer palette。這讓我們
-     * 視覺確認 sheet 內哪些 (col, row) 是 terrain，做 spec 06 校準的 ground
-     * truth。一般 M5 路線會走 LUT remap（widget 背景保持）但 demo 先看
-     * 全貌。 */
+    /* M5 真落地 (2026-06-06 第二輪):
+     *   舊版這裡是 debug 模式直接把整張 SPR32X32 sheet raw blit + grid 線
+     *   做資產校驗,結果看起來像「sprite atlas 平鋪占位」不像真實 game world。
+     *   現在改走 widgets/map.c 的真實 render path: world_ready=true 後
+     *   widgets render 會跑 terrain enum lookup 把每格 terrain 對應到
+     *   SPR32X32 的代表 (col, row) blit 到 widget rect 內。 */
     g.palette = g.sprite_sheet.pal;   /* 用 sheet 自有 palette */
 
     civ_world_init_demo(&g.world);
-    g.world_ready = false;            /* skip widget render path，下面手動 blit */
+
+    /* 建 sheet→game palette LUT (sheet 已用 g.palette 同表故 identity,但
+     * blit_remap 仍要 lut_built=true 才不會跳到 fallback 綠底) */
+    civ_sprite_sheet_build_lut(&g.sprite_sheet, &g.palette);
+
+    g.world_ready = true;
 
     paint_background(&g);
     civ_widgets_render_all(&g);
-
-    /* 在 map widget rect 內畫 sheet 一片區域 — 從左上開始一直放滿 */
-    SDL_Rect dest = {0, TITLE_H, 480, FB_H - TITLE_H};
-    civ_rect_t src = {0, 0, 480, FB_H - TITLE_H};
-    if (src.w > g.sprite_sheet.sheet->w) src.w = g.sprite_sheet.sheet->w;
-    if (src.h > g.sprite_sheet.sheet->h) src.h = g.sprite_sheet.sheet->h;
-    civ_surface_blit(g.framebuffer, 0, TITLE_H,
-                     g.sprite_sheet.sheet, &src);
-    (void)dest;
-
-    /* 32×32 grid 線（讓肉眼可數 col/row） */
-    for (int x = 0; x <= 480; x += 32)
-        civ_vline(g.framebuffer, x, TITLE_H, src.h, 0);
-    for (int y = TITLE_H; y <= TITLE_H + src.h; y += 32)
-        civ_hline(g.framebuffer, 0, y, src.w, 0);
-
-    /* 標籤覆蓋資訊 */
-    if (g.font_body) {
-        char buf[128];
-        snprintf(buf, sizeof buf,
-                 "M5 World Demo  view=(%d,%d) cursor=(%d,%d)",
-                 g.world.view_x, g.world.view_y,
-                 g.world.cursor_x, g.world.cursor_y);
-        civ_text_out(g.framebuffer, g.font_body, 8, FB_H - 6, buf,
-                     14, 0, CIV_TEXT_BK_TRANSPARENT);
-    }
 
     const char *out_path = argc > 1 ? argv[1] : "m5_world.ppm";
     write_ppm(out_path, g.framebuffer, &g.palette);

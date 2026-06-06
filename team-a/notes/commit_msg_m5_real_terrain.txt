@@ -1,0 +1,55 @@
+M5 真落地: terrain enum + SPR32X32 lookup 取代 atlas debug 平鋪
+
+# 交付
+
+  src/world/world.h           加 civ_terrain_kind_t enum (12 種):
+                              OCEAN/GRASS/PLAINS/FOREST/MOUNTAIN/HILLS/
+                              DESERT/JUNGLE/SWAMP/TUNDRA/ARCTIC/RIVER
+                              + civ_terrain_sprite_coord(kind, out_col, out_row)
+                              terrain[] 語意從「sprite 索引」改成
+                              「terrain kind 編號」, render 時查表。
+
+  src/world/world.c           加 sprite coord lookup table (近似值)
+                              + 改 init_demo 用 enum 值
+
+  src/widgets/map.c           render path 改走 terrain enum lookup
+
+  tests/test_world_snapshot.c 移除舊的「sheet raw blit + grid debug」
+                              改走真實 widget render path:
+                              - sprite_sheet_build_lut(identity LUT)
+                              - world_ready=true
+                              - civ_widgets_render_all() 跑真實渲染
+
+  docs/screenshots/m5_terrain_render.png
+                              真實 widget render path 出來的 snapshot
+
+# 視覺結果(使用者驗收後續方向)
+
+  layout 對:  三分區 widget tree (WDWSMMAP / WDWSTATUS / map) 正確
+  美術不對:   sprite coord lookup 表是視覺辨認的近似值, 每格 terrain
+              都映到同一個 sprite -> 全圖看起來像 sprite atlas 重複,
+              不是 Civ1 原版的「藍海包綠陸 + 多種地形馬賽克」
+              + cursor 太大太方
+              + 右下角綠色長條 (LUT 邊界 artifact?)
+
+  這 png 是 spec 06 sprite 校正 task (#14) 的 ground-truth before 圖,
+  下個 session 由設計師 agent 找原版畫面比對後校 sprite coord 表。
+
+# 驗證
+
+  cmake build       33/33 zero warning
+  ctest with data:  14/14 PASS
+
+# 為何之前是「sheet atlas 平鋪 debug 模式」
+
+  M5 第一輪先把整張 1472x400 SPR32X32 sheet raw blit 到 widget 內
+  做資產辨識 (確認 sheet 大小 / col-row 佈局 / palette 對),
+  該階段已完成 -> 本次改走真實 render path 做 widget 整合,
+  讓地圖看起來不像 atlas 而像 game world (但目前 sprite coord 還是
+  猜的 -> 留給 spec 06 ground-truth pass)。
+
+# 下一步
+
+  交給設計師 agent (下個 session) 找 Civ1 原版畫面 + 比對 m5_terrain_render.png,
+  輸出 sprite coord ground-truth 表 + Civ1-likeness 補強清單 (cursor 形狀、
+  海洋藍色 LUT、地形馬賽克分布)。

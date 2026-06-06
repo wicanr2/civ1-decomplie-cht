@@ -115,7 +115,11 @@ static civ_evt_result_t map_dispatch(civ_widget_t *w, SDL_Event *ev)
 
 static void map_render(civ_widget_t *w, civ_surface_t *fb)
 {
-    /* M5：用 sprite sheet + world 資料畫 terrain，沒 sheet 時 fallback 綠底 */
+    /* M5：用 sprite sheet + world 資料畫 terrain，沒 sheet 時 fallback 綠底
+     *
+     * 修 (2026-06-06 第二輪): terrain[][] 改存 civ_terrain_kind_t enum，
+     * 用 civ_terrain_sprite_coord() 查代表 (col, row) 餵 civ_sprite_rect()。
+     * 舊版直接把 row*46+col 當 col 傳 + clamp >= 46 為 0 是錯的。 */
     if (w->game && w->game->world_ready && w->game->sprite_sheet.sheet) {
         civ_sprite_sheet_t *sh = &w->game->sprite_sheet;
         civ_world_t        *wd = &w->game->world;
@@ -128,9 +132,13 @@ static void map_render(civ_widget_t *w, civ_surface_t *fb)
                 int wy = wd->view_y + ry;
                 if (wx < 0 || wy < 0 || wx >= CIV_MAP_W || wy >= CIV_MAP_H)
                     continue;
-                int tile_idx = wd->terrain[wy][wx];
-                if (tile_idx >= sh->cols) tile_idx = 0;
-                civ_rect_t src = civ_sprite_rect(sh, tile_idx, 0);
+                civ_terrain_kind_t kind =
+                    (civ_terrain_kind_t)wd->terrain[wy][wx];
+                int sc = 0, sr = 0;
+                civ_terrain_sprite_coord(kind, &sc, &sr);
+                if (sc < 0 || sc >= sh->cols) sc = 0;
+                if (sr < 0 || sr >= sh->rows) sr = 0;
+                civ_rect_t src = civ_sprite_rect(sh, sc, sr);
                 int dx = w->rect.x + rx * tile_w;
                 int dy = w->rect.y + ry * tile_h;
                 if (sh->lut_built) {
