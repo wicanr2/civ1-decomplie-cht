@@ -10,7 +10,7 @@
 
 ## 目前 ship 狀態 (2026-06-06)
 
-最後 ship: `f35800d` M5-B layout 對齊原版
+最後 ship: D-spec06 terrain ground-truth 對位
 
 | Milestone | 範圍 | 狀態 | 證據 |
 |---|---|---|---|
@@ -24,6 +24,7 @@
 | **M5** | world map grid + sprite sheet + 端到端 blit (atlas debug 模式) | ✅ | `m5_demo.png` |
 | **M5 真** | terrain enum → SPR32X32 (col, row) lookup 取代 atlas 平鋪 | ✅ | `m5_terrain_render.png` |
 | **M5-B** | layout 對齊原版 — minimap 左上 / menu bar / status panel game state | ✅ | `m5b_layout_v2.png` |
+| **M5-C** | terrain (col, row) ground-truth 對位 — 12 種 terrain → SPR32X32 真實座標 | ✅ | `m5c_terrain_groundtruth.png` |
 | **M6-lite** | turn loop + 西元年 + AI mock counter | ✅ | `m6_status.png` |
 | **M6-full** | unit move + 戰鬥 + 城市生產 + 存讀檔 | 🟡 阻 spec 06+07 | — |
 | **M7** | 奇蹟 + 外交 + 勝利條件 | ❌ | — |
@@ -82,6 +83,7 @@
 | 資產 | 數量 | 狀態 | 備註 |
 |---|---|---|---|
 | CvPc sprite | 199 | 185 解通 ✅ + 14 ❌ | 14 個有 LZW variant 差異 |
+| SPR32X32 terrain (col,row) 對位 | 12 種 | 11 個 ground-truth ✅ + HILLS 暫共用 mountain | 真 HILLS tile + base+overlay 雙 layer renderer 是後續工作 |
 | STR# 文字 list | 33 | 解通 ✅ | 翻譯進度 241/433 條 |
 | TEXT (Civilopedia 條目) | 399 | 識別 ✅ 文字未全 dump | M7 i18n 範圍 |
 | GDAT | 7 | ❌ 格式未碰 | 推測動畫 |
@@ -156,7 +158,9 @@ tools/                         共用資產抽取工具（MIT）
 - [`docs/ASSETS_INDEX.md`](docs/ASSETS_INDEX.md) — **185 個 sprite 完整分類索引**（領袖 14 / 科技 ~65 / 單位 ~28 / 奇蹟 / 政府 / 太空 / 動畫 / UI），含縮圖
 - [`docs/screenshots/cvpc_spr32x32_decoded.png`](docs/screenshots/cvpc_spr32x32_decoded.png) — 主 sprite sheet 1472×400
 - [`docs/screenshots/cvpc_king00_elizabeth.png`](docs/screenshots/cvpc_king00_elizabeth.png) — Queen Elizabeth I 領袖肖像示意
-- [`docs/screenshots/m5b_layout_v2.png`](docs/screenshots/m5b_layout_v2.png) — 最新 ship 截圖 (M5-B layout 對齊原版)
+- [`docs/screenshots/m5c_terrain_groundtruth.png`](docs/screenshots/m5c_terrain_groundtruth.png) — 最新 ship 截圖 (M5-C terrain 真實 SPR32X32 對位)
+- [`docs/screenshots/m5b_layout_v2.png`](docs/screenshots/m5b_layout_v2.png) — M5-B layout 對齊原版 (前一張)
+- [`docs/screenshots/terrain_rows/`](docs/screenshots/terrain_rows/) — SPR32X32 row 0..11 強化縮放 strip + col 22 zoom 4x ground-truth 對位證據
 - 完整版權聲明：[`NOTICE.md`](NOTICE.md)
 
 > 所有 sprite © 1993 MicroProse Software / 現屬 Take-Two Interactive / Firaxis Games。**本 repo 為 clean-room 反組譯研究**，純技術考古 + 翻譯範圍規劃，不商用、不重打包、不替代原版商品。

@@ -19,21 +19,33 @@
  * 確切座標表是 best-guess，spec 06 ground-truth pass 會修。
  */
 
+/* Ground-truth 對位 (D-spec06, 2026-06-06):
+ *
+ * 工具: team-a/tools/crop_terrain_rows.sh + crop_full_rows.sh
+ * 證據: docs/screenshots/terrain_rows/row{0..11}_col22_zoom4x.png
+ *
+ * SPR32X32 cols 14-29 是 terrain band (每 row 一種地形 16 個 neighbor blend
+ * 變體)。col 22 (band 中段) 是「無鄰接」的代表 tile,M5 用這當每地形 default。
+ * cols 0-13 含 rivers + forests + units + 特殊資源 sprite。
+ *
+ * 12 row 視覺辨識結果 (見 [[project_civ1_cht_track_c]]):
+ */
 static const struct {
     int col, row;
 } TERRAIN_SPRITE[CIV_TERRAIN_COUNT] = {
-    [CIV_TERRAIN_OCEAN]    = { 22, 5 },  /* 底部水帶 */
-    [CIV_TERRAIN_GRASS]    = { 22, 2 },  /* 純綠草原 */
-    [CIV_TERRAIN_PLAINS]   = { 22, 0 },  /* 黃綠平原 */
-    [CIV_TERRAIN_FOREST]   = {  2, 2 },  /* 左半深綠樹叢 */
-    [CIV_TERRAIN_MOUNTAIN] = { 22, 3 },  /* 灰岩山脈 */
-    [CIV_TERRAIN_HILLS]    = { 22, 3 },  /* 暫共用 mountain band */
-    [CIV_TERRAIN_DESERT]   = { 22, 1 },  /* 黃土沙漠 */
-    [CIV_TERRAIN_JUNGLE]   = {  3, 2 },  /* 雜叢深綠 */
-    [CIV_TERRAIN_SWAMP]    = {  4, 2 },  /* 潛色綠 */
-    [CIV_TERRAIN_TUNDRA]   = { 22, 4 },  /* 灰白冷帶 */
-    [CIV_TERRAIN_ARCTIC]   = { 22, 4 },  /* 同 tundra band */
-    [CIV_TERRAIN_RIVER]    = {  6, 1 },  /* 藍色蜿蜒 */
+    [CIV_TERRAIN_DESERT]   = { 22, 0 },  /* row 0: 乾黃綠 + 仙人掌 */
+    [CIV_TERRAIN_PLAINS]   = { 22, 1 },  /* row 1: 密集橘綠平原 */
+    [CIV_TERRAIN_GRASS]    = { 22, 2 },  /* row 2: 淡黃綠草原 */
+    [CIV_TERRAIN_FOREST]   = { 22, 3 },  /* row 3: 深綠樹叢 */
+    [CIV_TERRAIN_JUNGLE]   = { 22, 4 },  /* row 4: 深綠斜紋雨林 */
+    [CIV_TERRAIN_MOUNTAIN] = { 22, 5 },  /* row 5: 灰白岩石尖峰 */
+    [CIV_TERRAIN_HILLS]    = { 22, 5 },  /* (暫共用 mountain band, 真 hills
+                                            可能在 cols 0-13 某處,待 ground-truth 二輪) */
+    [CIV_TERRAIN_TUNDRA]   = { 22, 6 },  /* row 6: 冰冷雜色 */
+    [CIV_TERRAIN_ARCTIC]   = { 22, 7 },  /* row 7: 白雪藍混 glacier */
+    [CIV_TERRAIN_SWAMP]    = { 22, 8 },  /* row 8: 綠底藍水塊 */
+    [CIV_TERRAIN_OCEAN]    = { 22, 9 },  /* row 9: 深藍 ocean */
+    [CIV_TERRAIN_RIVER]    = {  4, 4 },  /* row 4 cols 0-13: 藍蛇形 river 變體 */
 };
 
 void civ_terrain_sprite_coord(civ_terrain_kind_t kind, int *out_col, int *out_row)

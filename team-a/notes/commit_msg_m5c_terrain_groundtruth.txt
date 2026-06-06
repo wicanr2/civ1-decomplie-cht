@@ -1,0 +1,67 @@
+M5-C: terrain (col, row) ground-truth 對位 — SPR32X32 12 row 視覺辨識
+
+使用者選 D-spec06 → D-#3 → D-M6-full → D-minimap 依序執行。本次 D-spec06.
+之前 M5 真落地 (451f4d1) 的 TERRAIN_SPRITE[] 是 best-guess 視覺猜測,
+OCEAN/PLAINS/HILLS 全錯 sprite. 本次做 ground-truth 對位.
+
+# 對位方法
+
+  1. team-a/tools/crop_terrain_rows.sh 切 cols 14-29 → 12 row strip
+  2. team-a/tools/crop_full_rows.sh 切全 46 cols → 12 row 全寬 strip
+  3. col 22 (band 中央代表 tile) 各 row 單獨 zoom 4x
+  4. 12 個 zoom tile 逐一視覺辨識: cactus → DESERT / 樹叢 → FOREST / 雪 → ARCTIC ...
+
+# 12 row 對位結果
+
+  row 0:  乾黃綠 + 仙人掌                    → DESERT
+  row 1:  密集橘綠 (乾草地)                  → PLAINS
+  row 2:  淡黃綠草原                         → GRASSLAND
+  row 3:  深綠樹叢 (典型 Civ1 森林貼圖)      → FOREST
+  row 4:  深綠斜紋 (雨林) + 左 cols 0-13 藍蛇  → JUNGLE (+ RIVER at col 4)
+  row 5:  灰白岩石尖峰                       → MOUNTAIN (HILLS 暫共用)
+  row 6:  冰冷雜色                           → TUNDRA
+  row 7:  白雪藍混 glacier                   → ARCTIC
+  row 8:  綠底藍水塊                         → SWAMP
+  row 9:  深藍 ocean                         → OCEAN
+  row 10: 軍事單位橘框                       → (非 terrain)
+  row 11: 船 + 領袖 + 零散水                 → (非 terrain)
+
+# 交付
+
+  team-a/tools/crop_terrain_rows.sh     cols 14-29 切片工具
+  team-a/tools/crop_full_rows.sh        全 46 cols 切片工具
+  docs/screenshots/terrain_rows/        24 張對位證據 (12 strip + 12 zoom)
+  src/world/world.c                     TERRAIN_SPRITE[] 12 entry 全 ground-truth
+  docs/screenshots/m5c_terrain_groundtruth.png   ship snapshot
+
+  README.md                             加 M5-C 進度欄 + 資產解碼新欄
+
+# 驗證
+
+  ctest with data:  14/14 PASS
+  build:            33/33 zero warning
+
+# 視覺對比 m5b_layout_v2.png (前一輪 best-guess) → m5c_terrain_groundtruth.png
+
+  之前 (M5-B)              現在 (M5-C)
+  ------------------------|---------------------------
+  整片綠岩混亂 sprite     | 大面積純綠 GRASSLAND ✓
+  PLAINS 撞到軍事單位區    | PLAINS 真實乾草地紋 ✓
+  FOREST 露紅 transparency | FOREST 深綠樹叢 ✓
+  OCEAN 顯示綠岩 (錯)      | OCEAN 顯示藍水塊 ✓
+  右上 jungle 樹叢誤撞     | 右上 MOUNTAIN 灰岩塊正確 ✓
+
+# 已知未解 → 下個 round D-#3 之後再處理
+
+  - RIVER (col 4 row 4) 是 overlay sprite, 透明區露 palette-0 紅
+    需要 base+feature 雙 layer renderer (base GRASS 先 blit, RIVER 疊上)
+  - MOUNTAIN/HILLS 也有同 transparency 問題
+  - HILLS 暫共用 MOUNTAIN row 5 — 真 HILLS 可能在 cols 0-13 變體區
+  - SWAMP (row 8) 跟 OCEAN (row 9) 有點像, 可能其中一個其實是 COAST 過渡
+
+# 下一步
+
+  D-#3 i18n catalog 完整化:
+    (a) 241 條 hardcoded zh-TW (civ_dict.c) 改 JSON 載入
+    (b) 翻譯 399 條 Civilopedia TEXT sample 5-10 條
+    (c) 加 _T(s) macro 統一翻譯查表
