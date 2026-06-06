@@ -2,6 +2,10 @@
 
 > 對 **1993 MicroProse《文明帝國 視窗版》**（Win16 NE `CIV.EXE`）做 clean-room 反組譯，重寫成可攜的 **C99 + SDL2**，並內建繁體中文化。
 
+![tech showcase](docs/screenshots/m10_tech_screen_showcase.png)
+
+> 🎉 **科技研發完成 modal — 紀念中文化全條目皆完成**：花邊 frame + 36 px serif 「青銅器」標題 + 銅 1 字 icon + 「文明進展 / (取自埃及)」+ 解鎖列表 (貨幣 / 鐵器 / 方陣兵單位 / 巨像奇蹟)。對應 [`docs/TECH_DISCOVERY_SCREEN.md`](docs/TECH_DISCOVERY_SCREEN.md) design.
+
 ## 專案目的
 
 從 1993 Windows 版 *Sid Meier's Civilization* 的二進位檔從頭反組譯並重寫。不參考任何 upstream 的 open source 程式庫（特別是不看 [OpenCiv1](https://codeberg.org/rhorvat/OpenCiv1) 或其衍生分支）。不 patch 原始 `CIV.EXE`。也不依賴任何 Win16 API（GDI / USER / MMSYSTEM 全部由 SDL2 取代）。
@@ -10,9 +14,11 @@
 
 ## 目前 ship 狀態 (2026-06-07)
 
-最後 ship: **R16 M-techscreen** — tech discovery modal 實作 ship (BRONZE WORKING demo). 花邊 frame + 大標題 (青銅器) + subtitle (文明進展) + source 短語 (取自XX/自家研發) + Allows 列表 (藍 tech / 紅 unit / 綠 wonder 各帶 16×16 mini sprite). 鍵盤 `T` 鍵 demo 觸發, ESC/Enter 關. 13 tech enum + 7 種 prereq DAG fill 已寫. 真 turn loop 整合留 R17.
-
-對應 [`docs/TECH_DISCOVERY_SCREEN.md`](docs/TECH_DISCOVERY_SCREEN.md) design (R15 ship 時撰寫) 7 sub-step 全完成.
+最後 ship: **R17 全面中文化 + UI polish** — 對齊使用者 06-07 視覺指正:
+1. **city screen 背景**: ocean tile → 純藍 + 微微灰點 stipple (對齊 ROME reference)
+2. **status panel 重排**: 雙層 (青底 + 灰底) + 行距 18px 不重疊 + 全欄位中文化 (狀態/西元年/金庫/稅樂科/君主制/選定單位/攻防/移動/位置/生命)
+3. **menu bar + chrome 中文化**: title bar 「文明帝國」 + 8 menu items (檔案/編輯/命令/顧問/世界/百科/城市/說明) + minimap 「世界地圖」
+4. **TECH DISCOVERY 高品質紀念版 showcase**: 36px serif 標題 + tech icon 1 中文字 (銅 = BRONZE WORKING) + 雙寫粗體 + 升級花邊 frame — 紀念 civ1 中文化包含科技條目全中文.
 
 | Milestone | 範圍 | 狀態 | 證據 |
 |---|---|---|---|
@@ -39,6 +45,7 @@
 | **M9-polish** | 設計師 P1 polish: minimap body 黃→黑, status body 灰→Win16 #C0C0C0, status text 全 palette_nearest 真色 (黑數據/藍政府/黃單位名), Rate bar 真三色 (紅/黃/青), terrain base+overlay 雙 layer 解 Mountain 露 palette-0 紅 | ✅ | `m9_terrain_overlay_polish.png` |
 | **M9-citytile** | city screen 背景升級: 外大底用 SPR32X32 真 ocean tile 重複貼 (`paint_tile_repeat`), 內 panel 仍 stipple (文字易讀). 對齊使用者新 reference 「背景有真 tile pattern 不是單色」 | ✅ | `m9_city_screen_ocean_tile.png` |
 | **M-techscreen** | tech discovery modal: 雙層花邊 frame (clean-room 自畫 8×8 pattern) + 大標題 (青銅器) + subtitle 文明進展 + (取自XX/自家研發) source 短語 + Allows 列表 (藍 後續 tech / 紅 unit / 綠 wonder/imp 各帶 16×16 mini sprite). 13 tech enum + 7 種 prereq DAG fill. 鍵盤 T 鍵 demo 觸發 BRONZE WORKING. ESC/Enter 關. | ✅ | `m9_tech_screen.png` |
+| **M10-i18n** | 全面繁中化 + UI polish: title 「文明帝國」 + 8 menu items 中文 + minimap 「世界地圖」 + status panel 雙層重排 (青/灰底, 中文欄位, 行距 18px) + city screen 背景純藍+微 stipple (取代 R15 ocean tile, 對齊 ROME reference) + tech screen 36px serif showcase + 銅 1字 icon + 雙寫粗體紀念版 | ✅ | `m10_main_zhtw.png` / `m10_city_screen_speckle.png` / `m10_tech_screen_showcase.png` |
 | **M6-full** | 真實戰鬥公式 (spec 07) + 城市生產 + RLL 存讀檔 | 🟡 阻 spec 06+07 | — |
 | **M7** | 奇蹟 + 外交 + 勝利條件 | ❌ | — |
 

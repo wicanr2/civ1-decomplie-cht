@@ -28,62 +28,85 @@ static void status_render(civ_widget_t *w, civ_surface_t *fb)
      * 真實的 player state hook (金庫, 稅率, 政府) 等 M6-full / M7 才會接.
      */
 
-    /* R4+R10: Win16 子視窗 chrome 用 nearest 解 sheet palette idx 對不上 */
-    enum { SUB_TITLE_H = 12 };
-    uint8_t c_t_bg = w->game ? civ_palette_nearest_rgb(&w->game->palette, 0x00,0x00,0x80) : 1;
-    uint8_t c_t_fg = w->game ? civ_palette_nearest_rgb(&w->game->palette, 0xFF,0xFF,0xFF) : 15;
-    civ_fill_rect(fb, (civ_rect_t){w->rect.x, w->rect.y, w->rect.w, SUB_TITLE_H}, c_t_bg);
-    if (w->game && w->game->font_body) {
-        const char *title = "Status";
-        int tw = civ_text_measure(w->game->font_body, title);
-        int tx = w->rect.x + (w->rect.w - tw) / 2;
-        civ_text_out(fb, w->game->font_body, tx, w->rect.y + SUB_TITLE_H - 3,
-                     title, c_t_fg, c_t_bg, CIV_TEXT_BK_TRANSPARENT);
-    }
-    civ_rect_t inner_rect = { w->rect.x, w->rect.y + SUB_TITLE_H,
-                              w->rect.w, w->rect.h - SUB_TITLE_H };
-
-    /* R14: 灰底 idx 7 在 sheet palette 意義錯, 改 palette_nearest 找真 Win16 #C0C0C0 */
-    uint8_t c_body_bg = civ_palette_nearest_rgb(&w->game->palette, 0xC0,0xC0,0xC0);
-    uint8_t c_border  = civ_palette_nearest_rgb(&w->game->palette, 0x80,0x80,0x80);
-    civ_fill_rect(fb, inner_rect, c_body_bg);
-    civ_frame_rect(fb, inner_rect, c_border);
-
+    /* R17: status 重整 — 對齊使用者指正 (文字排版跑掉/雙層雙背景).
+     *
+     * Reference layout (civ1_win_civilopedia_dropdown.png 左下 Status panel):
+     *   ┌────────────────┐
+     *   │   Status (青)  │  <- title bar
+     *   ├────────────────┤
+     *   │ [青底矩形圖]   │  <- 上半: 城市人口/年代/金庫 (Cyan box)
+     *   │ 40,000人       │
+     *   │ 3420 BC        │
+     *   │ 25@ 0.5.5      │
+     *   ├────────────────┤
+     *   │ Indian (灰底)  │  <- 下半: 玩家/單位 info
+     *   │ Militia        │
+     *   │ Moves: 1       │
+     *   │ Delhi          │
+     *   │ (Grassland)    │
+     *   └────────────────┘
+     *
+     * 我們的版本中文化:
+     *   標題: 狀態  ;  上半青底: 人口/年代/金庫;  下半灰底: 單位資訊/城市
+     */
     if (!w->game) return;
     civ_font_t *font = w->game->font_body;
     if (!font) return;
 
-    /* R14: 全部 text/bar 用 palette_nearest 真色 (不再 hardcode sheet idx) */
-    uint8_t c_black  = civ_palette_nearest_rgb(&w->game->palette, 0, 0, 0);
-    uint8_t c_yellow = civ_palette_nearest_rgb(&w->game->palette, 0xC0, 0x80, 0);
-    uint8_t c_blue   = civ_palette_nearest_rgb(&w->game->palette, 0, 0, 0x80);
-    uint8_t c_red    = civ_palette_nearest_rgb(&w->game->palette, 0xC0, 0, 0);
-    uint8_t c_lux    = civ_palette_nearest_rgb(&w->game->palette, 0xE0, 0xE0, 0);
-    uint8_t c_sci    = civ_palette_nearest_rgb(&w->game->palette, 0, 0x80, 0xC0);
+    civ_palette_t *pal = &w->game->palette;
+    uint8_t c_title_bg = civ_palette_nearest_rgb(pal, 0x00, 0x00, 0x80);
+    uint8_t c_title_fg = civ_palette_nearest_rgb(pal, 0xFF, 0xFF, 0xFF);
+    uint8_t c_top_bg   = civ_palette_nearest_rgb(pal, 0x40, 0xB0, 0xC0);  /* 青 */
+    uint8_t c_body_bg  = civ_palette_nearest_rgb(pal, 0xC0, 0xC0, 0xC0);  /* Win16 灰 */
+    uint8_t c_border   = civ_palette_nearest_rgb(pal, 0x40, 0x40, 0x40);
+    uint8_t c_black    = civ_palette_nearest_rgb(pal, 0, 0, 0);
+    uint8_t c_yellow   = civ_palette_nearest_rgb(pal, 0xC0, 0x80, 0);
+    uint8_t c_blue     = civ_palette_nearest_rgb(pal, 0, 0, 0x80);
+    uint8_t c_red      = civ_palette_nearest_rgb(pal, 0xC0, 0, 0);
+    uint8_t c_lux      = civ_palette_nearest_rgb(pal, 0xE0, 0xE0, 0);
+    uint8_t c_sci      = civ_palette_nearest_rgb(pal, 0, 0x80, 0xC0);
+    uint8_t c_grey_txt = civ_palette_nearest_rgb(pal, 0x40, 0x40, 0x40);
 
+    enum { SUB_TITLE_H = 12 };
+    civ_fill_rect(fb, (civ_rect_t){w->rect.x, w->rect.y, w->rect.w, SUB_TITLE_H},
+                  c_title_bg);
+    {
+        const char *title = "狀態";
+        int tw = civ_text_measure(font, title);
+        int tx = w->rect.x + (w->rect.w - tw) / 2;
+        civ_text_out(fb, font, tx, w->rect.y + SUB_TITLE_H - 2, title,
+                     c_title_fg, c_title_bg, CIV_TEXT_BK_TRANSPARENT);
+    }
+
+    /* === 上半青底: 人口 / 年代 / 金庫 / 稅率 / 政府 ===
+     * top_h 預留 上半總高 (含小頭像 + 4 行文字) */
+    int top_y = w->rect.y + SUB_TITLE_H;
+    int top_h = 110;
+    civ_fill_rect(fb, (civ_rect_t){w->rect.x, top_y, w->rect.w, top_h}, c_top_bg);
+    civ_frame_rect(fb, (civ_rect_t){w->rect.x, top_y, w->rect.w, top_h}, c_border);
+
+    int x = w->rect.x + 8;
+    int y = top_y + 16;
     char buf[64];
-    int x = inner_rect.x + 6;
-    int y = inner_rect.y + 12;
 
-    /* 1. 西元年 (黑字 on grey body) */
+    /* 1. 年代 (Civ1 字串 e.g. "3420 BC") */
     int year = w->game->civ_year;
-    if (year < 0)
-        snprintf(buf, sizeof buf, "%d BC", -year);
-    else
-        snprintf(buf, sizeof buf, "AD %d", year);
-    civ_text_out(fb, font, x, y, buf, c_black, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
-    y += 18;
+    if (year < 0) snprintf(buf, sizeof buf, "西元前 %d 年", -year);
+    else          snprintf(buf, sizeof buf, "西元 %d 年", year);
+    civ_text_out(fb, font, x, y, buf, c_black, c_top_bg, CIV_TEXT_BK_TRANSPARENT);
+    y += 20;
 
-    /* 2. 金庫 (placeholder $0) */
-    snprintf(buf, sizeof buf, "Gold: $0");
-    civ_text_out(fb, font, x, y, buf, c_black, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
-    y += 16;
+    /* 2. 金庫 (placeholder) */
+    snprintf(buf, sizeof buf, "金庫: $0");
+    civ_text_out(fb, font, x, y, buf, c_black, c_top_bg, CIV_TEXT_BK_TRANSPARENT);
+    y += 20;
 
-    /* 3. 稅率三色條 */
-    civ_text_out(fb, font, x, y, "Rate:", c_black, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
-    y += 14;
-    int bar_x = x, bar_y = y, bar_w = w->rect.w - 12, bar_h = 8;
+    /* 3. 稅率三色 bar — bar 上方 留 14 px 給 label 文字 */
     int tax_pct = 60, lux_pct = 20, sci_pct = 20;
+    snprintf(buf, sizeof buf, "稅%d 樂%d 科%d", tax_pct, lux_pct, sci_pct);
+    civ_text_out(fb, font, x, y, buf, c_black, c_top_bg, CIV_TEXT_BK_TRANSPARENT);
+    y += 14;
+    int bar_x = x, bar_y = y, bar_w = w->rect.w - 16, bar_h = 8;
     int tax_w = bar_w * tax_pct / 100;
     int lux_w = bar_w * lux_pct / 100;
     int sci_w = bar_w - tax_w - lux_w;
@@ -91,92 +114,101 @@ static void status_render(civ_widget_t *w, civ_surface_t *fb)
     civ_fill_rect(fb, (civ_rect_t){bar_x + tax_w,        bar_y, lux_w, bar_h}, c_lux);
     civ_fill_rect(fb, (civ_rect_t){bar_x + tax_w + lux_w, bar_y, sci_w, bar_h}, c_sci);
     civ_frame_rect(fb, (civ_rect_t){bar_x, bar_y, bar_w, bar_h}, c_black);
-    y += bar_h + 4;
-    snprintf(buf, sizeof buf, "T%d L%d S%d", tax_pct, lux_pct, sci_pct);
-    civ_text_out(fb, font, x, y, buf, c_black, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
-    y += 16;
+    y += bar_h + 6;
 
-    /* 4. 政府型態 (placeholder) */
-    civ_text_out(fb, font, x, y, "Despotism", c_blue, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
-    y += 18;
+    /* 4. 政府 */
+    civ_text_out(fb, font, x, y, "君主制", c_blue, c_top_bg, CIV_TEXT_BK_TRANSPARENT);
 
-    /* 5. 分隔線 */
-    civ_hline(fb, x, y, bar_w, c_border);
-    y += 4;
+    /* === 下半灰底: 單位 / 城市 info === */
+    int bot_y = top_y + top_h;
+    int bot_h = w->rect.h - SUB_TITLE_H - top_h;
+    civ_fill_rect(fb, (civ_rect_t){w->rect.x, bot_y, w->rect.w, bot_h}, c_body_bg);
+    civ_frame_rect(fb, (civ_rect_t){w->rect.x, bot_y, w->rect.w, bot_h}, c_border);
 
-    /* 6. 選中單位 panel — M6-full-lite hook 進 world.selected_unit */
-    civ_text_out(fb, font, x, y, "Unit:", c_black, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
-    y += 14;
+    int yb = bot_y + 14;
+
+    /* 5. 選中單位 */
+    civ_text_out(fb, font, x, yb, "選定單位:", c_black, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
+    yb += 18;
     if (w->game->world_ready && w->game->world.selected_unit >= 0 &&
         w->game->world.selected_unit < w->game->world.units_count) {
         const civ_unit_t *u = &w->game->world.units[w->game->world.selected_unit];
         if (u->alive) {
             const char *uname = civ_unit_name_zh(u->type);
-            civ_text_out(fb, font, x, y, uname, c_yellow, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
-            y += 14;
+            civ_text_out(fb, font, x + 6, yb, uname, c_yellow, c_body_bg,
+                         CIV_TEXT_BK_TRANSPARENT);
+            yb += 18;
             int atk, def, moves;
             civ_unit_stats(u->type, &atk, &def, &moves);
-            snprintf(buf, sizeof buf, "A%d D%d M%d/%d", atk, def,
-                     u->moves_left, moves);
-            civ_text_out(fb, font, x, y, buf, c_black, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
-            y += 14;
-            snprintf(buf, sizeof buf, "(%d,%d) HP %d", u->x, u->y, u->hp);
-            civ_text_out(fb, font, x, y, buf, c_black, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
-            y += 14;
+            snprintf(buf, sizeof buf, "攻%d 防%d", atk, def);
+            civ_text_out(fb, font, x + 6, yb, buf, c_black, c_body_bg,
+                         CIV_TEXT_BK_TRANSPARENT);
+            yb += 16;
+            snprintf(buf, sizeof buf, "移動 %d/%d", u->moves_left, moves);
+            civ_text_out(fb, font, x + 6, yb, buf, c_black, c_body_bg,
+                         CIV_TEXT_BK_TRANSPARENT);
+            yb += 16;
+            snprintf(buf, sizeof buf, "位置 (%d,%d)", u->x, u->y);
+            civ_text_out(fb, font, x + 6, yb, buf, c_black, c_body_bg,
+                         CIV_TEXT_BK_TRANSPARENT);
+            yb += 16;
+            snprintf(buf, sizeof buf, "生命 %d", u->hp);
+            civ_text_out(fb, font, x + 6, yb, buf, c_black, c_body_bg,
+                         CIV_TEXT_BK_TRANSPARENT);
+            yb += 18;
         } else {
-            civ_text_out(fb, font, x, y, "(陣亡)", c_red, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
-            y += 14;
+            civ_text_out(fb, font, x + 6, yb, "(已陣亡)", c_red, c_body_bg,
+                         CIV_TEXT_BK_TRANSPARENT);
+            yb += 18;
         }
     } else {
-        civ_text_out(fb, font, x, y, "(無)", c_border, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
-        y += 14;
+        civ_text_out(fb, font, x + 6, yb, "(未選定)", c_grey_txt, c_body_bg,
+                     CIV_TEXT_BK_TRANSPARENT);
+        yb += 18;
     }
 
-    /* 7. 最近戰鬥訊息 */
-    if (w->game->world_ready && w->game->world.last_combat_msg[0]) {
-        civ_text_out(fb, font, x, y, w->game->world.last_combat_msg,
-                     c_red, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
-        y += 14;
-    }
-
-    /* 7b. R5 M6-full: cursor 上 city info */
+    /* 6. cursor 上 city */
     if (w->game->world_ready) {
         int cidx = civ_world_city_at(&w->game->world,
                                      w->game->world.cursor_x,
                                      w->game->world.cursor_y);
         if (cidx >= 0) {
             const civ_city_t *c = &w->game->world.cities[cidx];
-            civ_text_out(fb, font, x, y, "城市:", c_black, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
-            y += 12;
-            civ_text_out(fb, font, x, y, c->name, c_yellow, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
-            y += 12;
-            snprintf(buf, sizeof buf, "人口: %d", c->population);
-            civ_text_out(fb, font, x, y, buf, c_black, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
-            y += 12;
+            civ_text_out(fb, font, x, yb, "游標城市:", c_black, c_body_bg,
+                         CIV_TEXT_BK_TRANSPARENT);
+            yb += 18;
+            civ_text_out(fb, font, x + 6, yb, c->name, c_yellow, c_body_bg,
+                         CIV_TEXT_BK_TRANSPARENT);
+            yb += 16;
+            snprintf(buf, sizeof buf, "人口 %d 萬", c->population);
+            civ_text_out(fb, font, x + 6, yb, buf, c_black, c_body_bg,
+                         CIV_TEXT_BK_TRANSPARENT);
+            yb += 16;
             if (c->building_target >= 0) {
-                snprintf(buf, sizeof buf, "正在建造: %s",
+                snprintf(buf, sizeof buf, "建造: %s",
                          civ_building_name_zh(c->building_target));
-                civ_text_out(fb, font, x, y, buf, c_black, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
-                y += 12;
-                snprintf(buf, sizeof buf, "  %d/%d 盾",
-                         c->shield_stock,
-                         civ_building_cost(c->building_target));
-                civ_text_out(fb, font, x, y, buf, c_black, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
-                y += 12;
+                civ_text_out(fb, font, x + 6, yb, buf, c_black, c_body_bg,
+                             CIV_TEXT_BK_TRANSPARENT);
+                yb += 16;
             }
         }
     }
 
-    /* 8. 回合計數 (底部, RE 期保留) */
-    int y_bottom = inner_rect.y + inner_rect.h - 30;
-    snprintf(buf, sizeof buf, "Turn %u  Tick %llu",
-             (unsigned)w->game->turn_number,
-             (unsigned long long)w->game->tick_count);
-    civ_text_out(fb, font, x, y_bottom, buf, c_border, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
+    /* 7. 戰鬥訊息 */
+    if (w->game->world_ready && w->game->world.last_combat_msg[0]) {
+        civ_text_out(fb, font, x, yb, w->game->world.last_combat_msg,
+                     c_red, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
+    }
 
-    snprintf(buf, sizeof buf, "AI moves: %llu",
+    /* 8. 底部回合計數 (debug) */
+    int y_bottom = w->rect.y + w->rect.h - 28;
+    snprintf(buf, sizeof buf, "回合 %u", (unsigned)w->game->turn_number);
+    civ_text_out(fb, font, x, y_bottom, buf, c_grey_txt, c_body_bg,
+                 CIV_TEXT_BK_TRANSPARENT);
+    snprintf(buf, sizeof buf, "AI %llu",
              (unsigned long long)w->game->ai_actions);
-    civ_text_out(fb, font, x, y_bottom + 14, buf, c_border, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
+    civ_text_out(fb, font, x, y_bottom + 14, buf, c_grey_txt, c_body_bg,
+                 CIV_TEXT_BK_TRANSPARENT);
 }
 
 static void status_destroy(civ_widget_t *w)

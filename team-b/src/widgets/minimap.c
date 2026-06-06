@@ -85,7 +85,7 @@ static void minimap_render(civ_widget_t *w, civ_surface_t *fb)
     uint8_t c_t_fg = w->game ? civ_palette_nearest_rgb(&w->game->palette, 0xFF,0xFF,0xFF) : 15;
     civ_fill_rect(fb, (civ_rect_t){w->rect.x, w->rect.y, w->rect.w, SUB_TITLE_H}, c_t_bg);
     if (w->game && w->game->font_body) {
-        const char *title = "World Map";
+        const char *title = "世界地圖";
         int tw = civ_text_measure(w->game->font_body, title);
         int tx = w->rect.x + (w->rect.w - tw) / 2;
         civ_text_out(fb, w->game->font_body, tx, w->rect.y + SUB_TITLE_H - 3,

@@ -125,133 +125,166 @@ static const char *civ_short_name(int slot)
     return SHORT[slot];
 }
 
+/* R17: 每個 tech 對應一個代表性中文字 (icon 占位之代替), 對齊 reference
+ * 圖示 — 1991 manual 每 tech 對應一個 cause/effect 圖. */
+static const char *tech_icon_char_zh(civ_tech_id_t t)
+{
+    switch (t) {
+        case CIV_TECH_ALPHABET:         return "文";
+        case CIV_TECH_BRONZE_WORKING:   return "銅";
+        case CIV_TECH_HORSEBACK_RIDING: return "馬";
+        case CIV_TECH_POTTERY:          return "陶";
+        case CIV_TECH_CURRENCY:         return "幣";
+        case CIV_TECH_IRON_WORKING:     return "鐵";
+        case CIV_TECH_WRITING:          return "書";
+        case CIV_TECH_MAP_MAKING:       return "圖";
+        case CIV_TECH_MASONRY:          return "石";
+        case CIV_TECH_POLYTHEISM:       return "神";
+        case CIV_TECH_LITERACY:         return "文";
+        case CIV_TECH_MATHEMATICS:      return "算";
+        default:                        return "?";
+    }
+}
+
 void civ_tech_screen_render(struct civ_game *g, civ_surface_t *fb)
 {
     if (!g || !g->tech_screen_open) return;
     const civ_tech_discovery_event_t *ev = &g->tech_screen_event;
 
-    /* 顏色 */
+    /* R17 升級色盤 — 對齊原版 BRONZE WORKING reference 紙質感 */
     uint8_t c_white  = pn(g, 0xFF, 0xFF, 0xFF);
     uint8_t c_black  = pn(g, 0x00, 0x00, 0x00);
-    uint8_t c_grey   = pn(g, 0xA0, 0xA0, 0xA0);
+    uint8_t c_grey   = pn(g, 0x80, 0x80, 0x80);
+    uint8_t c_dgrey  = pn(g, 0x40, 0x40, 0x40);
     uint8_t c_purple = pn(g, 0x80, 0x00, 0x80);
     uint8_t c_blue   = pn(g, 0x00, 0x40, 0xC0);
     uint8_t c_red    = pn(g, 0xC0, 0x00, 0x00);
     uint8_t c_green  = pn(g, 0x00, 0x80, 0x00);
     uint8_t c_bg     = pn(g, 0xF0, 0xE8, 0xD0);   /* 米色 wallpaper bg */
-    uint8_t c_yellow = pn(g, 0xFF, 0xE0, 0x00);
+    uint8_t c_dark   = pn(g, 0x60, 0x30, 0x20);   /* tech icon 深褐 (青銅色) */
+    uint8_t c_gold   = pn(g, 0xE0, 0xC0, 0x40);   /* tech icon 金 highlight */
 
     /* 整版 米色 wallpaper 底 */
     civ_fill_rect(fb, (civ_rect_t){0, 0, TS_W, TS_H}, c_bg);
 
-    /* R16-2: 雙層花邊 frame */
+    /* R16-2: 雙層花邊 frame (外厚 + 內細 + 黑線) */
     paint_frame_border(fb, g, (civ_rect_t){8, 8, TS_W - 16, TS_H - 16}, 16);
     civ_frame_rect(fb, (civ_rect_t){24, 24, TS_W - 48, TS_H - 48}, c_black);
-    /* 內框留 1px 黑邊就好 */
+    civ_frame_rect(fb, (civ_rect_t){25, 25, TS_W - 50, TS_H - 50}, c_dgrey);
 
-    /* R16-3: 左上 96x96 tech illustration 占位 (BRONZE WORKING = 大鍋火) */
-    civ_rect_t pic_r = { 56, 80, 96, 96 };
-    civ_fill_rect(fb, pic_r, c_black);
-    civ_frame_rect(fb, pic_r, c_grey);
-    if (g->font_body) {
-        const char *icon_hint = "(圖示)";
-        int w = civ_text_measure(g->font_body, icon_hint);
-        civ_text_out(fb, g->font_body,
-                     pic_r.x + (pic_r.w - w) / 2,
-                     pic_r.y + pic_r.h / 2,
-                     icon_hint, c_white, c_black,
+    /* R17: 左上 tech illustration — 用 1 個代表性中文字 (大字) + 深褐底 */
+    civ_rect_t pic_r = { 60, 80, 110, 110 };
+    civ_fill_rect(fb, pic_r, c_dark);
+    civ_frame_rect(fb, pic_r, c_gold);
+    civ_frame_rect(fb,
+                   (civ_rect_t){pic_r.x + 1, pic_r.y + 1, pic_r.w - 2, pic_r.h - 2},
+                   c_black);
+    /* 圖示大字 — 用 font_title 寫 1 個代表字, 雙寫粗體 */
+    if (g->font_title) {
+        const char *ic = tech_icon_char_zh(ev->tech_id);
+        int iw = civ_text_measure(g->font_title, ic);
+        int ix = pic_r.x + (pic_r.w - iw) / 2;
+        int iy = pic_r.y + pic_r.h / 2 + 16;
+        civ_text_out(fb, g->font_title, ix + 1, iy + 1, ic, c_dark, c_dark,
+                     CIV_TEXT_BK_TRANSPARENT);
+        civ_text_out(fb, g->font_title, ix, iy, ic, c_gold, c_dark,
+                     CIV_TEXT_BK_TRANSPARENT);
+        /* 雙寫粗體 */
+        civ_text_out(fb, g->font_title, ix + 1, iy, ic, c_gold, c_dark,
                      CIV_TEXT_BK_TRANSPARENT);
     }
 
-    /* R16-3: 大標題 (tech 中文名). 雙寫達到「粗黑大字」效果. */
+    /* R17: 大標題區 — tname 中央偏右, 雙寫多次 達到粗黑大字效果 */
+    int title_x = 200;
+    int title_y = 130;
     if (g->font_title) {
         const char *tname = civ_tech_name_zh(ev->tech_id);
-        int tw = civ_text_measure(g->font_title, tname);
-        int tx = 180;
-        int ty = 110;
-        /* drop shadow 1px */
-        civ_text_out(fb, g->font_title, tx + 1, ty + 1,
+        /* drop shadow 3px (gives 3D effect) */
+        civ_text_out(fb, g->font_title, title_x + 2, title_y + 2,
                      tname, c_grey, c_bg, CIV_TEXT_BK_TRANSPARENT);
-        civ_text_out(fb, g->font_title, tx, ty,
+        /* bold 雙寫: stamp twice with 1px x offset */
+        civ_text_out(fb, g->font_title, title_x,     title_y,
                      tname, c_black, c_bg, CIV_TEXT_BK_TRANSPARENT);
-        (void)tw;
+        civ_text_out(fb, g->font_title, title_x + 1, title_y,
+                     tname, c_black, c_bg, CIV_TEXT_BK_TRANSPARENT);
     } else if (g->font_body) {
-        civ_text_out(fb, g->font_body, 180, 110,
+        civ_text_out(fb, g->font_body, title_x, title_y,
                      civ_tech_name_zh(ev->tech_id), c_black, c_bg,
                      CIV_TEXT_BK_TRANSPARENT);
     }
 
-    /* subtitle "文明進展" */
+    /* subtitle + source phrase */
     if (g->font_body) {
-        civ_text_out(fb, g->font_body, 180, 140,
-                     civ_tech_subtitle_zh(), c_grey, c_bg,
+        civ_text_out(fb, g->font_body, title_x, title_y + 26,
+                     civ_tech_subtitle_zh(), c_dgrey, c_bg,
                      CIV_TEXT_BK_TRANSPARENT);
 
-        /* "(取自 XXX)" / "(自家研發)" */
         const char *src = civ_tech_source_phrase_zh(
             ev->source, civ_short_name(ev->from_civ_slot));
-        civ_text_out(fb, g->font_body, 180, 162,
+        civ_text_out(fb, g->font_body, title_x, title_y + 46,
                      src, c_grey, c_bg, CIV_TEXT_BK_TRANSPARENT);
     }
 
-    /* R16-4: Allows 列表 */
+    /* R16-4: Allows 列表 — 加深裝飾, 對齊 reference layout */
     if (g->font_body) {
-        int ay = 210;
-        civ_text_out(fb, g->font_body, 80, ay,
+        int ay = 240;
+        int ax = 80;
+        civ_text_out(fb, g->font_body, ax, ay,
                      "解鎖:", c_purple, c_bg, CIV_TEXT_BK_TRANSPARENT);
-        ay += 22;
+        ay += 24;
 
         /* 後續可研發 tech (藍) */
         for (int i = 0; i < 8 && ev->unlocked_techs[i]; i++) {
-            civ_text_out(fb, g->font_body, 110, ay,
+            civ_text_out(fb, g->font_body, ax + 30, ay,
                          civ_tech_name_zh(ev->unlocked_techs[i]),
                          c_blue, c_bg, CIV_TEXT_BK_TRANSPARENT);
-            ay += 20;
+            ay += 22;
         }
 
         /* unit (紅) + sprite */
         for (int i = 0; i < 4 && ev->unlocked_units[i]; i++) {
             int col = 0, row = 0;
             unit_sprite_coord(ev->unlocked_units[i], &col, &row);
-            blit_mini_sprite(fb, g, 100, ay - 14, col, row);
+            blit_mini_sprite(fb, g, ax + 12, ay - 14, col, row);
             char buf[64];
             snprintf(buf, sizeof buf, "%s 單位",
                      civ_unit_name_zh((civ_unit_type_t)ev->unlocked_units[i]));
-            civ_text_out(fb, g->font_body, 120, ay, buf,
+            civ_text_out(fb, g->font_body, ax + 32, ay, buf,
                          c_red, c_bg, CIV_TEXT_BK_TRANSPARENT);
-            ay += 20;
+            ay += 22;
         }
 
         /* improvement (綠) + sprite */
         for (int i = 0; i < 4 && ev->unlocked_imp[i]; i++) {
             int col = 0, row = 0;
             building_sprite_coord(ev->unlocked_imp[i], &col, &row);
-            blit_mini_sprite(fb, g, 100, ay - 14, col, row);
-            char buf[64];
-            snprintf(buf, sizeof buf, "%s",
-                     civ_building_name_zh(ev->unlocked_imp[i]));
-            civ_text_out(fb, g->font_body, 120, ay, buf,
+            blit_mini_sprite(fb, g, ax + 12, ay - 14, col, row);
+            civ_text_out(fb, g->font_body, ax + 32, ay,
+                         civ_building_name_zh(ev->unlocked_imp[i]),
                          c_green, c_bg, CIV_TEXT_BK_TRANSPARENT);
-            ay += 20;
+            ay += 22;
         }
 
-        /* wonder (綠) + sprite — R16 只 placeholder, 真名 R17 補 wonder 表 */
+        /* wonder (綠) + sprite */
         for (int i = 0; i < 4 && ev->unlocked_wonder[i]; i++) {
             int col = 0, row = 0;
             wonder_sprite_coord(ev->unlocked_wonder[i], &col, &row);
-            blit_mini_sprite(fb, g, 100, ay - 14, col, row);
-            const char *wname = "巨像 Wonder";
-            if (ev->unlocked_wonder[i] == 2) wname = "金字塔 Wonder";
-            civ_text_out(fb, g->font_body, 120, ay, wname,
+            blit_mini_sprite(fb, g, ax + 12, ay - 14, col, row);
+            const char *wname = "巨像 奇蹟";
+            if (ev->unlocked_wonder[i] == 2) wname = "金字塔 奇蹟";
+            civ_text_out(fb, g->font_body, ax + 32, ay, wname,
                          c_green, c_bg, CIV_TEXT_BK_TRANSPARENT);
-            ay += 20;
+            ay += 22;
         }
     }
 
-    /* 底部 hint */
+    /* 底部 hint (對齊 reference 右下劍形 cursor 位置) */
     if (g->font_body) {
-        civ_text_out(fb, g->font_body, 50, TS_H - 40,
-                     "按 Enter / ESC 繼續",
-                     c_yellow, c_bg, CIV_TEXT_BK_TRANSPARENT);
+        const char *hint = "按 Enter / ESC 繼續";
+        int hw = civ_text_measure(g->font_body, hint);
+        civ_text_out(fb, g->font_body,
+                     (TS_W - hw) / 2, TS_H - 38,
+                     hint, c_dgrey, c_bg, CIV_TEXT_BK_TRANSPARENT);
     }
+    (void)c_white;
 }

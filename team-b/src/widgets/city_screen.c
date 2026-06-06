@@ -30,36 +30,33 @@ static void paint_stipple(civ_surface_t *fb, civ_rect_t r,
     }
 }
 
-/* R15: 用真實 SPR32X32 sprite tile 重複貼當背景 — 對齊使用者新 reference
- * (原版 city screen 藍底實際是 ocean/coast sprite 真 tile pattern, 不是
- * 單色 stipple). 對 rect 內 32x32 grid 重複 blit ocean tile.
+/* R17: paint_fine_speckle — 4x4 pattern, 取代 R15 paint_tile_repeat 的 ocean.
+ * 對齊原版 ROME city screen reference: 整版底色實際是「純藍 + 細顆粒 dither」,
+ * 不是 ocean wave tile (R15 R10 使用者再次指正). 4x4 內 13/16 pixel 是 base 藍,
+ * 3/16 pixel 是 highlight 較亮藍, 形成均勻 speckle 質感.
  *
- * tile_col / tile_row 是 SPR32X32 內 source. clip 過 rect 邊界. */
-static void paint_tile_repeat(civ_surface_t *fb, civ_rect_t r,
-                              struct civ_game *g, int tile_col, int tile_row)
+ *   pattern:
+ *     . . . .
+ *     . X . .
+ *     . . . X
+ *     . . X .
+ */
+static void paint_fine_speckle(civ_surface_t *fb, civ_rect_t r,
+                                uint8_t c_base, uint8_t c_dot)
 {
-    if (!g->sprite_sheet.sheet) {
-        /* fallback: 2x2 stipple 藍 */
-        paint_stipple(fb, r, pn(g, 0x60,0x80,0xD0), pn(g, 0x50,0x70,0xC0));
-        return;
-    }
-    civ_sprite_sheet_t *sh = &g->sprite_sheet;
-    int tw = sh->tile_w, th = sh->tile_h;
-    civ_rect_t src = civ_sprite_rect(sh, tile_col, tile_row);
-
-    /* clip 設定: 不讓 blit 跑出 rect */
-    civ_rect_t old_clip = fb->clip;
-    civ_surface_clip_set(fb, r);
-
-    for (int yy = r.y; yy < r.y + r.h; yy += th) {
-        for (int xx = r.x; xx < r.x + r.w; xx += tw) {
-            if (sh->lut_built)
-                civ_surface_blit_remap(fb, xx, yy, sh->sheet, &src, sh->lut);
-            else
-                civ_surface_blit(fb, xx, yy, sh->sheet, &src);
+    static const uint8_t DOT[16] = {
+        0, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 0, 1,
+        0, 0, 1, 0,
+    };
+    for (int yy = r.y; yy < r.y + r.h; yy++) {
+        for (int xx = r.x; xx < r.x + r.w; xx++) {
+            if (xx < 0 || xx >= fb->w || yy < 0 || yy >= fb->h) continue;
+            int idx = (yy & 3) * 4 + (xx & 3);
+            fb->pixels[yy * fb->pitch + xx] = DOT[idx] ? c_dot : c_base;
         }
     }
-    fb->clip = old_clip;
 }
 
 /* 對齊 reference/civ1_win_city_screen.png. 全螢幕 modal.
@@ -119,8 +116,22 @@ void civ_city_screen_render(struct civ_game *g, civ_surface_t *fb)
     uint8_t c_white   = pn(g, 0xFF, 0xFF, 0xFF);
     uint8_t c_red     = pn(g, 0xC0, 0x00, 0x00);
     uint8_t c_blue    = pn(g, 0x00, 0x00, 0x80);
-    /* R15: 整版背景改用真 ocean tile (對齊原版 city screen 真有 tile pattern) */
-    paint_tile_repeat(fb, (civ_rect_t){0, 0, CS_W, CS_H}, g, 22, 9);
+    /* R17 v2: 整版背景純藍 (Win16 #000080 nearest) + 微微 stipple 反白點
+     * (4x4 中 1/16 高亮 pixel) — 對齊 ROME reference 純藍質感.
+     *
+     * 之前 paint_fine_speckle 用 3/16 密度 + 兩個藍色, 但 sheet palette
+     * 找不到對應 RGB 跳到 terrain 雜色. v2 改用 c_blue base + c_white 1/16
+     * 點, 兩色都是穩定 nearest match. */
+    {
+        uint8_t c_dot = pn(g, 0xC0, 0xC0, 0xC0);
+        civ_fill_rect(fb, (civ_rect_t){0, 0, CS_W, CS_H}, c_blue);
+        for (int yy = 0; yy < CS_H; yy += 4) {
+            for (int xx = 2; xx < CS_W; xx += 8) {
+                if (xx < fb->w && yy < fb->h)
+                    fb->pixels[yy * fb->pitch + xx] = c_dot;
+            }
+        }
+    }
 
     /* === 標題列 y 0..30 (黑底黃字 — 原版風格) === */
     civ_fill_rect(fb, (civ_rect_t){0, 0, CS_W, 30}, c_black);

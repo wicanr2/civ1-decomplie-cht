@@ -64,10 +64,11 @@ static void paint_background(struct civ_game *g)
     civ_fill_rect(fb, (civ_rect_t){0, 0, FB_W, TITLE_H}, c_title_bg);
     civ_hline(fb, 0, TITLE_H - 1, FB_W, c_menu_fg);
     if (g->font_body) {
-        const char *t = "CIVILIZATION";
+        /* R17: 主標題中文化 — "文明帝國" 對齊使用者中文化目標 */
+        const char *t = "文明帝國";
         int w = civ_text_measure(g->font_body, t);
         int x = (FB_W - w) / 2;
-        civ_text_out(fb, g->font_body, x, TITLE_H - 4, t,
+        civ_text_out(fb, g->font_body, x, TITLE_H - 3, t,
                      c_title_fg, c_title_bg, CIV_TEXT_BK_TRANSPARENT);
         /* min/max/close 三個小框右上角 (Win16 暗示) */
         for (int i = 0; i < 3; i++) {
@@ -78,19 +79,22 @@ static void paint_background(struct civ_game *g)
         civ_frame_rect(fb, (civ_rect_t){4, 3, 10, 10}, c_title_fg);
     }
 
-    /* === menu bar @ y=16 (16 px) — Win16 灰底黑字 === */
+    /* === menu bar @ y=16 (16 px) — Win16 灰底黑字 ===
+     * R17: 8 items 中文化 (對齊使用者指正) — 對齊 1993 英文版 menu
+     *   File → 檔案;  Edit → 編輯;  Orders → 命令;  Advisors → 顧問
+     *   World → 世界; Civilopedia → 百科; City → 城市;   Help → 說明 */
     civ_fill_rect(fb, (civ_rect_t){0, TITLE_H, FB_W, MENU_H}, c_menu_bg);
     civ_hline(fb, 0, CHROME_H - 1, FB_W, c_menu_fg);
     if (g->font_body) {
         const char *items[] = {
-            "File", "Edit", "Orders", "Advisors",
-            "World", "Civilopedia", "City", "Help",
+            "檔案", "編輯", "命令", "顧問",
+            "世界", "百科", "城市", "說明",
         };
         int x = 8;
         for (size_t i = 0; i < sizeof items / sizeof items[0]; i++) {
-            civ_text_out(fb, g->font_body, x, TITLE_H + MENU_H - 4, items[i],
+            civ_text_out(fb, g->font_body, x, TITLE_H + MENU_H - 3, items[i],
                          c_menu_fg, c_menu_bg, CIV_TEXT_BK_TRANSPARENT);
-            x += civ_text_measure(g->font_body, items[i]) + 12;
+            x += civ_text_measure(g->font_body, items[i]) + 16;
         }
     }
 }
@@ -185,8 +189,13 @@ int main(int argc, char **argv)
         }
     }
 
-    /* R16 demo: 若 argv 帶 "tech" 則打開 tech discovery modal — BRONZE WORKING */
+    /* R16 demo: 若 argv 帶 "tech" 則打開 tech discovery modal — BRONZE WORKING
+     * R17: 同時把 font_title 改用 36px (大字效果, 對齊原版 reference) */
     if (argc > 2 && strcmp(argv[2], "tech") == 0) {
+        if (file_exists(CIV_DEFAULT_FONT_PATH)) {
+            if (g.font_title) civ_font_close(g.font_title);
+            g.font_title = civ_font_open(CIV_DEFAULT_FONT_PATH, 36);
+        }
         civ_tech_discovery_event_t *ev = &g.tech_screen_event;
         memset(ev, 0, sizeof *ev);
         ev->tech_id       = CIV_TECH_BRONZE_WORKING;
