@@ -1,65 +1,65 @@
-# Clean-room protocol
+# Clean-room 制度
 
-## Why
+## 為什麼要 clean-room
 
-The 1993 *Civilization for Windows* source code is not publicly available and is, by all reports, lost. Several open-source projects (notably OpenCiv1, a C# port of the 1991 DOS version) reverse-engineered the game from disassembly. Their code is MIT-licensed and would be technically usable, but the goal of this project is an **independent** reconstruction: a codebase whose authorship history can be traced back to specifications written from disassembly observations alone, with no derivation from any prior reverse-engineered implementation.
+1993 年《文明帝國 視窗版》的原始碼從未公開，根據各方說法已遺失。坊間已有數個從 disassembly 反組譯的 open source 專案，最知名的是 OpenCiv1（1991 DOS 版的 C# 移植），程式以 MIT 釋出，技術上可直接利用。但本專案目標是 **獨立重建** — 一份程式碼的著作脈絡可以追到「**只看 disassembly 觀察寫出來的 spec**」，沒有衍生自任何前人反組譯實作。
 
-This both eliminates ambiguity around IP provenance and forces the implementation to confront the original binary's behavior directly, which surfaces details that derivative ports tend to paper over.
+這樣做有兩個好處：(1) 釐清 IP 來源毫無疑義；(2) 強迫實作直接面對原版 binary 行為，會浮現衍生 port 通常被掩蓋的細節。
 
-## The two-team split
+## 雙隊分工
 
-| Team | Inputs | Outputs | Forbidden |
-|------|--------|---------|-----------|
-| A — disassembly | Ghidra project on `CIV.EXE`, Track A's EDILZSS2 format spec | `team-a/specs/*.md`, `team-a/dumps/*.txt` | Writing C / C++ / any compilable code; reading any file under `team-b/`; reading OpenCiv1 / Freeciv / CivOne |
-| B — implementation | `team-a/specs/*.md` only | `team-b/src/**`, `team-b/tests/**` | Opening Ghidra; loading `CIV.EXE` into any disassembler; reading OpenCiv1 or any other Civ reimplementation; reading `team-a/dumps/` (specs only) |
+| 隊 | 輸入 | 輸出 | 禁止 |
+|---|---|---|---|
+| **A — disassembly 側** | `CIV.EXE` 的 Ghidra 專案；Track A 的 EDILZSS2 格式 spec | `team-a/specs/*.md`、`team-a/dumps/*.txt` | 寫 C / C++ / 任何可編譯的程式碼；讀 `team-b/` 下任何檔案；讀 OpenCiv1 / Freeciv / CivOne |
+| **B — 實作側** | 只有 `team-a/specs/*.md` | `team-b/src/**`、`team-b/tests/**` | 開 Ghidra；把 `CIV.EXE` 載入任何 disassembler；讀 OpenCiv1 或其他 Civ 重寫；讀 `team-a/dumps/`（只能讀 spec） |
 
-`team-a/dumps/` exists for Team A's own audit trail — it is **not** part of the interface. Team B never reads it.
+`team-a/dumps/` 存在的目的是 Team A 自己的 audit trail — **不屬於介面**。Team B 永遠不讀。
 
-`team-a/notes/` is Team A's scratch, also not part of the interface, and gitignored from PR review attention.
+`team-a/notes/` 是 Team A 私人 scratch，也不屬於介面，PR review 時不必逐行檢查。
 
-## Sign-off workflow
+## 簽核流程
 
-Each spec file (`team-a/specs/NN_subsystem.md`) carries a footer:
+每份 spec（`team-a/specs/NN_subsystem.md`）末尾都有 footer：
 
 ```markdown
 ## Sign-off
 
-- [ ] Team A: this spec accurately describes the behavior observed in CIV.EXE for the named subsystem.
-- [ ] Team B: this spec is implementable without further disassembly access; ambiguities have been escalated to Team A.
+- [ ] Team A：這份 spec 準確描述了該子系統在 CIV.EXE 中觀察到的行為。
+- [ ] Team B：這份 spec 可實作；不需要再回頭看 disassembly；不明處已 escalate 給 Team A。
 ```
 
-Both boxes must be ticked (in commits, by the human / agent acting in each role) before Team B begins implementing that subsystem. Ambiguities discovered mid-implementation come back as questions in the spec PR — Team A revises the spec; Team B does not return to the disassembly to "look it up".
+兩格都打勾（在 commit 中，由執行該角色的人 / agent 確認）後，Team B 才開始實作該子系統。實作途中若發現含糊，回到 spec PR 提問 — Team A 修 spec；Team B 不會自己「翻 disassembly 看」。
 
-## Agent / human role discipline
+## Agent / 人類角色紀律
 
-When the same operator (human or AI agent) serves both roles across different sessions:
+當同一操作者（人或 AI agent）在不同 session 擔任兩隊：
 
-1. **Never both roles in the same session.** A session is bound to one team. Switching teams requires ending the current session.
-2. **Knowledge from a Team A session does not silently leak into a Team B session.** The only Team-A → Team-B channel is committed specs.
-3. **Conversation memory is treated the same way.** If a memory note was written during a Team A session, a subsequent Team B session reads only the spec, not the memory note. (In practice this means Team A memories should describe *what was specified*, not *what the disassembly looked like*.)
+1. **同一 session 不戴兩頂帽子。** 一個 session 綁一個隊。換隊要結束目前 session。
+2. **Team A session 學到的東西不會默默漏到 Team B session。** Team A → Team B 唯一通道是已 commit 的 spec。
+3. **對話 memory 比照辦理。** 如果一條 memory 是 Team A session 寫的，下一個 Team B session 只讀 spec 不讀那條 memory。（實務上：Team A memory 應該記錄 **規範了什麼**，不是 **disassembly 看到什麼**。）
 
-## What can be reused from Track A (the prior project)
+## 可以從 Track A 重用的東西
 
-The parent project `civ1_cht` did extensive Track A work (Win16 NE inline patching). The following Track A outputs are **data**, not implementation, and can be cleanly pulled into this project:
+母專案 `civ1_cht` 的 Track A 做了大量 Win16 NE inline patch 工作。下列 Track A 產出是 **資料**，不是實作，可以乾淨地取用：
 
-- EDILZSS2 decompression *format specification* (a description of the byte layout, not the decoder implementation)
-- The list of `RT_DIALOG` resource IDs and their structural fields
-- The translated Chinese strings (`inline_translations.json`, `dialog_translations.json`) as a translation catalog, under CC BY-SA 4.0
+- EDILZSS2 解壓 **格式規範**（描述 byte layout，不是 decoder 實作）
+- `RT_DIALOG` resource ID 清單與 slot 結構
+- 翻譯字串（`inline_translations.json`、`dialog_translations.json`）做為 translation catalog，授權 CC BY-SA 4.0
 
-The following Track A outputs are **implementation** and must not be pulled in:
+下列 Track A 產出是 **實作**，不可取用：
 
-- The Python decoder for EDILZSS2 (Team B re-implements from the format spec)
-- The NE binary patcher scripts
-- The Win16 GDI workarounds
+- EDILZSS2 的 Python decoder（Team B 從格式 spec 重新實作）
+- NE binary patcher script
+- Win16 GDI workaround
 
-See `REUSE_FROM_TRACK_A.md` for the precise inventory.
+完整對照表見 `REUSE_FROM_TRACK_A.md`。
 
-## Validation
+## 驗證
 
-There is no behavioral oracle (no DOSBox, no `wine` running the original binary, no reference port). Validation comes from:
+沒有行為 oracle（不跑 DOSBox、不用 `wine` 跑原版、不參考任何 port）。驗證來自：
 
-1. **Spec-derived unit tests.** Team A's spec includes worked examples (e.g., "given input bytes `0x12 0x34 …`, the EDILZSS2 decoder must produce output bytes `0xAB 0xCD …`"). Team B's tests assert this.
-2. **Asset round-trip.** Decoded `.pic` / `.pal` files re-encoded back to bytes must match the originals (this validates the loader/saver pair, not behavior).
-3. **Visual layout comparison.** Final UI screenshots may be compared against Track A's frozen Big5-patched binary screenshots for *layout* parity, not for *behavioral* parity.
+1. **Spec 推導出的單元測試。** Team A 在 spec 內附 worked example（例：「給定輸入 bytes `0x12 0x34 …`，EDILZSS2 decoder 必須產出 bytes `0xAB 0xCD …`」）。Team B 的測試 assert 這個。
+2. **資產 round-trip。** 解開的 `.pic`/`.pal` 再 encode 回去要與原檔 byte 等同（驗 loader/saver pair，不驗行為）。
+3. **視覺 layout 比對。** 最終 UI 截圖可以對 Track A 已凍結的 Big5-patched binary 截圖比 **layout** 一致，不比 **行為** 一致。
 
-Anything that cannot be tested by one of these three means is escalated as an open question in the spec, not resolved by running the original game.
+無法用這三種方法測的東西，當作 spec 內未解問題往上 escalate，不是自己跑原版去問答案。

@@ -1,35 +1,47 @@
-# Phase log
+# 階段紀錄
 
-## 2026-06-06 — Phase 0 kickoff
+## 2026-06-06 — Phase 0 起步
 
-- Repo created: https://github.com/wicanr2/civ1-decomplie-cht
-- WSL environment: Ubuntu 22.04.5 LTS on WSL2 kernel 6.6.114.1, JDK 21.0.11 pre-installed.
-- Decision: drop prior Track B (`openciv1pp/`, derived from OpenCiv1) entirely; this repo is a clean-room rebuild from disassembly.
-- Decision: no DOSBox / wine / reference-binary oracle. Validation comes from spec-derived fixtures, asset round-trip, and layout-only screenshot comparison against Track A's frozen Big5 build.
+- Repo 建立：https://github.com/wicanr2/civ1-decomplie-cht
+- WSL 環境：Ubuntu 22.04.5 LTS（WSL2 kernel 6.6.114.1），JDK 21.0.11 已預裝。
+- 決策：放棄前置 Track B（`openciv1pp/`，衍生自 OpenCiv1） — 本 repo 從 disassembly 起 clean-room 重建。
+- 決策：不用 DOSBox / wine / 跑原版 binary 當 oracle。驗證來自 spec 推導 fixture、資產 round-trip、與 Track A 凍結 Big5 build 做純 layout 截圖比對。
 
-## 2026-06-06 — Toolchain and binary intake
+## 2026-06-06 — 工具棧 + binary 取得
 
-- Ghidra 12.1.2 installed to `/opt/ghidra_12.1.2_PUBLIC` (symlinked `/opt/ghidra`); headless analyzer verified against JDK 21.
-- Auxiliary tools installed via apt: `p7zip-full`, `binwalk`, `xxd`, `file`. (`radare2` / `rizin` not in Ubuntu 22.04 default repos — deferred; Ghidra alone is sufficient for the first pass.)
-- Discovered the `CIV.EXE` initially supplied at `_sfx_build_civ1/game/CIV.EXE` is the Track A Big5-patched build (832,512 bytes, MD5 `336FF646…`). Its non-resident-name table `MODULE_DESC` decodes as Big5 `'文明帝國 視窗版'` rather than `'CIVILIZATION for Windows'`.
-- Pristine 1993 English binary also located at `D:\03_game_tmp\win31\C\MPS\CIVWIN\CIV.EXE` (833,024 bytes, MD5 `DCC4399E…`).
-- The two binaries are structurally identical (same 133-segment layout, same 6 imports, same 11 exports); Track A's patches modify only inline string slots and `RT_DIALOG` labels, not code.
-- After provisionally pinning the pristine binary as work-of-record and writing spec 00 against it, the user authorized using the Track A Big5-patched binary instead — spec 00, README, and `team-a/binary/CIV.EXE` updated accordingly. The patched binary is the work-of-record going forward because (a) the user's SFX portable build chain targets it, so visual-layout validation uses the same artifact, and (b) Big5 inline-string references in the disassembly directly populate Team B's translation catalog.
-- Ghidra was first run against the pristine binary as a sanity check (total analysis time 56 s; Ghidra auto-detected `New Executable (NE)` / `x86:LE:16:Protected Mode` and applied built-in Win16 export symbol tables for KERNEL/USER/GDI/WIN87EM/MMSYSTEM/COMMDLG). That project was deleted and re-imported against the Big5-patched binary.
+- Ghidra 12.1.2 安裝到 `/opt/ghidra_12.1.2_PUBLIC`（symlink `/opt/ghidra`）；headless analyzer + JDK 21 驗證通過。
+- 輔助工具 apt 安裝：`p7zip-full`、`binwalk`、`xxd`、`file`。（`radare2` / `rizin` 不在 Ubuntu 22.04 預設 repo — 延後；Ghidra 一個就夠用。）
+- 發現 `_sfx_build_civ1/game/CIV.EXE` 是 Track A Big5-patched build（832,512 bytes，MD5 `336FF646…`），不是原版 1993。MODULE_DESC 解 Big5 = `'文明帝國 視窗版'`，不是 `'CIVILIZATION for Windows'`。
+- 原版 1993 英文 binary 在 `D:\03_game_tmp\win31\C\MPS\CIVWIN\CIV.EXE`（833,024 bytes，MD5 `DCC4399E…`）。
+- 兩個 binary 結構完全相同（同 133 segments / 同 6 imports / 同 11 exports）；Track A 只 patch inline 字串槽與 RT_DIALOG label，沒動 code。
+- 在原版上跑 spec 00 後，使用者授權改用 Track A Big5-patched binary — spec 00 / README / `team-a/binary/CIV.EXE` 對應更新。選 Big5-patched 是因為 (a) 使用者的 SFX portable 是這份 binary build 的，視覺 layout 驗證能對同一 artifact；(b) Big5 inline string reference 直接餵 Team B 翻譯 catalog。
+- 第一輪 Ghidra（原版上）跑了 56 秒；自動偵測 `New Executable (NE)` / `x86:LE:16:Protected Mode`，且自動套用 Win16 export symbol table（KERNEL/USER/GDI/WIN87EM/MMSYSTEM/COMMDLG）。專案刪掉，改在 Big5-patched binary 上重跑。
 
-## 2026-06-06 — Spec 01: Compiler ID + API surface + original source structure
+## 2026-06-06 — Spec 00：NE 結構
 
-- Ran Ghidra auto-analysis on the Big5-patched binary: 1142 functions discovered, all 11 Win16 callbacks named (`WDWMAPPROC` 1208:0054 / `CIVDIALOGPROC` 1098:1838 / `TIMERPROC` 1008:0d68 / etc.); 157 imported Win16 APIs identified across the six expected modules.
-- Wrote `team-a/tools/ghidra_extract_spec01.py` — Ghidra Jython post-script that dumps function list, per-API call-site counts via segment-1608 thunk references, entry-point walk, and compiler-signature strings into `team-a/dumps/01[a-d]_*.txt`.
-- Compiler identified: **Borland C++ 1991** (`'Borland C++ - Copyright 1991 Borland Intl.'` literal in segment 1420).
-- Original 1993 source-file structure recovered from `assert()`-macro-embedded `"func()  :  source.c"` strings: 12+ `.c` files including `dialogs.c`, `godpal.c`, `gr.c`, `gr_pic.c` (contains **`PicDecompress`** = EDILZSS2 decoder), `gr_port.c`, `init.c`, `load.c` (contains `RLLDecode`/`RLLEncode` for save files), `mac.c` (Mac Memory Manager shim), `resmgr.c` (Mac Resource Manager shim), `shape.c`, `wdwmap.c`/`wdwsmmap.c`/`wdwstat.c` (three windows), `windows.c` (likely `WinMain`/`MenuZ`).
-- Architectural finding: **the 1993 Windows version is structurally a Mac port adapted to Win16**, evidenced by `mac.c`'s `NewPtr` / `DisposPtr` / `HandToHand` / `DisposeHandle` (Mac Memory Manager API) and `resmgr.c`'s `OpenResFile` / `NewResource` / `AddType` / `RestoMem` (Mac Resource Manager API). The Win16 substrate is used to emulate the Mac primitives; this is why `KERNEL.GLOBALLOCK`/`GLOBALUNLOCK` (206/230 calls) dominate the import inventory — they back the Mac Handle/Pointer abstraction. Team B's C99 reimplementation collapses both layers (Mac shim + Win16 substrate) into a single direct C99 layer.
-- API call-site totals (work for Team B's SDL2 substitution): USER 970, KERNEL 667, GDI 552, COMMDLG 4, MMSYSTEM 4, WIN87EM 0 (unused at runtime — linked only for `c0w` runtime-presence check). Per-API hot-list captured in spec 01.
-- Wrote `team-a/specs/01_compiler_and_api_surface.md` covering compiler identification, original `.c` source file inventory, the Mac-port architectural finding, full per-module API call-site tables, and the entry-point startup walk.
+- 寫 `team-a/tools/ne_dump.py` — 公開格式（Microsoft NE spec）的 dumper；只讀格式定義允許的欄位，不做任何推論。輸出存 `team-a/dumps/00_ne_structure.txt`。
+- 寫第一份簽核 spec `team-a/specs/00_ne_structure.md`：binary 身分、記憶體模型、133 segments（約 69 code + 約 63 data + 1 autodata 在 segment 133）、6 個 Win16 import（KERNEL / USER / GDI / WIN87EM / MMSYSTEM / COMMDLG）、11 個導出 callback（`WDWMAPPROC`、`TIMERPROC`、`CIVDIALOGPROC`…）、resource directory（24 `RT_DIALOG`、1 `RT_MENU`、16 `RT_CURSOR`、1 `RT_ICON`、無 `RT_STRING`、無 `RT_RCDATA`、無 `RT_VERSION`）。
+- Spec 00 簽核待 Team A 與 Team B 各別覆核。
 
-## 2026-06-06 — Spec 00: NE structure
+## 2026-06-06 — Spec 02：啟動流程、game loop、11 個 callback 職責
 
-- Wrote `team-a/tools/ne_dump.py`, a public-format NE-header / segment / import / resource dumper. Output captured in `team-a/dumps/00_ne_structure.txt`.
-- Wrote first signed spec `team-a/specs/00_ne_structure.md` covering binary identity, memory model, 133 segments (~69 code + ~63 data + 1 autodata at segment 133), the six Win16 imports (KERNEL / USER / GDI / WIN87EM / MMSYSTEM / COMMDLG), the eleven exported callbacks (`WDWMAPPROC`, `TIMERPROC`, `CIVDIALOGPROC`, …), and the resource directory (24 `RT_DIALOG`, 1 `RT_MENU`, 16 `RT_CURSOR`, 1 `RT_ICON`, no `RT_STRING`, no `RT_RCDATA`, no `RT_VERSION`).
-- Spec 00 sign-off pending Team A and Team B review.
-- Ghidra headless auto-analysis on the pristine `CIV.EXE` queued for background execution to feed spec 01 (compiler identification + per-API call inventory).
+- 寫 `team-a/tools/ghidra_extract_spec02.py` Jython post-script — 透過 Ghidra DecompInterface 對 11 個導出 callback + entry stub 各別做 decompile，輸出 `team-a/dumps/02a_<name>.c`；同時從 entry 起點走 call graph，找第一個 call `REGISTERCLASS` / `LOADMENU` / `LOADACCELERATORS` 的 function 作為 WinMain candidate，decompile 到 `02b_winmain_chain.c`。
+- WinMain candidate 定位：**`FUN_1008_0000` @ `1008:0000`**（spec 02 §2.1.2）。
+- 啟動流程 7 段（C runtime stub → 早期 init → 載入 sub-system → 註冊 TIMERPROC/SETTIMER/ADDFONTRESOURCE → 載 5 個 startup dialog → 載 7 組 game data → 創 3 個視窗 → 鍵盤狀態 hack → 主迴圈 → 清理）全部 walked，每段都對應到 Team B 的 SDL2 替代建議。
+- 主迴圈形狀確認：`while (DAT_12d8_24ee == 0) { FUN_1088_0000(); }`，內部用 `PEEKMESSAGE`（spec 01 統計 23 次 call site，遠多於 0 次的 `GETMESSAGE`）做非阻塞 poll；idle path 推進遊戲狀態與動畫。
+- 11 個 callback 各別職責整理完，最重要的幾個發現：
+  - **`TIMERPROC` 只做 counter decrement**（`DAT_12d8_24f0 -= 1`）— 不 post message、不做任何工作。實際 frame timing 由 idle path 控；timer 只是精準度補丁。
+  - **`WDWMAPPROC` / `WDWSMMAPPROC` / `WDWSTATUSPROC` 不用 switch，用 dispatch table**（22 / 9 / 9 個 entry 的平行陣列：`msgs[]` + `handlers[]`）。Team B 對應到 `{sdl_event_type, handler_fn}` 表。
+  - `WDWMAPPROC` 有「鎖定 mode」(`DAT_12b0_0000`)：開啟時只接受 `WM_SIZE` 與 `WM_CLOSE`，其他都 DefWindowProc — 推測進入「移動單位」「選城市」這種需要 modal 互動的瞬間。
+  - 4 個 RANDOM* / REGIONPROC 都是 subclass procedure — Team B 用 widget event handler 取代。
+- 寫 `team-a/specs/02_startup_and_game_loop.md` 涵蓋 §2.1 啟動流程、§2.2 11 個 callback 逐一說明、§2.3 視窗-callback 對應總覽、§2.4 Team B 最小可跑 SDL2 骨架建議。
+
+## 2026-06-06 — Spec 01：Compiler ID + API surface + 原始 source 結構
+
+- 在 Big5-patched binary 上跑 Ghidra auto-analysis：1142 個 function、11 個 Win16 callback 全自動命名（`WDWMAPPROC` 1208:0054 / `CIVDIALOGPROC` 1098:1838 / `TIMERPROC` 1008:0d68 等）、157 個 Win16 import 自動歸到 6 個 module。
+- 寫 `team-a/tools/ghidra_extract_spec01.py` — Ghidra Jython post-script，輸出 function 清單、按 segment 1608 thunk reference 計算的 per-API call site 數、entry-point 走路、編譯器簽名字串，到 `team-a/dumps/01[a-d]_*.txt`。
+- 編譯器 ID 確認：**Borland C++ 1991**（segment 1420 內有字串 `'Borland C++ - Copyright 1991 Borland Intl.'`）。
+- 原始 1993 source 結構從 Borland `assert()` macro 嵌入的 `"func()  :  source.c"` 字串還原：12+ 個 `.c` 檔，包含 `dialogs.c`、`godpal.c`、`gr.c`、`gr_pic.c`（含 **`PicDecompress`** = EDILZSS2 decoder）、`gr_port.c`、`init.c`、`load.c`（含 `RLLDecode`/`RLLEncode` 存檔 RLL 編碼）、`mac.c`（Mac Memory Manager shim）、`resmgr.c`（Mac Resource Manager shim）、`shape.c`、`wdwmap.c` / `wdwsmmap.c` / `wdwstat.c`（三個視窗）、`windows.c`（推測含 `WinMain` / `MenuZ`）。
+- 架構發現：**1993 Windows 版本質上是 Mac 移植** — `mac.c` 有 `NewPtr` / `DisposPtr` / `HandToHand` / `DisposeHandle`（Mac Memory Manager API），`resmgr.c` 有 `OpenResFile` / `NewResource` / `AddType` / `RestoMem`（Mac Resource Manager API）。Win16 substrate 用來 emulate Mac primitive，所以 `KERNEL.GLOBALLOCK`/`GLOBALUNLOCK` 佔 KERNEL 全部 667 個 call 的 436 個（206 + 230）— 都在背後撐 Mac Handle/Pointer 抽象。Team B 的 C99 重寫把這兩層 shim 都收掉，直接寫一層。
+- API call-site 統計（給 Team B 排 SDL2 取代優先序）：USER 970 / KERNEL 667 / GDI 552 / COMMDLG 4 / MMSYSTEM 4 / WIN87EM 0（runtime 沒用 — link 只是為了 `c0w` 的存在性檢查）。逐個 API 的熱度列在 spec 01。
+- 寫 `team-a/specs/01_compiler_and_api_surface.md` 涵蓋編譯器 ID、原始 `.c` source 清單、Mac-port 架構發現、按 module 的 API call-site 完整表、entry-point 啟動走路。

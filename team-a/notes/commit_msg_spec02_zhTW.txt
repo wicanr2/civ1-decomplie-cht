@@ -1,0 +1,58 @@
+Spec 02 + 全 repo 文件中文化
+
+按使用者要求：
+1. 全 repo 文件改用繁體中文
+2. 新增 spec 02 — 啟動流程、主迴圈、11 個 callback 各別職責
+
+新增 spec 02 (team-a/specs/02_startup_and_game_loop.md):
+
+- §2.1.1 C runtime stub (entry @ 1000:0000) 7 步驟 walk
+- §2.1.2 WinMain candidate (FUN_1008_0000 @ 1008:0000) 9 段啟動序列
+       (A 早期 init / B 載入 sub-system / C 註冊 callback+timer /
+        D 5 個 startup dialog / E 7 組 game data / F 創 3 個視窗 /
+        G 鍵盤狀態 hack / H 主迴圈 / I 清理)
+- §2.1.3 主迴圈 (while DAT_12d8_24ee == 0) - PEEKMESSAGE 非阻塞 poll
+       + idle path 推進遊戲狀態
+- §2.2 11 個 callback 逐一說明 (何時呼叫、處理什麼事、影響哪些 global、
+       Team B 對應)
+- §2.3 視窗-callback 對應總覽表
+- §2.4 給 Team B 的最小可跑 SDL2 骨架程式碼建議
+
+關鍵發現:
+- TIMERPROC 只做 counter decrement (DAT_12d8_24f0 -= 1)
+- WDWMAPPROC 用 22-entry dispatch table 而非 switch
+- WDWSMMAPPROC 與 WDWSTATUSPROC body 同 77 bytes、同 9-entry table -
+  同一模板複製
+- WDWMAPPROC 有 lockable mode (DAT_12b0_0000) 進 modal-like 狀態
+
+依據 dumps:
+- team-a/dumps/02a_entry.c
+- team-a/dumps/02a_timerproc.c (43 bytes - 極簡)
+- team-a/dumps/02a_enumfunc.c
+- team-a/dumps/02a_dlgproc.c
+- team-a/dumps/02a_civdialogproc.c (191 bytes)
+- team-a/dumps/02a_wdwmapproc.c (203 bytes - dispatch table 邏輯)
+- team-a/dumps/02a_wdwsmmapproc.c (77 bytes)
+- team-a/dumps/02a_wdwstatusproc.c (77 bytes)
+- team-a/dumps/02a_randomradioproc.c
+- team-a/dumps/02a_randomstaticproc.c
+- team-a/dumps/02a_randomuserproc.c
+- team-a/dumps/02a_regionproc.c
+- team-a/dumps/02b_winmain_chain.c (WinMain candidate decompile)
+
+工具:
+- team-a/tools/ghidra_extract_spec02.py (Jython 2.7 + DecompInterface)
+
+文件全 zh-TW 改寫:
+- README.md
+- docs/CLEAN_ROOM.md
+- docs/REUSE_FROM_TRACK_A.md
+- docs/PHASE_LOG.md
+- team-a/specs/00_ne_structure.md
+- team-a/specs/01_compiler_and_api_surface.md
+(新增) team-a/specs/02_startup_and_game_loop.md
+
+技術術語與程式碼識別碼保留英文 (Borland C++ / Mac Memory Manager /
+SetTimer / DefWindowProc / SDL_PollEvent / 等等)。
+
+Spec 02 簽核待 Team A 與 Team B 各別覆核。
