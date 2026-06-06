@@ -1,0 +1,32 @@
+# Original game binary — must never be committed
+team-a/binary/
+*.exe
+*.EXE
+!tools/**/*.exe
+
+# Ghidra project files (kept locally in WSL ~/ghidra-projects/civ1/)
+*.gpr
+*.rep/
+*.lock
+
+# Extracted assets (regenerable from user-supplied CIV.EXE)
+assets-extracted/
+
+# Build output
+team-b/build/
+build/
+*.o
+*.obj
+
+# Editor / OS noise
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Python tool caches
+__pycache__/
+*.pyc
+.venv/
+venv/
