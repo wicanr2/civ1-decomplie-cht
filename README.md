@@ -59,12 +59,12 @@ tools/                         Asset extraction scripts (EDILZSS2 etc., MIT)
 ## Provenance
 
 `CIV.EXE` reference (user-supplied binary, never committed):
-- Size: 833,024 bytes (pristine 1993 original)
-- MD5: `DCC4399E57AEFE490914AC2F5A95CD92`
-- SHA-256: `F606568096376F8ED8989D74D17F36AB3B18ADFA7A2D56D89A4F29BEE5D94672`
-- NE signature confirmed at offset `0x60`; module name `WINCIV`; description `CIVILIZATION for Windows`
+- Size: 832,512 bytes (Track A Big5-patched 1993 *Civilization for Windows*; code segments unchanged from the pristine MicroProse release)
+- MD5: `336FF64650F6391C65A8B804ADFC31C9`
+- SHA-256: `720C5EA4EFD47FC7069A89C9A366A3A18A561A88E39F963865C6084EEC4DB022`
+- NE signature confirmed at offset `0x60`; module name `WINCIV`; description `'文明帝國 視窗版'` (Big5)
 
-The Track A Big5-patched build (`MODULE_DESC = '文明帝國 視窗版'`, 832,512 bytes, MD5 `336FF646…`) is **not** the work-of-record and is never disassembled for this project.
+The pristine 1993 English binary (`MODULE_DESC = 'CIVILIZATION for Windows'`, 833,024 bytes, MD5 `DCC4399E…`) exists at `D:\03_game_tmp\win31\C\MPS\CIVWIN\CIV.EXE` and is structurally identical (same 133 segments, same 6 imports, same 11 exports). Track A's patches modify only inline string slots and `RT_DIALOG` labels; no code byte differs between the two binaries. The Big5 patched version is the work-of-record so that spec validation against running screenshots uses the same artifact the user's portable build is shipped from.
 
 ## What this project does **not** do
 

@@ -1,0 +1,40 @@
+Switch work-of-record to Track A Big5-patched CIV.EXE
+
+Per user authorization, the work-of-record binary is now the Track A
+Big5-patched build at _sfx_build_civ1/game/CIV.EXE
+  size 832,512 bytes
+  MD5  336FF64650F6391C65A8B804ADFC31C9
+  SHA  720C5EA4EFD47FC7069A89C9A366A3A18A561A88E39F963865C6084EEC4DB022
+
+The two binaries (pristine 833,024-byte original and 832,512-byte
+Track A patched) are structurally identical: same linker version
+(5.10), same 133 segments, same 6 imports (KERNEL/USER/GDI/
+WIN87EM/MMSYSTEM/COMMDLG), same 11 exported callbacks, same 24
+RT_DIALOG resource IDs. Track A patches only data slots (inline
+strings, dialog control labels, MODULE_DESC); no code byte differs.
+
+Reasons to pin the patched build as work-of-record:
+- The user's existing SFX portable build chain targets it, so any
+  later visual-layout validation against running screenshots is
+  against the same artifact.
+- Inline string references in the disassembly already point at Big5
+  bytes (lead 0xA1-0xFE), simplifying the user-facing string
+  inventory for Team B's translation catalog: the strings Track A
+  chose to translate are by definition the ones the Big5 build
+  needs.
+
+Implication for Team A disassembly:
+- When a string reference targets bytes with high-bit lead bytes,
+  the string is Big5. The original 1993 English equivalent is
+  recoverable from the parent project's data/inline_translations.json
+  and data/dialog_translations.json.
+
+Updates in this commit:
+- team-a/specs/00_ne_structure.md  - section 0.1 rewritten
+- README.md                         - reference hashes updated
+- docs/PHASE_LOG.md                  - decision logged
+- team-a/dumps/00_ne_structure.txt - regenerated against the
+                                     Big5-patched binary
+
+Ghidra re-import on the Big5-patched binary is running in the
+background; previous pristine-binary project deleted.

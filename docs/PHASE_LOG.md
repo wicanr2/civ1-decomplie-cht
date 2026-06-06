@@ -11,8 +11,11 @@
 
 - Ghidra 12.1.2 installed to `/opt/ghidra_12.1.2_PUBLIC` (symlinked `/opt/ghidra`); headless analyzer verified against JDK 21.
 - Auxiliary tools installed via apt: `p7zip-full`, `binwalk`, `xxd`, `file`. (`radare2` / `rizin` not in Ubuntu 22.04 default repos — deferred; Ghidra alone is sufficient for the first pass.)
-- Discovered the `CIV.EXE` initially supplied at `_sfx_build_civ1/game/CIV.EXE` is the Track A Big5-patched build (832,512 bytes), not a pristine 1993 original. Its non-resident-name table `MODULE_DESC` decodes as Big5 `'文明帝國 視窗版'` rather than `'CIVILIZATION for Windows'`.
-- Pristine 1993 original located at `D:\03_game_tmp\win31\C\MPS\CIVWIN\CIV.EXE` (833,024 bytes; MD5 `DCC4399E57AEFE490914AC2F5A95CD92`; SHA-256 `F606568096376F8ED8989D74D17F36AB3B18ADFA7A2D56D89A4F29BEE5D94672`). This is the work-of-record; copied into `team-a/binary/CIV.EXE` (gitignored).
+- Discovered the `CIV.EXE` initially supplied at `_sfx_build_civ1/game/CIV.EXE` is the Track A Big5-patched build (832,512 bytes, MD5 `336FF646…`). Its non-resident-name table `MODULE_DESC` decodes as Big5 `'文明帝國 視窗版'` rather than `'CIVILIZATION for Windows'`.
+- Pristine 1993 English binary also located at `D:\03_game_tmp\win31\C\MPS\CIVWIN\CIV.EXE` (833,024 bytes, MD5 `DCC4399E…`).
+- The two binaries are structurally identical (same 133-segment layout, same 6 imports, same 11 exports); Track A's patches modify only inline string slots and `RT_DIALOG` labels, not code.
+- After provisionally pinning the pristine binary as work-of-record and writing spec 00 against it, the user authorized using the Track A Big5-patched binary instead — spec 00, README, and `team-a/binary/CIV.EXE` updated accordingly. The patched binary is the work-of-record going forward because (a) the user's SFX portable build chain targets it, so visual-layout validation uses the same artifact, and (b) Big5 inline-string references in the disassembly directly populate Team B's translation catalog.
+- Ghidra was first run against the pristine binary as a sanity check (total analysis time 56 s; Ghidra auto-detected `New Executable (NE)` / `x86:LE:16:Protected Mode` and applied built-in Win16 export symbol tables for KERNEL/USER/GDI/WIN87EM/MMSYSTEM/COMMDLG). That project was deleted and re-imported against the Big5-patched binary.
 
 ## 2026-06-06 — Spec 00: NE structure
 

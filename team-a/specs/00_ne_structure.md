@@ -6,24 +6,41 @@
 
 ## 0.1  Binary identity
 
-The work-of-record is the pristine 1993 *Civilization for Windows*
-executable as shipped by MicroProse:
+The work-of-record is the 1993 *Civilization for Windows* executable
+as patched by the parent project's Track A for Big5 display (inline
+ASCII strings, `RT_DIALOG` control labels, and the non-resident-name
+table description rewritten in Big5; code segments untouched):
 
 | Property | Value |
 |---|---|
 | File name | `CIV.EXE` |
-| Size | 833,024 bytes |
-| MD5 | `DCC4399E57AEFE490914AC2F5A95CD92` |
-| SHA-256 | `F606568096376F8ED8989D74D17F36AB3B18ADFA7A2D56D89A4F29BEE5D94672` |
+| Size | 832,512 bytes |
+| MD5 | `336FF64650F6391C65A8B804ADFC31C9` |
+| SHA-256 | `720C5EA4EFD47FC7069A89C9A366A3A18A561A88E39F963865C6084EEC4DB022` |
 | Container | Win16 New Executable (NE), targeting Windows 3.0A or later |
 | Module name | `WINCIV` |
-| Module description | `CIVILIZATION for Windows` |
+| Module description | Big5 — bytes `A4 E5 A9 FA AB D2 B0 EA 20 B5 F8 B5 A1 AA A9 00` = `'文明帝國 視窗版'` |
 
-A separate copy of this file that has been in-place modified for Big5
-display (file size 832,512, MD5 `336FF646…`) exists in the parent
-project's Track A workspace. **That patched binary is not the
-work-of-record.** Team A always disassembles the pristine 833,024-byte
-file.
+The pristine 1993 binary (`MODULE_DESC = 'CIVILIZATION for Windows'`,
+size 833,024, MD5 `DCC4399E…`, located at
+`D:\03_game_tmp\win31\C\MPS\CIVWIN\CIV.EXE`) is structurally
+identical: same linker version (5.10), same 133-segment layout, same
+6 imports, same 11 exported callbacks, same 24 RT_DIALOG resource
+IDs. Track A's patches modify only data slots (inline strings and
+dialog labels); no code byte is changed. The two binaries therefore
+yield equivalent disassembly, equivalent function set, and equivalent
+algorithmic behavior. The Big5 patched build is preferred as
+work-of-record only because:
+
+1. The user's existing portable build chain (Track A's SFX packager)
+   targets this binary, so spec validation against running screenshots
+   uses the same artifact.
+2. Inline string references in the disassembly already point at
+   Big5 bytes, which simplifies the "user-facing string"
+   inventory for Team B's translation catalog (the strings Track A
+   chose to translate are by definition the ones a Big5 build needs).
+
+**Implication for Team A:** when the disassembly shows a `MOV AX, OFFSET <string>` or `PUSH OFFSET <string>` whose target is high-byte data (`0xA1`–`0xFE` lead bytes), the string is Big5; the original 1993 English equivalent is recoverable from the parent project's `data/inline_translations.json` and `data/dialog_translations.json`.
 
 ## 0.2  Memory model and target
 

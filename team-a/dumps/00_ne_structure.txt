@@ -1,5 +1,5 @@
 # NE structure dump for /mnt/d/03_game_tmp/civ1-decomplie-cht/team-a/binary/CIV.EXE
-# file size:    833,024 bytes
+# file size:    832,512 bytes
 
 ## MZ stub
   e_lfanew = 0x60
@@ -25,25 +25,25 @@
   sector alignment:      2^9 = 512 bytes
   resource count:        0
   exe type:              0x02 (Windows)
-  fastload off/len:      0x5 / 1558
+  fastload off/len:      0x5 / 1557
   win version expected:  0x030A (3.0A)
 
 ## Segment table (133 segments)
     #    sector       len   flags   minalloc  decoded
-    1  0x000C00     19409  0x1D50      19409  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
-    2  0x006200      4141  0x1D50       4141  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
-    3  0x007C00       279  0x1D50        279  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
-    4  0x007E00      9651  0x1D50       9651  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
-    5  0x00BA00       334  0x1D50        334  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
-    6  0x00BC00      7852  0x1D50       7852  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
-    7  0x00E400     40319  0x1D50      40319  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
-    8  0x01CA00      4221  0x1D50       4221  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
-    9  0x01E400      7097  0x1D50       7097  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
-   10  0x020E00      1347  0x1D50       1347  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
-   11  0x021600      5754  0x1D50       5754  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
-   12  0x023800      3792  0x1D50       3792  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
-   13  0x024E00      2148  0x1D50       2148  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
-   14  0x025A00     10840  0x1D50      10840  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
+    1  0x000C00     19333  0x1D50      19333  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
+    2  0x006200      4269  0x1D50       4269  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
+    3  0x007E00       279  0x1D50        279  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
+    4  0x008000      9651  0x1D50       9651  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
+    5  0x00BC00       334  0x1D50        334  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
+    6  0x00BE00      7852  0x1D50       7852  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
+    7  0x00E600     40351  0x1D50      40351  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
+    8  0x01CC00      4221  0x1D50       4221  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
+    9  0x01E600      7097  0x1D50       7097  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
+   10  0x021000      1347  0x1D50       1347  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
+   11  0x021800      5754  0x1D50       5754  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
+   12  0x023A00      3792  0x1D50       3792  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
+   13  0x025000      2148  0x1D50       2148  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
+   14  0x025C00     10747  0x1D50      10747  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
    15  0x029800      8475  0x1D50       8475  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
    16  0x02C800     23853  0x1D50      23853  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
    17  0x034400      3255  0x1D50       3255  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
@@ -52,7 +52,7 @@
    20  0x039C00     12230  0x1D50      12230  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
    21  0x03DC00      1039  0x1D50       1039  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
    22  0x03E200       832  0x1D50        832  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
-   23  0x03E600      7048  0x1D50       7048  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
+   23  0x03E600      7104  0x1D50       7104  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
    24  0x040800      6990  0x1D50       6990  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
    25  0x042C00      3105  0x1D50       3105  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
    26  0x043A00      2802  0x1D50       2802  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
@@ -62,7 +62,7 @@
    30  0x047000     13325  0x1D50      13325  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
    31  0x04BE00       841  0x1D50        841  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
    32  0x04C400      4404  0x1D50       4404  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
-   33  0x04DC00      3128  0x1D50       3128  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
+   33  0x04DC00      3100  0x1D50       3100  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
    34  0x04EC00      2258  0x1D50       2258  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
    35  0x04FA00      7958  0x1D50       7958  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
    36  0x052600      2204  0x1D50       2204  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
@@ -91,78 +91,78 @@
    59  0x07DC00       781  0x1D50        781  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
    60  0x07E200      3142  0x1D50       3142  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
    61  0x07F600      3204  0x1D50       3204  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
-   62  0x080A00      3656  0x1D50       3656  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
+   62  0x080A00      3680  0x1D50       3680  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
    63  0x081E00     20490  0x1D50      20490  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
    64  0x088E00       975  0x1D50        975  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
    65  0x089400       408  0x1D50        408  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
-   66  0x089600      8766  0x1D50       8766  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
+   66  0x089600      9072  0x1D50       9072  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
    67  0x08C800      4536  0x1D50       4536  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
-   68  0x08E200      3017  0x1D50       3017  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
-   69  0x08F400      6869  0x1D50       6869  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
-   70  0x091A00       262  0x0C51        262  DATA | MOVABLE | PRELOAD
-   71  0x091C00      1890  0x0C51       1890  DATA | MOVABLE | PRELOAD
-   72  0x092400        62  0x0C51         62  DATA | MOVABLE | PRELOAD
-   73  0x092600        14  0x0C51         14  DATA | MOVABLE | PRELOAD
-   74  0x092800       524  0x0C51        524  DATA | MOVABLE | PRELOAD
-   75  0x092C00         4  0x0C51          4  DATA | MOVABLE | PRELOAD
-   76  0x092E00        42  0x0C51         42  DATA | MOVABLE | PRELOAD
-   77  0x093000       228  0x0C51        228  DATA | MOVABLE | PRELOAD
-   78  0x093200         2  0x0C51          2  DATA | MOVABLE | PRELOAD
-   79  0x093400        44  0x0C51         44  DATA | MOVABLE | PRELOAD
-   80  0x093600         8  0x0C51          8  DATA | MOVABLE | PRELOAD
-   81  0x093800        10  0x0C51         10  DATA | MOVABLE | PRELOAD
-   82  0x093A00        22  0x0C51         22  DATA | MOVABLE | PRELOAD
-   83  0x093C00      1906  0x0C51       1906  DATA | MOVABLE | PRELOAD
-   84  0x094400      1810  0x0C51       1810  DATA | MOVABLE | PRELOAD
-   85  0x094C00       600  0x0C51        600  DATA | MOVABLE | PRELOAD
-   86  0x095000        36  0x0C51         36  DATA | MOVABLE | PRELOAD
-   87  0x095200       162  0x0C51        162  DATA | MOVABLE | PRELOAD
-   88  0x095400       288  0x0C51        288  DATA | MOVABLE | PRELOAD
-   89  0x095600        44  0x0C51         44  DATA | MOVABLE | PRELOAD
-   90  0x095800        98  0x0C51         98  DATA | MOVABLE | PRELOAD
-   91  0x095A00       184  0x0C51        184  DATA | MOVABLE | PRELOAD
-   92  0x095C00     17936  0x0C51      17936  DATA | MOVABLE | PRELOAD
-   93  0x09A400        22  0x0C51         22  DATA | MOVABLE | PRELOAD
-   94  0x09A600      1090  0x0C51       1090  DATA | MOVABLE | PRELOAD
-   95  0x09AC00      4354  0x0C51       4354  DATA | MOVABLE | PRELOAD
-   96  0x09BE00     65058  0x0C51      65058  DATA | MOVABLE | PRELOAD
-   97  0x0ABE00         2  0x0C51          2  DATA | MOVABLE | PRELOAD
-   98  0x0AC000        38  0x0C51         38  DATA | MOVABLE | PRELOAD
-   99  0x0AC200        12  0x0C51         12  DATA | MOVABLE | PRELOAD
-  100  0x0AC400        17  0x0C51         17  DATA | MOVABLE | PRELOAD
-  101  0x0AC600        17  0x0C51         17  DATA | MOVABLE | PRELOAD
-  102  0x0AC800        20  0x0C51         20  DATA | MOVABLE | PRELOAD
-  103  0x0ACA00     16402  0x0C51      16402  DATA | MOVABLE | PRELOAD
-  104  0x0B0C00       520  0x0C51        520  DATA | MOVABLE | PRELOAD
-  105  0x0B1000       128  0x0C51        128  DATA | MOVABLE | PRELOAD
-  106  0x0B1200         4  0x0C51          4  DATA | MOVABLE | PRELOAD
-  107  0x0B1400       244  0x0C51        244  DATA | MOVABLE | PRELOAD
-  108  0x0B1600        12  0x0C51         12  DATA | MOVABLE | PRELOAD
-  109  0x0B1800        42  0x0C51         42  DATA | MOVABLE | PRELOAD
-  110  0x0B1A00        18  0x0C51         18  DATA | MOVABLE | PRELOAD
-  111  0x0B1C00        18  0x0C51         18  DATA | MOVABLE | PRELOAD
-  112  0x0B1E00       108  0x0C51        108  DATA | MOVABLE | PRELOAD
-  113  0x0B2000        72  0x0C51         72  DATA | MOVABLE | PRELOAD
-  114  0x0B2200         2  0x0C51          2  DATA | MOVABLE | PRELOAD
-  115  0x0B2400      5103  0x0C51       5103  DATA | MOVABLE | PRELOAD
-  116  0x0B3800         2  0x0C51          2  DATA | MOVABLE | PRELOAD
-  117  0x0B3A00         4  0x0C51          4  DATA | MOVABLE | PRELOAD
-  118  0x0B3C00       176  0x0C51        176  DATA | MOVABLE | PRELOAD
-  119  0x0B3E00       302  0x0C51        302  DATA | MOVABLE | PRELOAD
-  120  0x0B4000        12  0x0C51         12  DATA | MOVABLE | PRELOAD
-  121  0x0B4200         2  0x0C51          2  DATA | MOVABLE | PRELOAD
-  122  0x0B4400       160  0x0C51        160  DATA | MOVABLE | PRELOAD
-  123  0x0B4600       900  0x0C51        900  DATA | MOVABLE | PRELOAD
-  124  0x0B4A00      2370  0x0C51       2370  DATA | MOVABLE | PRELOAD
-  125  0x0B5400        32  0x0C51         32  DATA | MOVABLE | PRELOAD
-  126  0x0B5600      4010  0x0C51       4010  DATA | MOVABLE | PRELOAD
-  127  0x0B6600        14  0x0C51         14  DATA | MOVABLE | PRELOAD
-  128  0x0B6800       256  0x0C51        256  DATA | MOVABLE | PRELOAD
-  129  0x0B6A00        10  0x0C51         10  DATA | MOVABLE | PRELOAD
-  130  0x0B6C00       206  0x0C51        206  DATA | MOVABLE | PRELOAD
-  131  0x0B6E00         2  0x0C51          2  DATA | MOVABLE | PRELOAD
-  132  0x0B7000       112  0x0C51        112  DATA | MOVABLE | PRELOAD
-  133  0x0B7200     46278  0x0D51      46278  DATA | MOVABLE | PRELOAD | HAS_RELOC
+   68  0x08E200      2935  0x1D50       2935  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
+   69  0x08F200      6873  0x1D50       6873  MOVABLE | PRELOAD | HAS_RELOC | DISCARD
+   70  0x091800       262  0x0C51        262  DATA | MOVABLE | PRELOAD
+   71  0x091A00      1920  0x0C51       1920  DATA | MOVABLE | PRELOAD
+   72  0x092200        62  0x0C51         62  DATA | MOVABLE | PRELOAD
+   73  0x092400        14  0x0C51         14  DATA | MOVABLE | PRELOAD
+   74  0x092600       524  0x0C51        524  DATA | MOVABLE | PRELOAD
+   75  0x092A00         4  0x0C51          4  DATA | MOVABLE | PRELOAD
+   76  0x092C00        42  0x0C51         42  DATA | MOVABLE | PRELOAD
+   77  0x092E00       228  0x0C51        228  DATA | MOVABLE | PRELOAD
+   78  0x093000         2  0x0C51          2  DATA | MOVABLE | PRELOAD
+   79  0x093200        44  0x0C51         44  DATA | MOVABLE | PRELOAD
+   80  0x093400         8  0x0C51          8  DATA | MOVABLE | PRELOAD
+   81  0x093600        10  0x0C51         10  DATA | MOVABLE | PRELOAD
+   82  0x093800        22  0x0C51         22  DATA | MOVABLE | PRELOAD
+   83  0x093A00      1906  0x0C51       1906  DATA | MOVABLE | PRELOAD
+   84  0x094200      1810  0x0C51       1810  DATA | MOVABLE | PRELOAD
+   85  0x094A00       600  0x0C51        600  DATA | MOVABLE | PRELOAD
+   86  0x094E00        36  0x0C51         36  DATA | MOVABLE | PRELOAD
+   87  0x095000       162  0x0C51        162  DATA | MOVABLE | PRELOAD
+   88  0x095200       288  0x0C51        288  DATA | MOVABLE | PRELOAD
+   89  0x095400        44  0x0C51         44  DATA | MOVABLE | PRELOAD
+   90  0x095600        98  0x0C51         98  DATA | MOVABLE | PRELOAD
+   91  0x095800       184  0x0C51        184  DATA | MOVABLE | PRELOAD
+   92  0x095A00     17936  0x0C51      17936  DATA | MOVABLE | PRELOAD
+   93  0x09A200        22  0x0C51         22  DATA | MOVABLE | PRELOAD
+   94  0x09A400      1090  0x0C51       1090  DATA | MOVABLE | PRELOAD
+   95  0x09AA00      4354  0x0C51       4354  DATA | MOVABLE | PRELOAD
+   96  0x09BC00     65058  0x0C51      65058  DATA | MOVABLE | PRELOAD
+   97  0x0ABC00         2  0x0C51          2  DATA | MOVABLE | PRELOAD
+   98  0x0ABE00        38  0x0C51         38  DATA | MOVABLE | PRELOAD
+   99  0x0AC000        12  0x0C51         12  DATA | MOVABLE | PRELOAD
+  100  0x0AC200        17  0x0C51         17  DATA | MOVABLE | PRELOAD
+  101  0x0AC400        17  0x0C51         17  DATA | MOVABLE | PRELOAD
+  102  0x0AC600        20  0x0C51         20  DATA | MOVABLE | PRELOAD
+  103  0x0AC800     16402  0x0C51      16402  DATA | MOVABLE | PRELOAD
+  104  0x0B0A00       520  0x0C51        520  DATA | MOVABLE | PRELOAD
+  105  0x0B0E00       128  0x0C51        128  DATA | MOVABLE | PRELOAD
+  106  0x0B1000         4  0x0C51          4  DATA | MOVABLE | PRELOAD
+  107  0x0B1200       244  0x0C51        244  DATA | MOVABLE | PRELOAD
+  108  0x0B1400        12  0x0C51         12  DATA | MOVABLE | PRELOAD
+  109  0x0B1600        42  0x0C51         42  DATA | MOVABLE | PRELOAD
+  110  0x0B1800        18  0x0C51         18  DATA | MOVABLE | PRELOAD
+  111  0x0B1A00        18  0x0C51         18  DATA | MOVABLE | PRELOAD
+  112  0x0B1C00       108  0x0C51        108  DATA | MOVABLE | PRELOAD
+  113  0x0B1E00        72  0x0C51         72  DATA | MOVABLE | PRELOAD
+  114  0x0B2000         2  0x0C51          2  DATA | MOVABLE | PRELOAD
+  115  0x0B2200      5103  0x0C51       5103  DATA | MOVABLE | PRELOAD
+  116  0x0B3600         2  0x0C51          2  DATA | MOVABLE | PRELOAD
+  117  0x0B3800         4  0x0C51          4  DATA | MOVABLE | PRELOAD
+  118  0x0B3A00       176  0x0C51        176  DATA | MOVABLE | PRELOAD
+  119  0x0B3C00       302  0x0C51        302  DATA | MOVABLE | PRELOAD
+  120  0x0B3E00        12  0x0C51         12  DATA | MOVABLE | PRELOAD
+  121  0x0B4000         2  0x0C51          2  DATA | MOVABLE | PRELOAD
+  122  0x0B4200       160  0x0C51        160  DATA | MOVABLE | PRELOAD
+  123  0x0B4400       900  0x0C51        900  DATA | MOVABLE | PRELOAD
+  124  0x0B4800      2370  0x0C51       2370  DATA | MOVABLE | PRELOAD
+  125  0x0B5200        32  0x0C51         32  DATA | MOVABLE | PRELOAD
+  126  0x0B5400      4010  0x0C51       4010  DATA | MOVABLE | PRELOAD
+  127  0x0B6400        14  0x0C51         14  DATA | MOVABLE | PRELOAD
+  128  0x0B6600       256  0x0C51        256  DATA | MOVABLE | PRELOAD
+  129  0x0B6800        10  0x0C51         10  DATA | MOVABLE | PRELOAD
+  130  0x0B6A00       206  0x0C51        206  DATA | MOVABLE | PRELOAD
+  131  0x0B6C00         2  0x0C51          2  DATA | MOVABLE | PRELOAD
+  132  0x0B6E00       112  0x0C51        112  DATA | MOVABLE | PRELOAD
+  133  0x0B7000     46270  0x0D51      46270  DATA | MOVABLE | PRELOAD | HAS_RELOC
 
 ## Imported modules (6)
   [1] KERNEL
@@ -187,94 +187,94 @@
           ord=11  'CIVDIALOGPROC'
 
 ## Non-resident-name table
-     MODULE_DESC  'CIVILIZATION for Windows'
+     MODULE_DESC  '�������� ������\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 
 ## Resource table @ NE+0x468
   resource alignment: 2^9 = 512 bytes
   type RT_CURSOR           entries=16
-    id=#1          file=0x0C3600 len=512  flags=0x1C30
-    id=#2          file=0x0C3800 len=512  flags=0x1C30
-    id=#3          file=0x0C3A00 len=512  flags=0x1C30
-    id=#4          file=0x0C3C00 len=512  flags=0x1C30
-    id=#5          file=0x0C3E00 len=512  flags=0x1C30
-    id=#6          file=0x0C4000 len=512  flags=0x1C30
-    id=#7          file=0x0C4200 len=512  flags=0x1C30
-    id=#8          file=0x0C4400 len=512  flags=0x1C30
-    id=#9          file=0x0C4600 len=512  flags=0x1C30
-    id=#10         file=0x0C4800 len=512  flags=0x1C30
-    id=#11         file=0x0C4A00 len=512  flags=0x1C30
-    id=#12         file=0x0C4C00 len=512  flags=0x1C30
-    id=#13         file=0x0C4E00 len=512  flags=0x1C30
-    id=#14         file=0x0C5000 len=512  flags=0x1C30
-    id=#15         file=0x0C5200 len=512  flags=0x1C30
-    id=#16         file=0x0C5400 len=512  flags=0x1C30
+    id=#1          file=0x0C3400 len=512  flags=0x1C30
+    id=#2          file=0x0C3600 len=512  flags=0x1C30
+    id=#3          file=0x0C3800 len=512  flags=0x1C30
+    id=#4          file=0x0C3A00 len=512  flags=0x1C30
+    id=#5          file=0x0C3C00 len=512  flags=0x1C30
+    id=#6          file=0x0C3E00 len=512  flags=0x1C30
+    id=#7          file=0x0C4000 len=512  flags=0x1C30
+    id=#8          file=0x0C4200 len=512  flags=0x1C30
+    id=#9          file=0x0C4400 len=512  flags=0x1C30
+    id=#10         file=0x0C4600 len=512  flags=0x1C30
+    id=#11         file=0x0C4800 len=512  flags=0x1C30
+    id=#12         file=0x0C4A00 len=512  flags=0x1C30
+    id=#13         file=0x0C4C00 len=512  flags=0x1C30
+    id=#14         file=0x0C4E00 len=512  flags=0x1C30
+    id=#15         file=0x0C5000 len=512  flags=0x1C30
+    id=#16         file=0x0C5200 len=512  flags=0x1C30
   type RT_ICON             entries=1
-    id=#1          file=0x0C5600 len=2560  flags=0x1C30
+    id=#1          file=0x0C5400 len=2560  flags=0x1C30
   type RT_MENU             entries=1
-    id=#128        file=0x0C2E00 len=1536  flags=0x1C70
+    id=#128        file=0x0C2C00 len=1536  flags=0x1C70
   type RT_DIALOG           entries=24
-    id=#129        file=0x0C6000 len=512  flags=0x1C30
-    id=#130        file=0x0C6200 len=512  flags=0x1C30
-    id=#131        file=0x0C6400 len=512  flags=0x1C30
-    id=#133        file=0x0C6600 len=512  flags=0x1C30
-    id=#135        file=0x0C6800 len=512  flags=0x1C30
-    id=#136        file=0x0C6A00 len=512  flags=0x1C30
-    id=#137        file=0x0C6C00 len=512  flags=0x1C30
-    id=#138        file=0x0C6E00 len=512  flags=0x1C30
-    id=#139        file=0x0C7000 len=512  flags=0x1C30
-    id=#140        file=0x0C7200 len=512  flags=0x1C30
-    id=#141        file=0x0C7400 len=512  flags=0x1C30
-    id=#142        file=0x0C7600 len=512  flags=0x1C30
-    id=#143        file=0x0C7800 len=512  flags=0x1C30
-    id=#144        file=0x0C7A00 len=512  flags=0x1C30
-    id=#145        file=0x0C7C00 len=512  flags=0x1C30
-    id=#146        file=0x0C7E00 len=512  flags=0x1C30
-    id=#147        file=0x0C8000 len=512  flags=0x1C30
-    id=#148        file=0x0C8200 len=512  flags=0x1C30
-    id=#149        file=0x0C8400 len=512  flags=0x1C30
-    id=#150        file=0x0C8600 len=512  flags=0x1C30
-    id=#151        file=0x0C8800 len=512  flags=0x1C30
-    id=#666        file=0x0C8A00 len=512  flags=0x1C30
-    id=#999        file=0x0C8C00 len=512  flags=0x1C30
-    id=#2000       file=0x0C8E00 len=1024  flags=0x1C30
+    id=#129        file=0x0C5E00 len=512  flags=0x1C30
+    id=#130        file=0x0C6000 len=512  flags=0x1C30
+    id=#131        file=0x0C6200 len=512  flags=0x1C30
+    id=#133        file=0x0C6400 len=512  flags=0x1C30
+    id=#135        file=0x0C6600 len=512  flags=0x1C30
+    id=#136        file=0x0C6800 len=512  flags=0x1C30
+    id=#137        file=0x0C6A00 len=512  flags=0x1C30
+    id=#138        file=0x0C6C00 len=512  flags=0x1C30
+    id=#139        file=0x0C6E00 len=512  flags=0x1C30
+    id=#140        file=0x0C7000 len=512  flags=0x1C30
+    id=#141        file=0x0C7200 len=512  flags=0x1C30
+    id=#142        file=0x0C7400 len=512  flags=0x1C30
+    id=#143        file=0x0C7600 len=512  flags=0x1C30
+    id=#144        file=0x0C7800 len=512  flags=0x1C30
+    id=#145        file=0x0C7A00 len=512  flags=0x1C30
+    id=#146        file=0x0C7C00 len=512  flags=0x1C30
+    id=#147        file=0x0C7E00 len=512  flags=0x1C30
+    id=#148        file=0x0C8000 len=512  flags=0x1C30
+    id=#149        file=0x0C8200 len=512  flags=0x1C30
+    id=#150        file=0x0C8400 len=512  flags=0x1C30
+    id=#151        file=0x0C8600 len=512  flags=0x1C30
+    id=#666        file=0x0C8800 len=512  flags=0x1C30
+    id=#999        file=0x0C8A00 len=512  flags=0x1C30
+    id=#2000       file=0x0C8C00 len=1024  flags=0x1C30
   type RT_ACCELERATOR      entries=1
-    id=#128        file=0x0C9200 len=512  flags=0x0C30
+    id=#128        file=0x0C9000 len=512  flags=0x0C30
   type RT_GROUP_CURSOR     entries=16
-    id=#128        file=0x0C9400 len=512  flags=0x1C30
-    id=#129        file=0x0C9600 len=512  flags=0x1C30
-    id=#130        file=0x0C9800 len=512  flags=0x1C30
-    id=#131        file=0x0C9A00 len=512  flags=0x1C30
-    id=#132        file=0x0C9C00 len=512  flags=0x1C30
-    id=#133        file=0x0C9E00 len=512  flags=0x1C30
-    id=#134        file=0x0CA000 len=512  flags=0x1C30
-    id=#135        file=0x0CA200 len=512  flags=0x1C30
-    id=#136        file=0x0CA400 len=512  flags=0x1C30
-    id=#137        file=0x0CA600 len=512  flags=0x1C30
-    id=#138        file=0x0CA800 len=512  flags=0x1C30
-    id=#139        file=0x0CAA00 len=512  flags=0x1C30
-    id=#140        file=0x0CAC00 len=512  flags=0x1C30
-    id=#141        file=0x0CAE00 len=512  flags=0x1C30
-    id=#142        file=0x0CB000 len=512  flags=0x1C30
-    id=#143        file=0x0CB200 len=512  flags=0x1C30
+    id=#128        file=0x0C9200 len=512  flags=0x1C30
+    id=#129        file=0x0C9400 len=512  flags=0x1C30
+    id=#130        file=0x0C9600 len=512  flags=0x1C30
+    id=#131        file=0x0C9800 len=512  flags=0x1C30
+    id=#132        file=0x0C9A00 len=512  flags=0x1C30
+    id=#133        file=0x0C9C00 len=512  flags=0x1C30
+    id=#134        file=0x0C9E00 len=512  flags=0x1C30
+    id=#135        file=0x0CA000 len=512  flags=0x1C30
+    id=#136        file=0x0CA200 len=512  flags=0x1C30
+    id=#137        file=0x0CA400 len=512  flags=0x1C30
+    id=#138        file=0x0CA600 len=512  flags=0x1C30
+    id=#139        file=0x0CA800 len=512  flags=0x1C30
+    id=#140        file=0x0CAA00 len=512  flags=0x1C30
+    id=#141        file=0x0CAC00 len=512  flags=0x1C30
+    id=#142        file=0x0CAE00 len=512  flags=0x1C30
+    id=#143        file=0x0CB000 len=512  flags=0x1C30
   type RT_GROUP_ICON       entries=1
-    id=#128        file=0x0CB400 len=512  flags=0x1C30
+    id=#128        file=0x0CB200 len=512  flags=0x1C30
 
 ## Per-segment relocation-record counts (proxy for API call density)
   seg  reloc_records  notes
-    1            313  reloc table @ 0x57D1
-    2            307  reloc table @ 0x722D
-    3             19  reloc table @ 0x7D17
-    4            668  reloc table @ 0xA3B3
-    5             13  reloc table @ 0xBB4E
-    6            259  reloc table @ 0xDAAC
-    7           2296  reloc table @ 0x1817F
-    8            266  reloc table @ 0x1DA7D
-    9            435  reloc table @ 0x1FFB9
-   10             65  reloc table @ 0x21343
-   11            320  reloc table @ 0x22C7A
-   12            187  reloc table @ 0x246D0
-   13            108  reloc table @ 0x25664
-   14            577  reloc table @ 0x28458
+    1            313  reloc table @ 0x5785
+    2            315  reloc table @ 0x72AD
+    3             19  reloc table @ 0x7F17
+    4            668  reloc table @ 0xA5B3
+    5             13  reloc table @ 0xBD4E
+    6            259  reloc table @ 0xDCAC
+    7           2297  reloc table @ 0x1839F
+    8            266  reloc table @ 0x1DC7D
+    9            435  reloc table @ 0x201B9
+   10             65  reloc table @ 0x21543
+   11            320  reloc table @ 0x22E7A
+   12            187  reloc table @ 0x248D0
+   13            108  reloc table @ 0x25864
+   14            573  reloc table @ 0x285FB
    15            463  reloc table @ 0x2B91B
    16            954  reloc table @ 0x3252D
    17            196  reloc table @ 0x350B7
@@ -283,7 +283,7 @@
    20            515  reloc table @ 0x3CBC6
    21             27  reloc table @ 0x3E00F
    22             14  reloc table @ 0x3E540
-   23            191  reloc table @ 0x40188
+   23            194  reloc table @ 0x401C0
    24            223  reloc table @ 0x4234E
    25             56  reloc table @ 0x43821
    26             91  reloc table @ 0x444F2
@@ -293,7 +293,7 @@
    30            775  reloc table @ 0x4A40D
    31             51  reloc table @ 0x4C149
    32            182  reloc table @ 0x4D534
-   33            111  reloc table @ 0x4E838
+   33            108  reloc table @ 0x4E81C
    34            108  reloc table @ 0x4F4D2
    35            369  reloc table @ 0x51916
    36             85  reloc table @ 0x52E9C
@@ -322,14 +322,14 @@
    59             42  reloc table @ 0x7DF0D
    60            220  reloc table @ 0x7EE46
    61            196  reloc table @ 0x80284
-   62            162  reloc table @ 0x81848
+   62            163  reloc table @ 0x81860
    63           1010  reloc table @ 0x86E0A
    64             35  reloc table @ 0x891CF
    65              6  reloc table @ 0x89598
-   66            447  reloc table @ 0x8B83E
+   66            460  reloc table @ 0x8B970
    67            259  reloc table @ 0x8D9B8
-   68            146  reloc table @ 0x8EDC9
-   69            338  reloc table @ 0x90ED5
+   68            142  reloc table @ 0x8ED77
+   69            338  reloc table @ 0x90CD9
    70              -  no reloc table
    71              -  no reloc table
    72              -  no reloc table
@@ -393,6 +393,6 @@
   130              -  no reloc table
   131              -  no reloc table
   132              -  no reloc table
-  133             63  reloc table @ 0xC26C6
+  133             63  reloc table @ 0xC24BE
 
 # end of dump
