@@ -23,6 +23,51 @@
 - 寫第一份簽核 spec `team-a/specs/00_ne_structure.md`：binary 身分、記憶體模型、133 segments（約 69 code + 約 63 data + 1 autodata 在 segment 133）、6 個 Win16 import（KERNEL / USER / GDI / WIN87EM / MMSYSTEM / COMMDLG）、11 個導出 callback（`WDWMAPPROC`、`TIMERPROC`、`CIVDIALOGPROC`…）、resource directory（24 `RT_DIALOG`、1 `RT_MENU`、16 `RT_CURSOR`、1 `RT_ICON`、無 `RT_STRING`、無 `RT_RCDATA`、無 `RT_VERSION`）。
 - Spec 00 簽核待 Team A 與 Team B 各別覆核。
 
+## 2026-06-06 — 平行 fork 兩個 agent：spec 03 資產格式 + Team B SDL 計畫
+
+依使用者指示同時開兩個 agent 推進：
+
+### Agent A（general-purpose）— 資產格式與 tile 抽取（spec 03）
+
+任務：盤點 game directory、反推 .PIC / tile 格式、寫 Python 抽 tile 出 PNG；參考 `D:\03_game_tmp\civ1_cht\` 的 Track A 既有 resource file 反推經驗。
+
+**顛覆性發現**：1993 Windows 版**根本沒有 .PIC 檔**。資產全部打包進 **5 個 `.RSC`（Apple Mac Resource Fork 標準格式）**，呼應 [spec 01 §1.2](../team-a/specs/01_compiler_and_api_surface.md) 對「Win 版是 Mac port、`resmgr.c` 是 Mac Resource Manager port」的論斷 — 這是檔案層的直接證據。
+
+成果：
+- `team-a/specs/03_asset_formats_and_tiles.md`（23.2 KB）— 完整資產 spec
+  - §3.1 game directory 33 個檔完整盤點（5 RSC + CIV.EXE + CIVFONTS.FON + CIVHELP.HLP + MPLOGO.BMP + 23 WAV）
+  - §3.2 Track A 已知 vs 本次新解開的格式對照
+  - §3.3 Mac Resource Fork 容器格式（big-endian header + map + type list + ref list + name list + data section）
+  - §3.4 CvPc 影像 5-byte header（width:BE16 + height:BE16 + lzw_min_code:u8）
+  - §3.6 tile 排列規則（待 LZW 解開後驗證）
+  - §3.9 待解問題 5 條（LZW 變體、palette 來源、GDAT/KDAT 語意…）
+  - §3.10 給 Team B 的 `civ_load_*` 介面契約
+- `team-a/tools/extract_tiles.py`（21.2 KB）— Mac Resource Fork parser + CvPc header parser + GIF89a LZW decoder（Path A）+ Pillow giflib wrapper（Path B）+ tile slicer，CLI `--list / --all / --resource-id / --tile-size / --dump-evidence`
+- `assets-extracted/_evidence/`（gitignored）3 個 evidence 檔給後續 Ghidra `LoadGifPicture` 對讀
+
+**5 個 .RSC 內含**：199 個 CvPc 影像（地形/單位/icon/sprite sheet/領袖肖像）+ 33 STR#（string list）+ 399 TEXT（Civilopedia 段落）+ 7 GDAT + 14 KDAT。**推翻** Track A `PROJECT_MEMORY` 「裡面沒有遊戲文字」的結論 — 33 + 399 = 432 條文字資料是 Batch B/C/D/E 翻譯規模的富礦。
+
+**未解的關鍵**：CvPc payload 是 LZW 變體（推測 RLE+LZW 混合），標準 GIF89a decoder 在 17 個 code 後撞牆（code 159 > 字典大小 130）。前 16 個 code 解出**完美正確的灰階 ramp**（`0 0 0 32 32 32 64 64 64 …`）證明 container + root code size 都對。真正解唯有 Ghidra 看 `gr_pic.c::LoadGifPicture`（[spec 01 §1.2](../team-a/specs/01_compiler_and_api_surface.md) 已確認該函式存在）。本次先 ship 已解部分，spec 03 §9.1 留給後續。
+
+### Agent B（Plan）— Team B SDL 實作計畫
+
+任務：吃 spec 00/01/02 + 12 個 callback decompile + WinMain chain + 12 KB LESSONS_LEARNED 規劃 SDL2 重寫架構。Plan agent 為 read-only，內容由主 session 落盤。
+
+成果：`team-b/SDL_IMPLEMENTATION_PLAN.md`（15 章、8 個 milestone M0–M7）：
+
+- §2 完整目錄樹（`team-b/src/` 下 30+ 個 .c/.h 模組），對應原版 `dialogs.c` / `godpal.c` / `gr.c` / `gr_pic.c` / `gr_port.c` / `init.c` / `load.c` / `mac.c` / `resmgr.c` / `shape.c` / `wdwmap.c` / `wdwsmmap.c` / `wdwstat.c` / `windows.c`；Mac shim 壓平到單層
+- §3 主迴圈與 event 分派（`civ_loop` + `civ_dispatch_event`），取代原版 `while (DAT_12d8_24ee == 0) { FUN_1088_0000(); }`
+- §4 widget dispatch table 模型（22-entry map + 9-entry minimap/status + lockable mode）
+- §5 palette framebuffer + drawing-state 結構（取代 552 個 GDI call）
+- §6 CJK 字模合成（FreeType MONO + 16×16/24×24 + Big5 byte-pair walker + palette 層合成）
+- §7 資源 loader 介面（Mac Resource Fork + CvPc + STR#/TEXT，對齊 spec 03 §3.10）
+- §11 i18n 含 spec 03 新發現的 432 條 STR#/TEXT
+- **§12 Track A 踩雷對照表 11 條**：otvdm SEGV、CIVFONTS dfCharSet、CityView palette stomp、CJK MONO、hotkey marker、WaitTimer ×12、portable SFX、WSLg input、dialog slot length、shared menu slot、「.RSC 無文字」誤判。Track C 9 條天然避開、2 條（palette stomp、hotkey marker）必須主動處理、1 條（誤判）影響翻譯範圍規劃
+- §13 M0–M7 8 個 milestone，各附 ctest 驗證點與 spec 依賴
+- §14 17 條「不做的事」清單
+
+依使用者要求 **不 commit、由我集中處理**。
+
 ## 2026-06-06 — 整合 Fandom Civ1 wiki 主頁
 
 - 依使用者要求，抓 https://civilization.fandom.com/wiki/Sid_Meier%27s_Civilization 內容。Cloudflare 擋 WebFetch 與一般 curl；改走 Fandom MediaWiki API（`api.php?action=query&prop=revisions&...`）拿 wikitext 成功。
