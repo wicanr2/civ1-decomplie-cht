@@ -10,7 +10,11 @@
 |---|---|
 | ![](docs/screenshots/m11_diplomat_elizabeth_zh.png) | ![](docs/screenshots/m11_diplomat_frederick_zh.png) |
 
-> 🤝 **R18 M-diplomat — 外交訪問畫面繁中化**：對齊使用者提供的 `Elizabeth_I_PC_29.webp` / `Frederick_PC_29.webp` reference。3 段 layout (sky+mountain horizon → 領袖肖像+兩側 advisor → 棕色 parchment 對話框 + 兩側 spear ornament). 14 領袖 enum + 5 mood (Greeting/Demand Tribute/Offer Peace/Declare War/Propose Trade) + 客製對話文字 (「英格蘭女皇伊莉莎白一世向您致意……」/「我等至明智之日耳曼皇帝腓特烈大帝向您致意……」). 鍵盤 `D` 鍵 demo 觸發 Elizabeth GREETING.
+> 🤝 **R18 + R19 M-diplomat — 外交訪問畫面繁中化**：對齊使用者提供的 `Elizabeth_I_PC_29.webp` / `Frederick_PC_29.webp` reference。3 段 layout (sky+mountain horizon → 領袖肖像+兩側 advisor → 棕色 parchment 對話框 + 兩側 spear ornament).
+>
+> **R19 重要修正 (使用者指正)**: 領袖肖像從 clean-room 自畫改用**原版 CIVDATA2 KING00..13 CvPc sprite** (427×320, 全部 13/13 載入成功). 修正 STR# 140 真實 slot 順序 (Caesar=1, Frederick=3, Elizabeth=14, 沒有蒙古, slot 8 NONE). 加 leader_portrait cache + scaled blit_remap + transparent skip. R20 follow-up: per-leader src_rect 對 14 KINGs 個別肖像 region 視覺辨識 (目前用 Elizabeth's region 對所有 KING — Elizabeth 顯示正確主肖像,其他 KING 落到動畫 frame 區域).
+>
+> 14 領袖 enum + 5 mood (Greeting/Demand Tribute/Offer Peace/Declare War/Propose Trade) + 客製對話文字 (「英格蘭女皇伊莉莎白一世向您致意……」/「我等至明智之德意志皇帝腓特烈大帝向您致意……」). 鍵盤 `D` 鍵 demo 觸發 Elizabeth GREETING.
 
 ## 專案目的
 
@@ -52,7 +56,7 @@
 | **M9-citytile** | city screen 背景升級: 外大底用 SPR32X32 真 ocean tile 重複貼 (`paint_tile_repeat`), 內 panel 仍 stipple (文字易讀). 對齊使用者新 reference 「背景有真 tile pattern 不是單色」 | ✅ | `m9_city_screen_ocean_tile.png` |
 | **M-techscreen** | tech discovery modal: 雙層花邊 frame (clean-room 自畫 8×8 pattern) + 大標題 (青銅器) + subtitle 文明進展 + (取自XX/自家研發) source 短語 + Allows 列表 (藍 後續 tech / 紅 unit / 綠 wonder/imp 各帶 16×16 mini sprite). 13 tech enum + 7 種 prereq DAG fill. 鍵盤 T 鍵 demo 觸發 BRONZE WORKING. ESC/Enter 關. | ✅ | `m9_tech_screen.png` |
 | **M10-i18n** | 全面繁中化 + UI polish: title 「文明帝國」 + 8 menu items 中文 + minimap 「世界地圖」 + status panel 雙層重排 (青/灰底, 中文欄位, 行距 18px) + city screen 背景純藍+微 stipple (取代 R15 ocean tile, 對齊 ROME reference) + tech screen 36px serif showcase + 銅 1字 icon + 雙寫粗體紀念版 | ✅ | `m10_main_zhtw.png` / `m10_city_screen_speckle.png` / `m10_tech_screen_showcase.png` |
-| **M11-diplomat** | 外交訪問畫面 (對齊 Elizabeth_I_PC_29 / Frederick_PC_29 reference): 3 段 layout (山地 horizon 自畫 + sky gradient + 領袖肖像 + 兩側 advisor; 棕 parchment 對話 + 兩側 spear ornament; 暗紅 serif 雙寫加粗對話文字). 14 領袖 enum + 5 mood + 領袖代表色 (Elizabeth 紅華服 / Frederick 藍軍服 + 銀白假髮) + 1 字 icon (英/德/羅/巴/法/埃...). 鍵盤 D 鍵 demo 觸發. test_diplomat 7 testcases. | ✅ | `m11_diplomat_elizabeth_zh.png` / `m11_diplomat_frederick_zh.png` |
+| **M11-diplomat** | 外交訪問畫面 (對齊 Elizabeth_I_PC_29 / Frederick_PC_29 reference): 3 段 layout (山地 horizon 自畫 + sky gradient + 真實 KING sprite + 兩側 advisor; 棕 parchment 對話 + 兩側 spear ornament; 暗紅 serif 雙寫加粗對話文字). **R19**: 改用原版 CIVDATA2 KING00..13 CvPc sprite + scaled blit_remap + transparent skip; STR# 140 真實 slot (Caesar=1 / Frederick=3 / Elizabeth=14, 沒蒙古). 14 領袖 enum + 5 mood + 1 字 icon fallback. 鍵盤 D 鍵 demo 觸發. test_diplomat 8 testcases (含 king_sprite_id). R20 follow-up: per-leader src_rect 微調. | ✅ | `m11_diplomat_elizabeth_zh.png` / `m11_diplomat_frederick_zh.png` |
 | **M6-full** | 真實戰鬥公式 (spec 07) + 城市生產 + RLL 存讀檔 | 🟡 阻 spec 06+07 | — |
 | **M7** | 奇蹟 + 外交 + 勝利條件 | ❌ | — |
 

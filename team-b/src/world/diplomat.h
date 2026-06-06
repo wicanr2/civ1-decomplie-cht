@@ -9,9 +9,15 @@
  *   - 對方派 Diplomat 過來談判
  *   - 戰爭/和平/貢品要求
  *
- * 對應 manual P38 Diplomacy + spec 06 §6.7 16 nation 3-axis AI personality.
- * 本 R18 階段只實作 first-greeting 訊息 (PC_29 圖片對應), 後續 R-diplomacy
- * 再補完整 4 種 stance + 5 種 tone.
+ * 對應 manual P38 Diplomacy + spec 06 §6.7 + spec 03 §3.1 KING00..13 CvPc
+ * (CIVDATA2 resource id 500..513) + spec 05 STR# 140 真實順序.
+ *
+ * **R19 重大發現**: 1993 Win port STR# 140 順序跟 Fandom wiki 不同:
+ *   slot 1=Caesar 2=Hammurabi 3=Frederick 4=Ramesses 5=Lincoln
+ *   6=Alexander 7=Gandhi 8=NONE 9=Stalin 10=Shaka
+ *   11=Napoleon 12=Montezuma 13=Mao 14=Elizabeth I
+ * 沒有蒙古, 中國領袖是 Mao 不是 Tzu Hsi.
+ * king_sprite_idx = slot - 1 (KING00..13 對應 slot 1..14).
  */
 #ifndef CIV_WORLD_DIPLOMAT_H
 #define CIV_WORLD_DIPLOMAT_H
@@ -19,24 +25,24 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define CIV_LEADER_COUNT 14   /* 對齊 spec 06 §6.7 + civ_dict.c STR# 140 */
+#define CIV_LEADER_COUNT 14   /* slot 1..14, slot 8 = NONE */
 
 typedef enum {
     CIV_LEADER_NONE        = 0,
-    CIV_LEADER_ELIZABETH   = 1,   /* 英國 — Greeting 紅色華服 */
-    CIV_LEADER_FREDERICK   = 2,   /* 德國 — Greeting 藍色軍服 */
-    CIV_LEADER_CAESAR      = 3,   /* 羅馬 */
-    CIV_LEADER_HAMMURABI   = 4,   /* 巴比倫 */
-    CIV_LEADER_NAPOLEON    = 5,   /* 法國 */
-    CIV_LEADER_RAMSES      = 6,   /* 埃及 */
-    CIV_LEADER_LINCOLN     = 7,   /* 美國 */
-    CIV_LEADER_ALEXANDER   = 8,   /* 希臘 */
-    CIV_LEADER_GANDHI      = 9,   /* 印度 */
-    CIV_LEADER_GENGHIS     = 10,  /* 蒙古 */
-    CIV_LEADER_TZU_HSI     = 11,  /* 中國 */
-    CIV_LEADER_SHAKA       = 12,  /* 祖魯 */
-    CIV_LEADER_MONTEZUMA   = 13,  /* 阿茲特克 */
-    CIV_LEADER_STALIN      = 14,  /* 蘇聯 */
+    CIV_LEADER_CAESAR      = 1,   /* 羅馬 — KING00 */
+    CIV_LEADER_HAMMURABI   = 2,   /* 巴比倫 — KING01 */
+    CIV_LEADER_FREDERICK   = 3,   /* 德意志 — KING02, 銀白假髮藍軍服 */
+    CIV_LEADER_RAMESES     = 4,   /* 埃及 — KING03 */
+    CIV_LEADER_LINCOLN     = 5,   /* 美利堅 — KING04 */
+    CIV_LEADER_ALEXANDER   = 6,   /* 希臘 — KING05 */
+    CIV_LEADER_GANDHI      = 7,   /* 印度 — KING06 */
+    /* slot 8 = NONE (STR# 140 留空) — KING07 hosted 但未對應 civ */
+    CIV_LEADER_STALIN      = 9,   /* 俄羅斯 — KING08 */
+    CIV_LEADER_SHAKA       = 10,  /* 祖魯 — KING09 */
+    CIV_LEADER_NAPOLEON    = 11,  /* 法蘭西 — KING10 */
+    CIV_LEADER_MONTEZUMA   = 12,  /* 阿茲特克 — KING11 */
+    CIV_LEADER_MAO         = 13,  /* 中華 — KING12 */
+    CIV_LEADER_ELIZABETH   = 14,  /* 英格蘭 — KING13, 紅華服 */
 } civ_leader_id_t;
 
 typedef enum {
@@ -52,20 +58,23 @@ typedef struct civ_diplomat_event {
     civ_diplomat_mood_t  mood;
 } civ_diplomat_event_t;
 
+/* 取得 KING sprite CvPc id (CIVDATA2 內 500..513). 回 -1 代表 NONE/越界. */
+int civ_leader_king_sprite_id(civ_leader_id_t l);
+
 /* zh-TW 領袖名稱 (對齊 spec 05 STR# 140 + civ_dict.c). */
 const char *civ_leader_name_zh(civ_leader_id_t l);
 
-/* zh-TW 文明名 (e.g. 英國 / 德國) — 對話用. */
+/* zh-TW 文明名 (e.g. 英格蘭 / 德意志) — 對話用. */
 const char *civ_leader_civ_name_zh(civ_leader_id_t l);
 
 /* 取此 event 應顯示的對話 (zh-TW, ≤ 2 行 64 中文字). 回靜態指標. */
 const char *civ_diplomat_dialog_zh(const civ_diplomat_event_t *ev);
 
-/* 1 個字代表 icon (e.g. "英" for Elizabeth, "德" for Frederick) — 對齊 R17
- * tech_icon_char_zh 設計, 顯示在領袖頭像占位中央. */
+/* 1 個字代表 icon (e.g. "英" for Elizabeth, "德" for Frederick) — fallback
+ * 用 (sprite 載入失敗時). */
 const char *civ_leader_icon_char_zh(civ_leader_id_t l);
 
-/* 領袖代表色 (服裝 RGB) — 用來畫頭像占位 + spear ornament. */
+/* 領袖代表色 (服裝 RGB) — fallback (sprite 未載入時用). */
 void civ_leader_palette(civ_leader_id_t l,
                          uint8_t *r, uint8_t *g, uint8_t *b);
 

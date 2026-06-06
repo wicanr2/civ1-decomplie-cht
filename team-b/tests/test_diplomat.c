@@ -21,9 +21,10 @@ static void test_leader_name_zh(void)
 
 static void test_leader_civ_name(void)
 {
+    /* R19: 對齊 STR# 140 真實 civ name */
     assert(strcmp(civ_leader_civ_name_zh(CIV_LEADER_ELIZABETH), "英格蘭") == 0);
-    assert(strcmp(civ_leader_civ_name_zh(CIV_LEADER_FREDERICK), "日耳曼") == 0);
-    assert(strcmp(civ_leader_civ_name_zh(CIV_LEADER_TZU_HSI),   "中華") == 0);
+    assert(strcmp(civ_leader_civ_name_zh(CIV_LEADER_FREDERICK), "德意志") == 0);
+    assert(strcmp(civ_leader_civ_name_zh(CIV_LEADER_MAO),       "中華") == 0);
     printf("  test_leader_civ_name PASS\n");
 }
 
@@ -31,10 +32,24 @@ static void test_icon_char(void)
 {
     assert(strcmp(civ_leader_icon_char_zh(CIV_LEADER_ELIZABETH), "英") == 0);
     assert(strcmp(civ_leader_icon_char_zh(CIV_LEADER_FREDERICK), "德") == 0);
-    assert(strcmp(civ_leader_icon_char_zh(CIV_LEADER_TZU_HSI),   "華") == 0);
+    assert(strcmp(civ_leader_icon_char_zh(CIV_LEADER_MAO),       "華") == 0);
     /* 越界回 "?" */
     assert(strcmp(civ_leader_icon_char_zh((civ_leader_id_t)999), "?") == 0);
     printf("  test_icon_char PASS\n");
+}
+
+static void test_king_sprite_id(void)
+{
+    /* R19: 對齊 spec 03 §3.1 CIVDATA2 KING00..13 = id 500..513 */
+    assert(civ_leader_king_sprite_id(CIV_LEADER_CAESAR)    == 500);
+    assert(civ_leader_king_sprite_id(CIV_LEADER_FREDERICK) == 502);
+    assert(civ_leader_king_sprite_id(CIV_LEADER_ELIZABETH) == 513);
+    /* slot 8 NONE 沒對應 leader → -1 */
+    assert(civ_leader_king_sprite_id((civ_leader_id_t)8) == -1);
+    assert(civ_leader_king_sprite_id(CIV_LEADER_NONE)    == -1);
+    /* 越界 → -1 */
+    assert(civ_leader_king_sprite_id((civ_leader_id_t)999) == -1);
+    printf("  test_king_sprite_id PASS\n");
 }
 
 static void test_palette_rgb(void)
@@ -72,7 +87,7 @@ static void test_dialog_greeting(void)
     ev.leader = CIV_LEADER_FREDERICK;
     snprintf(buf, sizeof buf, "%s", civ_diplomat_dialog_zh(&ev));
     if (!strstr(buf, "腓特烈")) { fprintf(stderr, "want 腓特烈 in %s\n", buf); assert(0); }
-    if (!strstr(buf, "日耳曼")) { fprintf(stderr, "want 日耳曼 in %s\n", buf); assert(0); }
+    if (!strstr(buf, "德意志")) { fprintf(stderr, "want 德意志 in %s\n", buf); assert(0); }
 
     /* generic (其他領袖 fallback) */
     ev.leader = CIV_LEADER_CAESAR;
@@ -123,6 +138,7 @@ int main(void)
     test_leader_name_zh();
     test_leader_civ_name();
     test_icon_char();
+    test_king_sprite_id();
     test_palette_rgb();
     test_dialog_greeting();
     test_dialog_moods();

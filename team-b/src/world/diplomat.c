@@ -4,78 +4,90 @@
 #include <stdio.h>
 #include <string.h>
 
+/* R19: 對齊 spec 05 STR# 140 真實順序 (civs.c ZH[] table 同步).
+ *   slot 1=Caesar 2=Hammurabi 3=Frederick 4=Ramesses 5=Lincoln
+ *   6=Alexander 7=Gandhi 8=NONE 9=Stalin 10=Shaka
+ *   11=Napoleon 12=Montezuma 13=Mao 14=Elizabeth I  */
 static const char *LEADER_NAME_ZH[CIV_LEADER_COUNT + 1] = {
     [CIV_LEADER_NONE]      = "",
-    [CIV_LEADER_ELIZABETH] = "伊莉莎白一世",
-    [CIV_LEADER_FREDERICK] = "腓特烈大帝",
     [CIV_LEADER_CAESAR]    = "凱撒",
     [CIV_LEADER_HAMMURABI] = "漢摩拉比",
-    [CIV_LEADER_NAPOLEON]  = "拿破崙",
-    [CIV_LEADER_RAMSES]    = "拉美西斯",
+    [CIV_LEADER_FREDERICK] = "腓特烈大帝",
+    [CIV_LEADER_RAMESES]   = "拉美西斯",
     [CIV_LEADER_LINCOLN]   = "林肯",
     [CIV_LEADER_ALEXANDER] = "亞歷山大",
     [CIV_LEADER_GANDHI]    = "甘地",
-    [CIV_LEADER_GENGHIS]   = "成吉思汗",
-    [CIV_LEADER_TZU_HSI]   = "慈禧太后",
-    [CIV_LEADER_SHAKA]     = "夏卡",
-    [CIV_LEADER_MONTEZUMA] = "蒙特祖瑪",
+    [8]                    = "",   /* slot 8 NONE */
     [CIV_LEADER_STALIN]    = "史達林",
+    [CIV_LEADER_SHAKA]     = "夏卡",
+    [CIV_LEADER_NAPOLEON]  = "拿破崙",
+    [CIV_LEADER_MONTEZUMA] = "蒙特蘇馬",
+    [CIV_LEADER_MAO]       = "毛澤東",
+    [CIV_LEADER_ELIZABETH] = "伊莉莎白一世",
 };
 
 static const char *LEADER_CIV_ZH[CIV_LEADER_COUNT + 1] = {
     [CIV_LEADER_NONE]      = "",
-    [CIV_LEADER_ELIZABETH] = "英格蘭",
-    [CIV_LEADER_FREDERICK] = "日耳曼",
     [CIV_LEADER_CAESAR]    = "羅馬",
     [CIV_LEADER_HAMMURABI] = "巴比倫",
-    [CIV_LEADER_NAPOLEON]  = "法蘭西",
-    [CIV_LEADER_RAMSES]    = "埃及",
+    [CIV_LEADER_FREDERICK] = "德意志",
+    [CIV_LEADER_RAMESES]   = "埃及",
     [CIV_LEADER_LINCOLN]   = "美利堅",
     [CIV_LEADER_ALEXANDER] = "希臘",
     [CIV_LEADER_GANDHI]    = "印度",
-    [CIV_LEADER_GENGHIS]   = "蒙古",
-    [CIV_LEADER_TZU_HSI]   = "中華",
+    [8]                    = "",
+    [CIV_LEADER_STALIN]    = "俄羅斯",
     [CIV_LEADER_SHAKA]     = "祖魯",
+    [CIV_LEADER_NAPOLEON]  = "法蘭西",
     [CIV_LEADER_MONTEZUMA] = "阿茲特克",
-    [CIV_LEADER_STALIN]    = "蘇聯",
+    [CIV_LEADER_MAO]       = "中華",
+    [CIV_LEADER_ELIZABETH] = "英格蘭",
 };
 
 static const char *LEADER_ICON_ZH[CIV_LEADER_COUNT + 1] = {
     [CIV_LEADER_NONE]      = "?",
-    [CIV_LEADER_ELIZABETH] = "英",
-    [CIV_LEADER_FREDERICK] = "德",
     [CIV_LEADER_CAESAR]    = "羅",
     [CIV_LEADER_HAMMURABI] = "巴",
-    [CIV_LEADER_NAPOLEON]  = "法",
-    [CIV_LEADER_RAMSES]    = "埃",
+    [CIV_LEADER_FREDERICK] = "德",
+    [CIV_LEADER_RAMESES]   = "埃",
     [CIV_LEADER_LINCOLN]   = "美",
     [CIV_LEADER_ALEXANDER] = "希",
     [CIV_LEADER_GANDHI]    = "印",
-    [CIV_LEADER_GENGHIS]   = "蒙",
-    [CIV_LEADER_TZU_HSI]   = "華",
-    [CIV_LEADER_SHAKA]     = "祖",
-    [CIV_LEADER_MONTEZUMA] = "阿",
+    [8]                    = "?",
     [CIV_LEADER_STALIN]    = "蘇",
+    [CIV_LEADER_SHAKA]     = "祖",
+    [CIV_LEADER_NAPOLEON]  = "法",
+    [CIV_LEADER_MONTEZUMA] = "阿",
+    [CIV_LEADER_MAO]       = "華",
+    [CIV_LEADER_ELIZABETH] = "英",
 };
 
-/* 領袖服裝代表色 — 對齊 reference 圖片觀察 */
+/* 領袖服裝代表色 — 對齊 reference 圖片觀察 (fallback 用) */
 static const struct { uint8_t r, g, b; } LEADER_PAL[CIV_LEADER_COUNT + 1] = {
     [CIV_LEADER_NONE]      = { 0x80, 0x80, 0x80 },
-    [CIV_LEADER_ELIZABETH] = { 0xC0, 0x20, 0x20 },  /* 紅華服 */
-    [CIV_LEADER_FREDERICK] = { 0x20, 0x40, 0xA0 },  /* 藍軍服 */
     [CIV_LEADER_CAESAR]    = { 0xC0, 0x00, 0x00 },  /* 羅馬紅 */
     [CIV_LEADER_HAMMURABI] = { 0xC0, 0x80, 0x40 },
-    [CIV_LEADER_NAPOLEON]  = { 0x00, 0x40, 0x80 },
-    [CIV_LEADER_RAMSES]    = { 0xE0, 0xC0, 0x00 },  /* 埃及金 */
+    [CIV_LEADER_FREDERICK] = { 0x20, 0x40, 0xA0 },  /* 藍軍服 */
+    [CIV_LEADER_RAMESES]   = { 0xE0, 0xC0, 0x00 },  /* 埃及金 */
     [CIV_LEADER_LINCOLN]   = { 0x40, 0x40, 0x40 },
     [CIV_LEADER_ALEXANDER] = { 0xC0, 0x80, 0x00 },
     [CIV_LEADER_GANDHI]    = { 0xE0, 0xE0, 0xE0 },
-    [CIV_LEADER_GENGHIS]   = { 0x80, 0x40, 0x20 },
-    [CIV_LEADER_TZU_HSI]   = { 0xE0, 0xC0, 0x00 },  /* 中華金黃 */
-    [CIV_LEADER_SHAKA]     = { 0x60, 0x40, 0x20 },
-    [CIV_LEADER_MONTEZUMA] = { 0x80, 0xC0, 0x40 },
+    [8]                    = { 0x80, 0x80, 0x80 },
     [CIV_LEADER_STALIN]    = { 0x80, 0x20, 0x20 },
+    [CIV_LEADER_SHAKA]     = { 0x60, 0x40, 0x20 },
+    [CIV_LEADER_NAPOLEON]  = { 0x00, 0x40, 0x80 },
+    [CIV_LEADER_MONTEZUMA] = { 0x80, 0xC0, 0x40 },
+    [CIV_LEADER_MAO]       = { 0xC0, 0x40, 0x20 },
+    [CIV_LEADER_ELIZABETH] = { 0xC0, 0x20, 0x20 },  /* 紅華服 */
 };
+
+int civ_leader_king_sprite_id(civ_leader_id_t l)
+{
+    if ((int)l < 1 || (int)l > CIV_LEADER_COUNT) return -1;
+    if ((int)l == 8) return -1;   /* slot 8 NONE 沒有對應 leader, 但 KING07 sprite 存在 */
+    /* KING00..13 = CIVDATA2 id 500..513, slot 1..14 對齊 idx 0..13 */
+    return 500 + ((int)l - 1);
+}
 
 const char *civ_leader_name_zh(civ_leader_id_t l)
 {
@@ -104,13 +116,6 @@ void civ_leader_palette(civ_leader_id_t l,
     if (b) *b = LEADER_PAL[l].b;
 }
 
-/* R18-1 對話文字 — 對齊 reference 圖片內英文原句直譯
- *   Elizabeth: "Greetings from Elizabeth I, ruler and Empress of the English..."
- *              → "英格蘭女皇伊莉莎白一世向您致意..."
- *   Frederick: "Greetings from our most wise Emperor Frederick of the Germans..."
- *              → "我等至明智之日耳曼皇帝腓特烈向您致意..."
- *
- * 句末 "..." 模擬待玩家點擊 continue 的進度感. */
 const char *civ_diplomat_dialog_zh(const civ_diplomat_event_t *ev)
 {
     static char buf[256];
@@ -120,7 +125,6 @@ const char *civ_diplomat_dialog_zh(const civ_diplomat_event_t *ev)
 
     switch (ev->mood) {
         case CIV_DIPLOMAT_GREETING:
-            /* 為了 reference 兩位特別客製化句式 */
             if (ev->leader == CIV_LEADER_ELIZABETH) {
                 snprintf(buf, sizeof buf,
                          "%s女皇%s向您致意……",

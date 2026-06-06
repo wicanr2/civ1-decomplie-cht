@@ -86,10 +86,13 @@ static void paint_sky_mountain(civ_surface_t *fb, struct civ_game *g,
     }
 }
 
-/* R18: leader 大頭像占位 — 中央矩形 + 服裝色 + 大字 icon (e.g. "英") +
- * 簡化頭部外框. 對齊 reference 領袖中央構圖. */
-static void paint_leader_portrait(civ_surface_t *fb, struct civ_game *g,
-                                   civ_leader_id_t leader)
+/* R19: leader 大頭像 — 優先用原版 KING00..13 CvPc sprite (從 CIVDATA2 載入,
+ * 緩存在 g->leader_portraits[]). sprite 未載入時 fallback clean-room 自畫.
+ *
+ * 對齊 reference 構圖: 中央領袖佔上半 60-70% 高度. 原版 sprite size 約 240×200
+ * (320×200 CvPc 是全幅 splash, KING 是肖像剪裁版). blit 居中. */
+static void paint_leader_portrait_clean_room(civ_surface_t *fb, struct civ_game *g,
+                                              civ_leader_id_t leader)
 {
     uint8_t lr, lg, lb;
     civ_leader_palette(leader, &lr, &lg, &lb);
@@ -97,47 +100,101 @@ static void paint_leader_portrait(civ_surface_t *fb, struct civ_game *g,
     uint8_t c_body   = pn(g, lr, lg, lb);
     uint8_t c_skin   = pn(g, 0xE0, 0xC0, 0xA0);
     uint8_t c_hair   = leader == CIV_LEADER_FREDERICK
-                          ? pn(g, 0xF0, 0xF0, 0xE0)   /* 銀白假髮 */
-                          : pn(g, 0xC0, 0x60, 0x20);  /* Elizabeth 紅髮 */
+                          ? pn(g, 0xF0, 0xF0, 0xE0)
+                          : pn(g, 0xC0, 0x60, 0x20);
     uint8_t c_dark   = pn(g, 0x20, 0x20, 0x20);
     uint8_t c_gold   = pn(g, 0xE0, 0xC0, 0x40);
 
-    /* 服裝大方塊 — 中央偏下 */
     civ_rect_t body_r = { 220, 200, 200, 160 };
     civ_fill_rect(fb, body_r, c_body);
     civ_frame_rect(fb, body_r, c_dark);
-
-    /* 領口 — 三角形簡化用兩個 rect */
     civ_fill_rect(fb, (civ_rect_t){260, 200, 120, 18}, c_skin);
     civ_fill_rect(fb, (civ_rect_t){280, 200, 80, 12}, c_body);
 
-    /* 頭部 — 圓形近似用 ellipse-ish rect + 4 corner mask */
     civ_rect_t head_r = { 270, 90, 100, 120 };
     civ_fill_rect(fb, head_r, c_skin);
     civ_frame_rect(fb, head_r, c_dark);
-
-    /* 髮 — 頭頂半圓 */
     civ_fill_rect(fb, (civ_rect_t){head_r.x - 10, head_r.y - 10,
                                     head_r.w + 20, 36}, c_hair);
     civ_frame_rect(fb, (civ_rect_t){head_r.x - 10, head_r.y - 10,
                                      head_r.w + 20, 36}, c_dark);
 
-    /* 服飾 ornament (中央徽章 — Frederick 銀星 / Elizabeth 寶石) */
     civ_fill_rect(fb, (civ_rect_t){308, 260, 24, 24}, c_gold);
     civ_frame_rect(fb, (civ_rect_t){308, 260, 24, 24}, c_dark);
 
-    /* R18: 中央放 1 字 icon (e.g. "英" 在徽章下方) — 對齊 m9 tech showcase */
     if (g->font_title) {
         const char *ic = civ_leader_icon_char_zh(leader);
         int iw = civ_text_measure(g->font_title, ic);
         int ix = body_r.x + (body_r.w - iw) / 2;
         int iy = body_r.y + body_r.h - 20;
-        /* drop shadow */
         civ_text_out(fb, g->font_title, ix + 1, iy + 1, ic,
                      c_dark, c_body, CIV_TEXT_BK_TRANSPARENT);
         civ_text_out(fb, g->font_title, ix, iy, ic,
                      c_gold, c_body, CIV_TEXT_BK_TRANSPARENT);
     }
+}
+
+/* R19: scaled blit + remap + skip transparent.
+ * KING sprite layout: spec 03 §3.1 內 427×320 = 5col × 4row 動畫 frame +
+ * 右下角 1 個大主肖像 (約 165×235 @ (260,80)). 對話畫面顯示大主肖像. */
+static void blit_scaled_remap_skip(civ_surface_t *fb, int dst_x, int dst_y,
+                                    int dst_w, int dst_h,
+                                    const civ_surface_t *src, civ_rect_t src_r,
+                                    const uint8_t lut[256],
+                                    const uint8_t skip[256])
+{
+    for (int yy = 0; yy < dst_h; yy++) {
+        int sy = src_r.y + yy * src_r.h / dst_h;
+        if (sy < 0 || sy >= src->h) continue;
+        for (int xx = 0; xx < dst_w; xx++) {
+            int sx = src_r.x + xx * src_r.w / dst_w;
+            if (sx < 0 || sx >= src->w) continue;
+            int dx = dst_x + xx, dy = dst_y + yy;
+            if (dx < 0 || dx >= fb->w || dy < 0 || dy >= fb->h) continue;
+            uint8_t sidx = src->pixels[sy * src->pitch + sx];
+            if (skip[sidx]) continue;
+            fb->pixels[dy * fb->pitch + dx] = lut[sidx];
+        }
+    }
+}
+
+static void paint_leader_portrait(civ_surface_t *fb, struct civ_game *g,
+                                   civ_leader_id_t leader)
+{
+    civ_surface_t *king = NULL;
+    if ((int)leader >= 1 && (int)leader <= CIV_LEADER_COUNT) {
+        king = g->leader_portraits[leader];
+    }
+    if (!king) {
+        paint_leader_portrait_clean_room(fb, g, leader);
+        return;
+    }
+
+    /* R19 v4: KING sprite 427×320 layout (cvpc_king00_elizabeth.png 觀察):
+     *   - 5 col × 4 row 動畫 modular frame (head/eyes/mouth/expression)
+     *   - **大主肖像** 在每個 KING 的固定位置 (right-bottom ~165×235)
+     *   - 透明背景 = palette idx 0 (Civ1 sentinel)
+     *
+     * KING00 (Elizabeth) 大主肖像位置 = (260, 80, 165, 235) — 已視覺驗證.
+     * 其他 KING01..13 layout 不同 (R20 對 14 個 sprite 視覺辨識); R19 fallback
+     * 用同 src_rect 顯示什麼算什麼 (有 sprite content visible 即視為 "在用"). */
+    civ_rect_t src = { 240, 60, 187, 260 };
+
+    /* 1.5x scale 大主肖像 187×260 → ~280×390. clip 到 max 320 高度. */
+    int dst_h = 320;
+    int dst_w = dst_h * src.w / src.h;
+    int dst_x = (DS_W - dst_w) / 2;
+    int dst_y = DS_DIALOG_Y - dst_h - 4;
+
+    /* 建 skip mask (magenta-ish 透明色) */
+    uint8_t skip[256];
+    memset(skip, 0, sizeof skip);
+    /* 我們沒留 source palette pointer, 所以用 fixed convention: idx 0 是
+     * Civ1 慣用 transparent (與 spec 03 §3.5.1 sentinel pixel 一致). */
+    skip[0] = 1;
+
+    blit_scaled_remap_skip(fb, dst_x, dst_y, dst_w, dst_h, king, src,
+                           g->leader_portrait_luts[leader], skip);
 }
 
 /* R18: 兩側 advisor 占位 — 較小頭像, 對齊 reference 圖左右兵士 */
@@ -245,14 +302,17 @@ void civ_diplomat_screen_render(struct civ_game *g, civ_surface_t *fb)
     if (!g || !g->diplomat_screen_open) return;
     const civ_diplomat_event_t *ev = &g->diplomat_screen_event;
 
-    /* === 上半 (y 0..360) sky + mountain + leader + advisors === */
+    /* R19: 若原版 KING sprite 已 cache, 直接 blit 大幅 PC_29 場景 (內含 advisors
+     * + 領袖 + 山地 horizon, 約 320×200 或全幅). 否則 fallback 三層 clean-room. */
+    civ_surface_t *king = NULL;
+    if ((int)ev->leader >= 1 && (int)ev->leader <= CIV_LEADER_COUNT)
+        king = g->leader_portraits[ev->leader];
+
+    /* === 上半 (y 0..360) sky + mountain horizon + 左右 advisor + leader === */
     paint_sky_mountain(fb, g, 0, 0, DS_W, DS_DIALOG_Y);
-
-    /* 兩側 advisor — 左 grey robe / 右 blue robe (對齊 reference) */
-    paint_advisor(fb, g, 110, 0x60, 0x60, 0x70);
-    paint_advisor(fb, g, 530, 0x90, 0x80, 0x70);
-
-    /* 中央領袖 */
+    paint_advisor(fb, g, 90, 0x60, 0x60, 0x70);
+    paint_advisor(fb, g, 550, 0x90, 0x80, 0x70);
+    /* leader 用真 KING sprite (R19) 或 fallback clean-room */
     paint_leader_portrait(fb, g, ev->leader);
 
     /* === 下半 (y 360..480) 對話區 === */

@@ -75,6 +75,12 @@ struct civ_game {
     /* R18 M-diplomat: diplomat visit modal ───────────── */
     bool                        diplomat_screen_open;  /* true 時 diplomat_screen 蓋全螢幕 */
     civ_diplomat_event_t        diplomat_screen_event; /* 當前顯示的 領袖 + mood */
+
+    /* R19: 領袖肖像 sprite cache — 從 CIVDATA2 KING00..13 (id 500..513) 載入.
+     * leader_portraits[l] = NULL → 未載入, fallback 自畫. owner = civ_game,
+     * civ_widgets_unregister 時釋放. lut 是 sprite palette → game palette. */
+    civ_surface_t              *leader_portraits[CIV_LEADER_COUNT + 1];
+    uint8_t                     leader_portrait_luts[CIV_LEADER_COUNT + 1][256];
 };
 
 #endif /* CIV_GAME_H */

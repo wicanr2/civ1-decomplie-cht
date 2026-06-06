@@ -160,6 +160,34 @@ int main(int argc, char **argv)
            g.sprite_sheet.sheet->w, g.sprite_sheet.sheet->h,
            g.sprite_sheet.cols, g.sprite_sheet.rows);
 
+    /* R19: 載 CIVDATA2 KING00..13 (id 500..513) → leader_portraits cache.
+     * sprite palette 透過 build_lut 翻譯到 g.palette (sprite_sheet.pal). */
+    snprintf(path, sizeof path, "%s/CIVDATA2.RSC", data_dir);
+    civ_rsrc_t *r2 = civ_rsrc_open(path);
+    if (!r2) {
+        snprintf(path, sizeof path, "%s/Civdata2.RSC", data_dir);
+        r2 = civ_rsrc_open(path);
+    }
+    if (r2) {
+        int loaded = 0;
+        for (civ_leader_id_t l = 1; l <= CIV_LEADER_COUNT; l++) {
+            int king_id = civ_leader_king_sprite_id(l);
+            if (king_id < 0) continue;   /* slot 8 NONE skip */
+            civ_surface_t *king = NULL;
+            civ_palette_t  king_pal = {0};
+            if (civ_load_cvpc_by_id(r2, (int16_t)king_id, &king, &king_pal) == 0) {
+                g.leader_portraits[l] = king;
+                civ_palette_build_lut(king_pal.entries, 256, &g.palette,
+                                      g.leader_portrait_luts[l]);
+                loaded++;
+            }
+        }
+        printf("KING portraits loaded: %d/13\n", loaded);
+        civ_rsrc_close(r2);
+    } else {
+        fprintf(stderr, "warning: CIVDATA2.RSC 找不到, leader_portraits 全 fallback\n");
+    }
+
     /* M5 真落地 (2026-06-06 第二輪):
      *   舊版這裡是 debug 模式直接把整張 SPR32X32 sheet raw blit + grid 線
      *   做資產校驗,結果看起來像「sprite atlas 平鋪占位」不像真實 game world。
@@ -220,8 +248,10 @@ int main(int argc, char **argv)
             dev->leader = CIV_LEADER_ELIZABETH;
         else if (strcmp(argv[2], "diplomat-frederick") == 0)
             dev->leader = CIV_LEADER_FREDERICK;
-        else if (strcmp(argv[2], "diplomat-tzu_hsi") == 0)
-            dev->leader = CIV_LEADER_TZU_HSI;
+        else if (strcmp(argv[2], "diplomat-mao") == 0)
+            dev->leader = CIV_LEADER_MAO;
+        else if (strcmp(argv[2], "diplomat-gandhi") == 0)
+            dev->leader = CIV_LEADER_GANDHI;
         else
             dev->leader = CIV_LEADER_CAESAR;
         dev->mood = CIV_DIPLOMAT_GREETING;
@@ -238,6 +268,14 @@ int main(int argc, char **argv)
     const char *out_path = argc > 1 ? argv[1] : "m5_world.ppm";
     write_ppm(out_path, g.framebuffer, &g.palette);
     printf("PASS test_world_snapshot → %s\n", out_path);
+
+    /* R19: 釋放 leader portraits */
+    for (int l = 1; l <= CIV_LEADER_COUNT; l++) {
+        if (g.leader_portraits[l]) {
+            civ_surface_free(g.leader_portraits[l]);
+            g.leader_portraits[l] = NULL;
+        }
+    }
 
     civ_sprite_sheet_free(&g.sprite_sheet);
     civ_widgets_unregister(&g);
