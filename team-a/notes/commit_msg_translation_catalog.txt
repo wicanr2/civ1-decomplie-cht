@@ -1,0 +1,63 @@
+翻譯 catalog 擴張: 241 條 zh-TW 涵蓋 11 個 STR# 全 master tables
+
+依使用者「1 > 2 > 3 依序」#1 任務。
+
+# 交付
+
+  src/data/civ_dict.{c,h}        241 條 zh-TW 翻譯 hard-coded catalog
+    72 條  STR# 130 Tech Advances     (字母 / 法典 / 數學 / 工業化 ...)
+    46 條  STR# 131 Improv & Wonders  (宮殿 / 兵營 / 大圖書館 / 金字塔 /
+                                        曼哈頓計畫 / 癌症療法 ...)
+    28 條  STR# 132 Units             (墾荒者 / 民兵 / 方陣兵 / 騎士 /
+                                        裝甲車 / 航空母艦 / 核彈 ...)
+    24 條  STR# 133 Terrains          (沙漠 / 平原 / 草原 / 海洋 / 河流 ...)
+    21 條  STR# 134 Miscellaneous     (老兵單位 / 駐守 / 灌溉 / 污染 ...)
+     7 條  STR# 138 Report Titles     (城市狀態 / 軍事狀態 / 情報報告 ...)
+     6 條  STR# 141 Governments       (無政府 / 專制 / 君主 / 共產 ...)
+     8 條  STR# 142 Caravan Goods     (絲綢 / 銀 / 葡萄酒 / 香料 ...)
+    13 條  STR# 146 King Title        (先生 / 皇帝 / 國王 / 同志 ...)
+     6 條  STR# 147 CivPedia Subtitle (文明進展 / 城市建築 / 世界奇蹟 ...)
+    10 條  STR# 150 Dock              (太空船零件: 結構 / 推進 / 燃料 ...)
+    --------
+   241 條 總計
+
+  加上既有 civs.c 內 14 文明 x 5 欄 = 70 條, 全 catalog 共 311 條 zh-TW。
+
+  tests/test_civ_dict.c          11 個 STR# 全範圍驗證:
+    - 起首 / 中間抽樣 / 結尾條目
+    - 越界索引回 NULL
+    - 不存在 str_id 回 NULL
+    - 包含 duplicate 條目 (地形 STR# 133 內 14=草原, 23=河流)
+
+  Civ_dict.h 提供單一 API:
+    const char *civ_dict_lookup(int str_id, int index);
+
+# 驗證
+
+  cmake build      15/15 zero warning
+  ctest no data:   9/9 PASS
+  ctest with data: 9/9 PASS
+                    含 test_civ_dict 完整 241 條驗證
+
+# 翻譯品質
+
+直譯 + 對齊現代繁中遊戲用語慣例:
+- 軍事: 方陣兵 (Phalanx) / 軍團兵 (Legion) / 火槍兵 (Musketeers) /
+        步兵 (Riflemen) / 戰艦 (Battleship)
+- 政治: 民主政體 (Democracy) / 共產主義 (Communism) / 共和政體 (Republic)
+- 奇蹟: 麥哲倫的遠征 / 米開朗基羅教堂 / 哥白尼天文台 / 莎士比亞劇場 /
+        牛頓學院 / 巴哈大教堂 / 達爾文之旅 / 胡佛水壩 / 阿波羅計畫
+- 地形: 沙漠 / 平原 / 草原 / 森林 / 山脈 / 凍原 / 沼澤 / 叢林 / 綠洲
+- 君主: Mr.=先生 / Comrade=同志 / Empress=女皇 / Chief=酋長 /
+        Lord=主公
+
+# 翻譯來源 single source of truth
+
+所有 241 條來自 Civdata0.RSC STR# 130-150 完整 dump。對齊 spec 05
+§5.3 的 33 STR# 索引表。
+
+# 下一步 - #2 (M5: palette stomp RGB-nearest LUT)
+
+接著做使用者「1 > 2 > 3」清單的 #2:
+M5 修 palette stomp - M3/M4 demo 看到的視覺問題,
+不同 CvPc palette 互相覆蓋。
