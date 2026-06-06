@@ -10,7 +10,7 @@
 
 ## 目前 ship 狀態 (2026-06-06)
 
-最後 ship: R8 spec 06 v0.3 — 16 nation AI personality 完整 (Mood / Policy / Ideology 三軸) from OpenCivOne NationDefinition
+最後 ship: R9 spec 09 v0.1 — 5 種結束方式 + 2 種勝利條件 + Civilization Score 完整公式 + Hall of Fame ranking
 
 | Milestone | 範圍 | 狀態 | 證據 |
 |---|---|---|---|
@@ -60,6 +60,7 @@
 | [`05`](team-a/specs/05_game_data_and_strings.md) | 33 STR# + 399 TEXT master tables 定位 | **master tables 不在 CIV.EXE** 而在 `Civdata0.RSC`；72 科技 / 46 建築 / 28 單位 / 24 地形 / 14 文明 / 14 領袖 / 6 政府 全名清單已抽出 |
 | [`06` v0.3](team-a/specs/06_game_data_tables.md) | **28 unit + 25 building + 22 wonder + 47 tech + 24 terrain + 16 nation** ground-truth | 主要源自 [OpenCivOne](https://codeberg.org/rhorvat/OpenCivOne) (MIT). 揭穿 34-byte unit struct + manual P41 Fighter 印錯 (真值 4-2). v0.3 加 16 nation AI personality 三軸 (Mood / Policy / Ideology): Gandhi −1/−1/0 / Genghis +1/+1/−1 / Lincoln −1/0/+1 等. Binary offset 仍 TBD. v0.4 待補 72-tech 完整 + SETI/Cancer Wonder + binary offset. |
 | [`07`](team-a/specs/07_save_format_and_rle.md) | **SAV file RLE 壓縮** (`load.c::RLLEncode/Decode`) §7.1 完整 + §7.2 v0.1 SAV layout map | §7.1 取自 [Honza Havlicek 2008](team-a/external/). §7.2 R2 cross-compare 3 HAM*.SAV (107 KB fixed-size) 對位 header / king names / civ names / player table / city table / 256 city pool. |
+| [`09` v0.1](team-a/specs/09_victory_and_scoring.md) | **5 種結束方式 + 2 種勝利 + Civilization Score 公式 + Hall of Fame** | manual P22-23 ground-truth: Score = 2×happy + 1×content + 20×wonder + 3×peace turn + 10×future tech − 10×pollution + space/conquest bonus. Space win (任 civ 到 Alpha Centauri) / Conquest win (消滅其他全 civ) / Retire / Quit / Destroyed. Team B §9.7 介面契約給 M8 milestone 用. |
 
 ### 待寫 spec ❌
 
@@ -70,7 +71,7 @@
 | **`07` §7.2 v0.2** | byte→struct field 對位細部 (treasury / known_techs bitmap / world map terrain) | §7.2 v0.1 layout map 已 ship (R2); v0.2 待 Ghidra walk `CivLoadGame` 看 `fread()` 順序 |
 | **`07` combat + AI** | combat 公式 + AI 決策 + 外交 | 數值表 ground-truth 已 ship (spec 06 §6.1.1); 公式骨架 manual P35 明示, 可直接實作 Team B `civ_combat_resolve()` |
 | **`08`** | 音效 — MMSYSTEM 4 個 API call site + 23 個 WAV 資源未分類 | 不擋遊戲邏輯；可獨立後做 |
-| **`09`** | 勝利條件 / 結局 / scoring | STR# 155-157 (Space 1/2/Archeologist) 文字側已 RE，演算法未碰 |
+| **`09` v0.2** | 西元 2100 強制 retire + difficulty multiplier 6 級 + 太空船完整零件規則 + STR# 155-157 中文化 | §9.1-9.7 v0.1 已 ship; v0.2 補 game-end 細節 + OpenCivOne SpaceshipCell 對位 |
 
 ### 子系統 RE 狀態
 
