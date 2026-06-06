@@ -1,0 +1,59 @@
+資產上 repo + ASSETS_INDEX.md 完整索引 + 著作權聲明
+
+依使用者指示「sprite 整理成一張表放在 github repo 確認正確性、允許
+asset 上傳 (註明版權還是屬於原作者)」。
+
+# 交付
+
+  NOTICE.md (新)
+    完整著作權聲明
+    - 原版 © 1993 MicroProse, 現屬 Take-Two Interactive / Firaxis
+    - 本 repo 為 clean-room 反組譯研究目的
+    - 不散布原版 binary、不商用、不替代現行商品
+    - 引用合理使用 / 學術研究 / 技術評論基礎
+    - 著作權持有人聯絡管道 + DMCA 程序
+    - 使用者責任條款
+
+  docs/ASSETS_INDEX.md (新, 294 lines)
+    185 個 CvPc sprite 完整分類索引:
+      Leaders (14): KING00-13 文明領袖肖像
+      Units (~28): 步兵 / 騎兵 / 海軍 / 飛行單位 / 太空單位
+      Technology (~65): 科技樹 icon (ALPHABET ~ WRITING)
+      Wonders & Buildings: ARCH, WONDERS, HOUSE, HILL, CITYPIX2/3
+      Government: GOVT0M/1M/2M
+      Space race: planet0-9, SPACE, SPACEST
+      World tiles: ROAD, road0-3, 裝飾元素 (左右樹/雕像/天空)
+      Animations: castle 5x3 動畫, Small_Birth 文明開場 (7 frame)
+      UI: DIFFS, LOVE1/2, RIOT/2, ICONPGT1/2, fame, slamall, MAP
+      Special: EARTH, SPY, DOCKER, SPR32X32, discovr1/2
+
+    每張 sprite 在表內含:
+      - 96px 縮圖 (magenta 背景自動轉透明, 視覺清楚)
+      - 原版 resource name
+      - 來源 RSC + resource ID (點擊直連原圖)
+      - 原始尺寸
+
+  assets-extracted/tiles/ (185 個 PNG, 3.4 MB) 入 repo
+  assets-extracted/tiles/_thumbs/ (185 個縮圖, 1.1 MB) 入 repo
+
+  team-a/tools/generate_asset_index.py (新)
+    自動產生 ASSETS_INDEX.md + 縮圖的 Python script
+    - 用 Pillow 生成 96px 縮圖, magenta -> 透明
+    - 11 個分類規則 (LEADERS / TECH_ICONS / UNITS / ...)
+    - 按分類 -> 子分類 -> 字母序排表
+
+  .gitignore 改: assets-extracted/ 從 ignore list 移除
+                 (改為 NOTICE.md 規範下的研究用途歸檔)
+
+  README.md 加「反組譯資產 (研究用途)」段落, 連 ASSETS_INDEX +
+  cvpc_spr32x32 + cvpc_king00 + NOTICE.md
+
+# 著作權立場
+
+- 原版 sprite 著作權屬 © 1993 MicroProse Software, Inc.
+- 現由 Take-Two Interactive / 2K Games / Firaxis Games 持有
+- 本 repo 是 clean-room 反組譯 *研究* 性質, 不作商業發行
+- 用於: 技術考古 / CvPc decoder 驗證 / 翻譯範圍規劃 / 教學示範
+- 不替代任何現行商品 (Take-Two 2005 收 IP, 1993 Win 版至今無商業
+  途徑可購)
+- 著作權持有人若認為超出合理使用範圍, NOTICE.md 內列出聯絡管道

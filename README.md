@@ -73,6 +73,15 @@ tools/                         共用資產抽取工具（EDILZSS2 等，MIT）
 - 不把反組譯結果（function listing、disassembly bytes、decompiler 輸出）嵌入到實作 source tree。
 - 不修改、patch、或重打包 `CIV.EXE`（那是母專案 Track A 的路線，已封存）。
 
+## 反組譯資產（研究用途）
+
+- [`docs/ASSETS_INDEX.md`](docs/ASSETS_INDEX.md) — **185 個 sprite 完整分類索引**（領袖 14 / 科技 ~65 / 單位 ~28 / 奇蹟 / 政府 / 太空 / 動畫 / UI），含縮圖
+- [`docs/screenshots/cvpc_spr32x32_decoded.png`](docs/screenshots/cvpc_spr32x32_decoded.png) — 主 sprite sheet 1472×400
+- [`docs/screenshots/cvpc_king00_elizabeth.png`](docs/screenshots/cvpc_king00_elizabeth.png) — Queen Elizabeth I 領袖肖像示意
+- 完整版權聲明：[`NOTICE.md`](NOTICE.md)
+
+> 所有 sprite © 1993 MicroProse Software / 現屬 Take-Two Interactive / Firaxis Games。**本 repo 為 clean-room 反組譯研究**，純技術考古 + 翻譯範圍規劃，不商用、不重打包、不替代原版商品。
+
 ## License
 
 - 程式碼（`team-b/src/`、`tools/`）：**MIT**

@@ -9,8 +9,9 @@ team-a/binary/
 *.rep/
 *.lock
 
-# Extracted assets (regenerable from user-supplied CIV.EXE)
-assets-extracted/
+# Extracted assets — research-only PNG sprites + thumbs are tracked
+# (見 NOTICE.md 對著作權的說明)。原始 .RSC 仍由使用者自備。
+# assets-extracted/ 內整個目錄入 repo 作為 CvPc decoder 正確性的證據
 
 # Build output
 team-b/build/
