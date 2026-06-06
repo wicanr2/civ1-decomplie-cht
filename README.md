@@ -10,7 +10,7 @@
 
 ## 目前 ship 狀態 (2026-06-06)
 
-最後 ship: R10 chrome polish — 設計師 audit 後全面套 palette_nearest(): title/menu/sub-title 真 Win16 深藍 + city screen 藍 stipple 底 + 紅 EXIT
+最後 ship: R11 spec 08 v0.1 — 24 WAV inventory (14 leader 配音 + 3 system + 3 combat + 2 endgame + 2 special) + MMSYSTEM 4 calls 推測 + Team B SDL_audio 接口
 
 | Milestone | 範圍 | 狀態 | 證據 |
 |---|---|---|---|
@@ -71,7 +71,7 @@
 | **`06` §6.9 binary offset** | 28 unit stats 在 CIV.EXE / RSC 內的實際位址 | R3 scan 證實非 contiguous array, 推測 hardcoded 在 code segment MOV immediate, 待 Ghidra 全 function MOV pattern walk |
 | **`07` §7.2 v0.2** | byte→struct field 對位細部 (treasury / known_techs bitmap / world map terrain) | §7.2 v0.1 layout map 已 ship (R2); v0.2 待 Ghidra walk `CivLoadGame` 看 `fread()` 順序 |
 | **`07` combat + AI** | combat 公式 + AI 決策 + 外交 | 數值表 ground-truth 已 ship (spec 06 §6.1.1); 公式骨架 manual P35 明示, 可直接實作 Team B `civ_combat_resolve()` |
-| **`08`** | 音效 — MMSYSTEM 4 個 API call site + 23 個 WAV 資源未分類 | 不擋遊戲邏輯；可獨立後做 |
+| **`08` v0.2** | MMSYSTEM 4 call sites 確切 API + caller 識別 (Ghidra walk) + 背景 BGM 確認 | v0.1 24 WAV inventory + 事件對應 ground-truth 已 ship; v0.2 補 API 對位 |
 | **`09` v0.2** | 西元 2100 強制 retire + difficulty multiplier 6 級 + 太空船完整零件規則 + STR# 155-157 中文化 | §9.1-9.7 v0.1 已 ship; v0.2 補 game-end 細節 + OpenCivOne SpaceshipCell 對位 |
 
 ### 子系統 RE 狀態
@@ -84,7 +84,7 @@
 | Dialog system | `dialogs.c` | 100% (spec 04) | — |
 | 視窗 proc | `wdwmap/wdwsmmap/wdwstat/windows` | dispatch table 骨架 (7/22 + 7/9 + 7/9) | 個別 message handler 待補 |
 | AI / 外交 | location 不確定 | 20% — spec 06 §6.7 16 nation 三軸個性 (Mood/Policy/Ideology) 完整 ground-truth | AI 決策 function 未抽 (從 Ghidra `FUN_10e8_2d46` 起 walk) + 外交決策樹 |
-| 音效 | MMSYSTEM 4 call | 0% | API call 統計過但語義未分析 |
+| 音效 | MMSYSTEM 4 call | 50% — spec 08 v0.1 24 WAV inventory + 事件對應 + Team B 介面契約 (`audio.h` CIV_SND_* 24 enum) | MMSYSTEM 4 API 確切對位 (Ghidra walk) + Team B SDL_audio 接通 |
 | Game state machine | 推測 `wdwmap` + WinMain D 段 | turn 推進骨架 (M6-lite) + unit 系統 (M6-full-lite) | city growth / tech research 演算法未抽 |
 | Combat | location 不確定 | 50% — manual P35 公式 ground-truth (`A/(A+D)` 機率) + spec 06 §6.1.1 修飾 (veteran ×1.5 / walls ×3 / terrain) | 真正 RNG seed + 攻擊推進規則 + 命中分配 |
 | 城市生產 | per-turn handler | 70% — spec 06 §6.2 25 building + city struct + cost lookup + 4 city spawn + turn-tick 生產推進 (shield/food/pop 成長) | trade 配率 / 7 Wonder effect / corruption / disorder / specialists |
