@@ -33,6 +33,9 @@ set(CIV_CORE_SOURCES
     src/gfx/palette.c
     src/gfx/primitive.c
     src/gfx/present.c
+    src/gfx/cvpc.c
+    src/res/rsrcfork.c
+    src/res/loader.c
     src/text/big5.c
     src/text/utf8.c
     src/text/glyph_cache.c

@@ -49,7 +49,7 @@ cd build && ctest --output-on-failure
 | **M0** | CMake + SDL 開視窗 + 主迴圈 + ESC 退出 + ctest skeleton | ✅ |
 | **M1** | palette framebuffer + CJK 字模 + 中文 text out | ✅ |
 | **M2** | 3 個 widget skeleton + dispatch table + modal lock | ✅ |
-| M3 | Mac Resource Fork + CvPc decode | ⏳（依賴 spec 03 §9.1 LZW 變體） |
+| **M3** | Mac Resource Fork parser + CvPc decoder + EARTH 端到端 blit | ✅ |
 | M4 | 14 文明資料 + 新局精靈 dialog | ⏳ |
 | M5 | 地圖視窗 paint terrain | ⏳ |
 | M6 | turn loop + AI + 存讀檔 | ⏳ |

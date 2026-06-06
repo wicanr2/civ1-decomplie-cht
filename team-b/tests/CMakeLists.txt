@@ -31,3 +31,13 @@ set_tests_properties(widget_dispatch PROPERTIES
     ENVIRONMENT "SDL_VIDEODRIVER=dummy"
     TIMEOUT 10
 )
+
+add_executable(test_rsrc_fork test_rsrc_fork.c)
+target_link_libraries(test_rsrc_fork PRIVATE civ_core)
+add_test(NAME rsrc_fork COMMAND test_rsrc_fork)
+set_tests_properties(rsrc_fork PROPERTIES TIMEOUT 10)
+
+add_executable(test_cvpc_decode test_cvpc_decode.c)
+target_link_libraries(test_cvpc_decode PRIVATE civ_core)
+add_test(NAME cvpc_decode COMMAND test_cvpc_decode)
+set_tests_properties(cvpc_decode PROPERTIES TIMEOUT 10)

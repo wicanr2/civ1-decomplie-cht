@@ -1,0 +1,79 @@
+M3: Mac Resource Fork parser + CvPc decoder + EARTH 端到端 blit
+
+# M3 交付
+
+7 個 module + 2 個新 test + main 更新 + demo:
+
+  src/res/rsrcfork.{c,h}      Apple Mac Resource Fork parser
+                               - big-endian header / type list / ref list
+                                 / name list 解析
+                               - civ_rsrc_open / close / count /
+                                 find(type, id) / iter(type, idx)
+                               - CIV_FOURCC macro
+                               - 壓平 Mac Handle 抽象, payload 用 plain
+                                 pointer 訪問
+                               - spec 03 §3.3 全套
+  src/res/loader.{c,h}        高層 API
+                               - civ_load_cvpc_by_id
+                               - civ_load_cvpc_by_name
+                                 (對 .GIF 副檔名敏感 - Mac Resource Fork
+                                  內 name 帶副檔名)
+  src/gfx/cvpc.{c,h}          CvPc 影像 decoder
+                               - 標準 GIF89a Appendix F LZW
+                                 (LSB-first, length-prefixed sub-blocks)
+                               - dictionary prefix[]/suffix[] 4096-entry
+                               - 反向展開 chain 避免遞迴
+                               - KwKwK 特例正確處理
+                               - palette 寫進 civ_palette_t
+                                 generation++
+
+  tests/test_rsrc_fork.c      對 Civdata0.RSC 驗 spec 03 §3.1 計數
+                               (4 CvPc / 33 STR# / 399 TEXT / 7 GDAT
+                                / 14 KDAT)
+  tests/test_cvpc_decode.c    EARTH (id 137, 320x200) 解碼驗
+                               - surface 尺寸對
+                               - palette[0] = 黑
+                               - 非零 pixel > 100, distinct indices > 4
+                               - by_name "EARTH" fail (副檔名)
+                               - by_name "EARTH.GIF" pass
+  tests/test_demo_snapshot.c  升 M3
+                               - try_blit_earth 載入 EARTH 中央 blit
+                                 到主地圖 widget
+                               - 加紅框 + 中文標籤
+                               - 失敗 fallback m2_demo
+
+# Env-driven test 路線
+
+CIV1_DATA_DIR 環境變數未設時 test_rsrc_fork / test_cvpc_decode 自動
+SKIP。CI 不用強制要求原版 .RSC; 本地開發 export 變數做 visual
+smoke。
+
+# 驗證結果
+
+  build:           31/31 zero warning
+  ctest no data:   7/7 PASS (含 SKIP 兩個 data-driven)
+  ctest with data: 7/7 PASS (含 EARTH decode + by_name 副檔名邏輯)
+  M3 demo:         docs/screenshots/m3_demo.png 顯示 EARTH 在主地圖
+                   widget 中央 blit, 黃色大陸 + 藍海可辨
+
+# spec 03 §12 #3 palette stomp 雷正面出現
+
+M3 demo 用 g->palette = earth_pal 直接整片換 EARTH 的 8 色 palette,
+原本 default palette 的 6x6x6 cube 色全被覆蓋 -> 主地圖 widget 的
+綠色 background 變黑, minimap 藍色變藍偏黑。
+
+這是 spec 03 §12 第 3 條雷 (CityView palette stomp) 的活樣本。M5
+必須做 RGB-nearest LUT 重映射, 否則 terrain CvPc + base CBACK +
+14 個文明橫幅各自 palette 互換時必然 visual 出問題。M3 階段先 ship
+直接覆蓋 palette 的 stub 行為, issue 留作 M5 開工前修。
+
+# Milestone 進度
+
+  M0  SDL 視窗 + 主迴圈                                         done
+  M1  palette FB + CJK 字模 + UTF-8 walker                      done
+  M2  3 widget skeleton + dispatch table + modal_lock           done
+  M3  Mac Resource Fork + CvPc decode + EARTH blit              done
+  M4  載入 14 文明資料 + 新局精靈 dialog (依賴 spec 04+05)
+  M5  地圖視窗 paint terrain + scroll (依賴 spec 06 + #3 雷)
+  M6  turn loop + AI + 存讀檔 (依賴 spec 06+07)
+  M7  奇蹟 + 外交 + 勝利條件 (依賴 spec 07)
