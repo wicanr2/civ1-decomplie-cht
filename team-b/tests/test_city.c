@@ -9,8 +9,10 @@
  *   5. civ_world_spawn_city 邊界 (negative coords / 超 cap)
  *   6. civ_world_city_at lookup
  */
+#include "civ_game.h"
 #include "world/city.h"
 #include "world/world.h"
+#include "world/turn.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -81,6 +83,34 @@ int main(void)
     EXPECT(civ_world_city_at(&w, 99, 99) == -1);  /* 無 */
     EXPECT(civ_world_city_at(&w, 0, 0) == -1);    /* OCEAN, 無 city */
 
-    printf("PASS test_city (6 子測, R5 M6-full)\n");
+    /* ── 7. R7 M7: turn-tick city progression ─────────── */
+    {
+        struct civ_game g = {0};
+        civ_world_init_demo(&g.world);
+        g.world_ready = true;
+
+        /* 羅馬 default: pop=3, Palace built */
+        civ_city_t *roma = &g.world.cities[0];
+        EXPECT(roma->population == 3);
+        EXPECT(roma->building_target == -1);  /* init_demo 沒設, tick 會自動 pick */
+
+        /* 跑 1 turn → 應自動 pick Granary (idx 3) */
+        civ_turn_advance(&g);
+        EXPECT(roma->building_target == 3);   /* Granary */
+        /* shield 1 turn: 2 + (3-1) = 4 */
+        EXPECT(roma->shield_stock == 4);
+
+        /* Granary cost = 60. 4 shield/turn → 完工後 target=-1.
+         * 跑 14 turn 後 shield = 15*4 = 60 → 完工. */
+        for (int i = 0; i < 14; i++) civ_turn_advance(&g);
+        EXPECT((roma->buildings_bitmap & (1u << 3)) != 0);  /* Granary built */
+        EXPECT(roma->building_target == -1);  /* 剛完工尚未 pick 下個 */
+
+        /* 再 1 turn → 應自動 pick Barracks (bit 2 未 set) */
+        civ_turn_advance(&g);
+        EXPECT(roma->building_target == 2);   /* Auto-pick next: Barracks */
+    }
+
+    printf("PASS test_city (7 子測, R5+R7)\n");
     return 0;
 }

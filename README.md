@@ -10,7 +10,7 @@
 
 ## 目前 ship 狀態 (2026-06-06)
 
-最後 ship: R6 M7-full city screen UI — modal 全螢幕 city 細節 + 5×5 周圍小地圖 + 4 tabs + CHANGE/BUY 按鈕 + EXIT
+最後 ship: R7 turn-tick city 生產推進 — shield 累積 / 建造完工 auto-pick 下個 / food 累積 / pop 成長
 
 | Milestone | 範圍 | 狀態 | 證據 |
 |---|---|---|---|
@@ -31,6 +31,7 @@
 | **M7-layout** | Win16 chrome 對齊原版: CIVILIZATION title bar + 8 menu items (File/Edit/Orders/Advisors/World/Civilopedia/City/Help) + World Map / Status 子視窗 title bars | ✅ | `m7_layout_win16_chrome.png` |
 | **M7-city** | city 系統: 25 building (spec 06 §6.2 ground-truth cost+zh-TW name) + 4 城市 spawn (羅馬/巴比倫/底比斯/雅典) + map sprite (SPR32X32 col 30+ 按 population 選 size) + name label + status panel cursor hook | ✅ | `m7_full_cities.png` |
 | **M7-cityscreen** | city screen 模態 UI (對齊 1993 reference): 標題 + CITY RESOURCES + 5×5 周圍小地圖 + PALACE + FOOD STORAGE + INFO/HAPPY/MAP/VIEW 4 tabs + CHANGE/BUY/EXIT 按鈕; Enter 開 / ESC 關 | ✅ | `m7_city_screen.png` |
+| **M7-tick** | turn-tick 生產推進: shield_per_turn = 2+(pop-1), food_per_turn = pop, 建造完工自動 pick 下個 (Granary→Barracks→Library→Marketplace→Walls→Temple priority), food 滿 (pop+1)×10 → pop++ | ✅ | (ctest test_city §7) |
 | **M6-full** | 真實戰鬥公式 (spec 07) + 城市生產 + RLL 存讀檔 | 🟡 阻 spec 06+07 | — |
 | **M7** | 奇蹟 + 外交 + 勝利條件 | ❌ | — |
 
@@ -84,7 +85,7 @@
 | 音效 | MMSYSTEM 4 call | 0% | API call 統計過但語義未分析 |
 | Game state machine | 推測 `wdwmap` + WinMain D 段 | turn 推進骨架 (M6-lite) + unit 系統 (M6-full-lite) | city growth / tech research 演算法未抽 |
 | Combat | location 不確定 | 50% — manual P35 公式 ground-truth (`A/(A+D)` 機率) + spec 06 §6.1.1 修飾 (veteran ×1.5 / walls ×3 / terrain) | 真正 RNG seed + 攻擊推進規則 + 命中分配 |
-| 城市生產 | per-turn handler | 50% — spec 06 §6.2 25 building 完整 + Team B `civ_city_t` struct + 25 building cost lookup + 4 city spawn 範例 | turn-tick 生產推進 + shield/food/trade 配率算法 + 7 Wonder 全 effect |
+| 城市生產 | per-turn handler | 70% — spec 06 §6.2 25 building + city struct + cost lookup + 4 city spawn + turn-tick 生產推進 (shield/food/pop 成長) | trade 配率 / 7 Wonder effect / corruption / disorder / specialists |
 | 數值表 | hardcoded in CIV.EXE | 60% — spec 06 v0.1 ground-truth from manual (28 unit / 21 building / 6 gov) | 72 tech tree + 21 wonders + 14 civ AI personality (v0.2) |
 | 太空船 | `Dock` STR# 150 | 文字側 RE 完成 | 組裝/啟動演算法未碰 |
 
