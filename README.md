@@ -10,7 +10,7 @@
 
 ## 目前 ship 狀態 (2026-06-06)
 
-最後 ship: R11 spec 08 v0.1 — 24 WAV inventory (14 leader 配音 + 3 system + 3 combat + 2 endgame + 2 special) + MMSYSTEM 4 calls 推測 + Team B SDL_audio 接口
+最後 ship: R12 M8 Linux portable — `tools/build_portable.sh` 一鍵 → 10.3 MB tar.gz (civ1 binary stripped 43KB + uming.ttc 字型 + launcher + README)
 
 | Milestone | 範圍 | 狀態 | 證據 |
 |---|---|---|---|
@@ -33,6 +33,7 @@
 | **M7-cityscreen** | city screen 模態 UI (對齊 1993 reference): 標題 + CITY RESOURCES + 5×5 周圍小地圖 + PALACE + FOOD STORAGE + INFO/HAPPY/MAP/VIEW 4 tabs + CHANGE/BUY/EXIT 按鈕; Enter 開 / ESC 關 | ✅ | `m7_city_screen.png` |
 | **M7-tick** | turn-tick 生產推進: shield_per_turn = 2+(pop-1), food_per_turn = pop, 建造完工自動 pick 下個 (Granary→Barracks→Library→Marketplace→Walls→Temple priority), food 滿 (pop+1)×10 → pop++ | ✅ | (ctest test_city §7) |
 | **M8-chrome** | 設計師 audit 後全面套 `civ_palette_nearest_rgb()`: title bar #000080 / menu bar #C0C0C0 / sub-window title #000080 / city screen 2×2 藍 stipple 底 (#6080D0 + #5070C0) / 標題黑底黃字 / 深藍 panel header / 紅 EXIT 按鈕. 解 P0 設計師清單. | ✅ | `m8_chrome_polish_main.png` + `m8_chrome_polish_city_screen.png` |
+| **M8-portable** | Linux portable tarball: `tools/build_portable.sh` 一鍵生成 10.3 MB tar.gz (civ1 43KB stripped + uming.ttc 字型 + launcher script + README); Win64 cross-compile 留 v0.2 | ✅ Linux only | `dist/civ1-cht-linux-x64.tar.gz` (gitignored, GitHub Releases 發布) |
 | **M6-full** | 真實戰鬥公式 (spec 07) + 城市生產 + RLL 存讀檔 | 🟡 阻 spec 06+07 | — |
 | **M7** | 奇蹟 + 外交 + 勝利條件 | ❌ | — |
 

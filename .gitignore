@@ -40,3 +40,11 @@ user-provided-data/
 # 來源: Honza Havlicek 2008 CivWin File Format demonstrator
 team-a/external/civdata4_extracted/
 team-a/external/Civilization/release/
+
+# R12 M8 portable build artifacts
+# build_portable.sh 產出: dist/civ1-cht-linux-x64/ + tar.gz
+# 真實 portable 透過 GitHub Releases 發布, 不入 git history
+dist/civ1-cht-linux-x64/
+dist/*.tar.gz
+dist/*.zip
+dist/*.exe
