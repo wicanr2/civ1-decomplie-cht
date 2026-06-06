@@ -1,0 +1,104 @@
+M5: world map + sprite sheet + grid blit (tile 語義校驗待 spec 06)
+
+依使用者「1 > 2 > 3 依序」#1 任務。M5 範圍：
+
+# 交付
+
+  src/world/sprite_sheet.{c,h}   sprite sheet 切割 + palette LUT cache
+                                  - civ_sprite_sheet_load: 從 .RSC CvPc
+                                    解碼 + 自動算 cols/rows
+                                  - civ_sprite_sheet_build_lut: 一次性
+                                    建 sheet palette -> base palette LUT
+                                  - civ_sprite_rect: (col, row) ->
+                                    src rect
+
+  src/world/world.{c,h}          世界地圖 + cursor + view
+                                  - civ_world_t: terrain[H=30][W=60]
+                                    uint8_t array
+                                  - civ_world_init_demo: bands 為不同
+                                    tile_idx 視覺校驗
+                                  - civ_world_move_cursor: 鍵盤導覽 +
+                                    視窗邊緣 auto-scroll (margin 2 tiles)
+
+  src/civ_game.h                 加 civ_sprite_sheet_t + civ_world_t +
+                                  world_ready flag
+
+  src/widgets/map.c              map_render M5 升級
+                                  - world_ready true 時走 sprite sheet
+                                    blit path:
+                                    * for each visible tile, look up
+                                      world.terrain[wy][wx]
+                                    * decode tile_idx -> (col, row)
+                                    * civ_sprite_rect + blit
+                                      (lut_built ? blit_remap : blit)
+                                    * cursor 雙框 (gold)
+                                  - world_ready false 時保留 M0..M4
+                                    fallback (placeholder 綠底)
+
+  tests/test_world_snapshot.c    視覺校驗
+                                  - load SPR32X32 (CIVDATA4 #200,
+                                    1472x400)
+                                  - 自動算 46 cols x 12 rows of 32x32
+                                  - debug 模式:
+                                    * g.palette = sheet.pal (用 sheet
+                                      自有 palette 顯示正確顏色)
+                                    * world_ready=false 跳過 map widget
+                                    * 直接 civ_surface_blit sheet 切片
+                                      到主地圖 widget rect (480 wide
+                                      = 15 cols 可見)
+                                    * 32x32 grid 線疊加肉眼可數
+                                    產出 docs/screenshots/m5_world.png
+
+# 視覺校驗結果
+
+可看到 SPR32X32 內 SHEET 結構 (15 cols 可見):
+  Row 0:        紅 bg + 上排工具列 sprite (cols 8-14)
+  Row 1:        forest 小 icon (cols 1-5) + 牆/建築 (cols 13-14)
+  Row 2:        **COAST/RIVER 水紋 (cols 0-14)** 真實 terrain
+  Row 3:        馬/鹿/棕地/山等特殊 terrain
+  Row 4-5:      villagers walking + cannon sprite
+  Row 6-7:      軍事步兵 + 海軍單位
+
+實際 TERRAIN 大塊位於 cols 14-29 (在 1472 sheet 中央, 本 480px
+視窗看不到), spec 06 校驗時需用更寬視窗或捲動到 col 14+ 確認。
+
+# task #14 開啟: M5 sprite tile (col,row) 校正
+
+M5 pipeline 完整可動 (load + decode + grid blit + cursor +
+auto-scroll), 但 tile_idx -> terrain 語義對應需:
+  1. spec 06 視覺校驗各 (col, row) 對應哪個地形類型
+  2. 寫 spec 06 terrain mapping table
+  3. world.c init 用對的 idx 填 terrain[]
+
+# 驗證
+
+  cmake build       42/42 zero warning
+  ctest no data:    13/13 PASS
+  ctest with data:  13/13 PASS (含 test_world_snapshot 0.06s)
+
+  docs/screenshots/m5_world.png:
+    可見 SPR32X32 sheet 左半 (cols 0-14) 含 row 2 coast/river /
+    row 3 特殊 terrain / row 6-7 軍事單位 + 32x32 grid 線
+
+# 不做的事 (留待 spec 06)
+
+- tile_idx -> 12 base terrain 對應表 (Ocean / River / Grassland /
+  Forest / Hills / Mountain / Tundra / Arctic / Swamp / Jungle /
+  Plains / Desert)
+- terrain palette stomp 解 (M5 用 sheet palette 蓋掉 base 是
+  debug 設計; 之後 LUT remap 路線會搬回來)
+- map widget 真實 keyboard 路由 (arrow keys -> civ_world_move_cursor)
+
+# Milestone 進度
+
+  M0  SDL 視窗 + 主迴圈                                done
+  M1  palette FB + CJK + UTF-8                         done
+  M2  3 widget skeleton + dispatch + modal_lock        done
+  M3  Mac Resource Fork + CvPc + EARTH blit            done
+  M4-lite STR# + 14 文明 + 領袖肖像 + zh-TW           done
+  M4-full Dialog framework + 3 頁新局精靈              done
+  M5-prep palette stomp RGB-nearest LUT remap          done
+  **M5  world map + sprite sheet + grid blit          done (本次)**
+       (tile_idx 語義對應留 task #14)
+  M6  turn loop + AI + 存讀檔                          下一步 (#2)
+  M7  奇蹟 + 外交 + 勝利條件                            (spec 07)

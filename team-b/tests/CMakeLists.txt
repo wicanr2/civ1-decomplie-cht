@@ -72,3 +72,11 @@ set_tests_properties(wizard_snapshot PROPERTIES
     ENVIRONMENT "SDL_VIDEODRIVER=dummy"
     TIMEOUT 30
 )
+
+add_executable(test_world_snapshot test_world_snapshot.c)
+target_link_libraries(test_world_snapshot PRIVATE civ_core)
+add_test(NAME world_snapshot COMMAND test_world_snapshot)
+set_tests_properties(world_snapshot PROPERTIES
+    ENVIRONMENT "SDL_VIDEODRIVER=dummy"
+    TIMEOUT 30
+)

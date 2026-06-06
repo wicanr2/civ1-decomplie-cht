@@ -12,6 +12,8 @@
 #include "gfx/present.h"
 #include "gfx/surface.h"
 #include "text/glyph_cache.h"
+#include "world/sprite_sheet.h"
+#include "world/world.h"
 
 #include <SDL.h>
 #include <stdbool.h>
@@ -49,6 +51,11 @@ struct civ_game {
      * widget 仍正常運作。 */
     bool       modal_lock;
     uint32_t   modal_lock_id;
+
+    /* M5：世界 + sprite sheet ────────────────────────── */
+    civ_world_t           world;
+    civ_sprite_sheet_t    sprite_sheet;
+    bool                  world_ready;
 };
 
 #endif /* CIV_GAME_H */
