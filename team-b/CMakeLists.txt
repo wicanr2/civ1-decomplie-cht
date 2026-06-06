@@ -55,6 +55,7 @@ set(CIV_CORE_SOURCES
     src/widgets/map.c
     src/widgets/minimap.c
     src/widgets/status.c
+    src/widgets/city_screen.c
 )
 
 add_library(civ_core STATIC ${CIV_CORE_SOURCES})

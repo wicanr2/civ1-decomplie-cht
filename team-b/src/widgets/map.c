@@ -102,6 +102,23 @@ static civ_evt_result_t on_key_down(civ_widget_t *w, SDL_Event *ev)
             if (wd->selected_unit >= 0 && wd->selected_unit < wd->units_count)
                 wd->units[wd->selected_unit].moves_left = 0;
             break;
+        case SDLK_RETURN:
+        case SDLK_KP_ENTER: {
+            /* R6: cursor 上有 city → 打開 city screen */
+            int cidx = civ_world_city_at(wd, wd->cursor_x, wd->cursor_y);
+            if (cidx >= 0) {
+                w->game->city_screen_open = true;
+                w->game->city_screen_idx  = cidx;
+                w->game->modal_lock       = true;
+            }
+            break;
+        }
+        case SDLK_ESCAPE:
+            if (w->game->city_screen_open) {
+                w->game->city_screen_open = false;
+                w->game->modal_lock       = false;
+            }
+            break;
         default: break;
     }
     return 0;

@@ -15,6 +15,7 @@
 #include "text/big5.h"
 #include "text/glyph_cache.h"
 #include "text/text_out.h"
+#include "widgets/city_screen.h"
 
 #include <SDL.h>
 #include <stdio.h>
@@ -160,8 +161,24 @@ int main(int argc, char **argv)
 
     g.world_ready = true;
 
+    /* R6 demo: 若 argv 帶 "city" 則打開 city screen 展示 modal */
+    if (argc > 2 && strcmp(argv[2], "city") == 0) {
+        int cidx = civ_world_city_at(&g.world,
+                                     g.world.cities[0].x,
+                                     g.world.cities[0].y);
+        if (cidx >= 0) {
+            g.city_screen_open = true;
+            g.city_screen_idx  = cidx;
+            g.modal_lock       = true;
+            /* 讓羅馬建造 Granary 為 demo */
+            g.world.cities[0].building_target = 3;  /* Granary */
+            g.world.cities[0].shield_stock    = 20;
+        }
+    }
+
     paint_background(&g);
     civ_widgets_render_all(&g);
+    civ_city_screen_render(&g, g.framebuffer);
 
     const char *out_path = argc > 1 ? argv[1] : "m5_world.ppm";
     write_ppm(out_path, g.framebuffer, &g.palette);

@@ -61,6 +61,10 @@ struct civ_game {
     uint32_t              turn_number;     /* 起始 0；第 1 回合 = 4000 BC */
     int                   civ_year;        /* 西元；負數 = BC */
     uint64_t              ai_actions;      /* AI mock action 累計 */
+
+    /* R6 M7-full: city screen modal ─────────────────── */
+    bool       city_screen_open;          /* true 時 city_screen 蓋全螢幕 */
+    int        city_screen_idx;           /* index into world.cities[] */
 };
 
 #endif /* CIV_GAME_H */

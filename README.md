@@ -10,7 +10,7 @@
 
 ## 目前 ship 狀態 (2026-06-06)
 
-最後 ship: R5 M6-full city 系統 — city struct + 25 building cost + 4 city spawn + map sprite + name label + status panel hook
+最後 ship: R6 M7-full city screen UI — modal 全螢幕 city 細節 + 5×5 周圍小地圖 + 4 tabs + CHANGE/BUY 按鈕 + EXIT
 
 | Milestone | 範圍 | 狀態 | 證據 |
 |---|---|---|---|
@@ -30,6 +30,7 @@
 | **M6-minimap** | minimap 真實 60×30 → 160×120 縮圖 + per-terrain palette-nearest RGB + view rect overlay + unit owner dots | ✅ | `m6_minimap_real.png` |
 | **M7-layout** | Win16 chrome 對齊原版: CIVILIZATION title bar + 8 menu items (File/Edit/Orders/Advisors/World/Civilopedia/City/Help) + World Map / Status 子視窗 title bars | ✅ | `m7_layout_win16_chrome.png` |
 | **M7-city** | city 系統: 25 building (spec 06 §6.2 ground-truth cost+zh-TW name) + 4 城市 spawn (羅馬/巴比倫/底比斯/雅典) + map sprite (SPR32X32 col 30+ 按 population 選 size) + name label + status panel cursor hook | ✅ | `m7_full_cities.png` |
+| **M7-cityscreen** | city screen 模態 UI (對齊 1993 reference): 標題 + CITY RESOURCES + 5×5 周圍小地圖 + PALACE + FOOD STORAGE + INFO/HAPPY/MAP/VIEW 4 tabs + CHANGE/BUY/EXIT 按鈕; Enter 開 / ESC 關 | ✅ | `m7_city_screen.png` |
 | **M6-full** | 真實戰鬥公式 (spec 07) + 城市生產 + RLL 存讀檔 | 🟡 阻 spec 06+07 | — |
 | **M7** | 奇蹟 + 外交 + 勝利條件 | ❌ | — |
 
@@ -167,7 +168,8 @@ tools/                         共用資產抽取工具（MIT）
 - [`docs/ASSETS_INDEX.md`](docs/ASSETS_INDEX.md) — **185 個 sprite 完整分類索引**（領袖 14 / 科技 ~65 / 單位 ~28 / 奇蹟 / 政府 / 太空 / 動畫 / UI），含縮圖
 - [`docs/screenshots/cvpc_spr32x32_decoded.png`](docs/screenshots/cvpc_spr32x32_decoded.png) — 主 sprite sheet 1472×400
 - [`docs/screenshots/cvpc_king00_elizabeth.png`](docs/screenshots/cvpc_king00_elizabeth.png) — Queen Elizabeth I 領袖肖像示意
-- [`docs/screenshots/m7_full_cities.png`](docs/screenshots/m7_full_cities.png) — 最新 ship 截圖 (R5: city 系統 + 4 城市 + sprite + name label)
+- [`docs/screenshots/m7_city_screen.png`](docs/screenshots/m7_city_screen.png) — 最新 ship 截圖 (R6: city screen modal UI 對齊原版)
+- [`docs/screenshots/m7_full_cities.png`](docs/screenshots/m7_full_cities.png) — R5: city 系統 + 4 城市 + sprite + name label
 - [`docs/screenshots/m7_layout_win16_chrome.png`](docs/screenshots/m7_layout_win16_chrome.png) — R4: Win16 chrome 對齊原版
 - [`docs/screenshots/m6_minimap_real.png`](docs/screenshots/m6_minimap_real.png) — M6-minimap: 真實縮圖 + view rect + unit dots
 - [`docs/screenshots/reference/`](docs/screenshots/reference/) — **1993 Civ Windows 原版視覺 reference** (使用者 2026-06-06 提供): 主畫面 + 城市畫面 + 主選單 + layout gap notes
