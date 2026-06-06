@@ -1,0 +1,86 @@
+M4-lite: STR# 載入 + 14 文明 master + 14 領袖肖像 + 中文 catalog
+
+# M4-lite 交付
+
+  src/data/strings.{c,h}   STR# resource 解析器
+                            - Mac Pascal-string array -> C blob + offsets
+                            - 30 個 CIV_STR_* enum 對應 spec 05 §5.6
+                              (Tax / Lux / Tech / Improvements / People /
+                               Terrains / Cities / Leaders / Governments /
+                               Caravan / Army / King / Civilopedia /
+                               Story / Space / Disk / File ...)
+  src/data/civs.{c,h}      14 文明 master table builder
+                            - 從 STR# 140/143/144/148/149 各 16 entry
+                              slot 1..14 抽取
+                            - KING00..13 sprite 對應 slot 1..14
+                            - hardcoded zh-TW catalog
+                              (14 文明 x 5 欄位 = 70 條翻譯)
+                            - civ_civs_zh(slot, "leader"|"civ_sing"|
+                              "civ_plur"|"adj_sing"|"adj_plur")
+
+  tests/test_strings.c     對 Civdata0.RSC 驗:
+                            - STR# 130 = 72 techs (Alphabet etc.)
+                            - STR# 132 = 28 units (Settlers etc.)
+                            - STR# 137 Credits =
+                                SID MEIER + BRUCE SHELLEY +
+                                PAUL L. ROWAN + WILLIAM F. DENMAN, JR.
+                            - STR# 140 Leaders =
+                                slot 1=Caesar / 2=Hammurabi /
+                                **4=Ramesses (不是 Cleopatra)**
+                            - 14 文明 master table 與 zh-TW catalog
+                              對齊驗證
+                              (slot 1=凱撒/羅馬, 4=拉美西斯/埃及)
+
+  tests/test_demo_snapshot.c 升 M4
+                            - 14 文明 7x2 grid
+                            - 每格載 CIVDATA2 #500..513 (KING00..13)
+                              領袖肖像 + 中文文明名 + 英文領袖名
+
+# 重大歷史更正: 1993 Win 版實際是 13 文明 + 1 NONE slot
+
+實際 STR# 140 順序 (test_strings 跑過 Civdata0 驗證):
+
+  slot 1=Caesar       羅馬凱撒
+  slot 2=Hammurabi    巴比倫漢摩拉比
+  slot 3=Frederick    德意志腓特烈
+  slot 4=Ramesses     埃及拉美西斯 (不是 Cleopatra!)
+  slot 5=Abe Lincoln  美利堅林肯
+  slot 6=Alexander    希臘亞歷山大
+  slot 7=M.Gandhi     印度甘地 (不是 Genghis Khan)
+  slot 8=(NONE)       空 slot
+  slot 9=Stalin       俄羅斯史達林
+  slot 10=Shaka       祖魯夏卡
+  slot 11=Napoleon    法蘭西拿破崙
+  slot 12=Montezuma   阿茲特克蒙特蘇馬
+  slot 13=Mao Tse Tung 中華毛澤東
+  slot 14=Elizabeth I 英格蘭伊莉莎白
+
+**Fandom 主頁說「14 文明」對 1993 Win port 是錯的** -
+實際 13 文明 + 1 預留空 slot。**蒙古 / Mongol 完全缺席**。
+
+# 驗證
+
+  cmake build      13/13 zero warning
+  ctest no data:   8/8 PASS (含 4 個 SKIP)
+  ctest with data: 8/8 PASS
+                    含 test_strings 完整驗證 + test_demo_snapshot M4 grid
+  m4_demo.png:     14 文明 grid 7x2 含領袖肖像 + 中文 + 英文
+                    Queen Elizabeth / Stalin / Mao / Lincoln 等清楚可辨
+
+# Milestone 進度
+
+  M0  SDL 視窗 + 主迴圈                                done
+  M1  palette FB + CJK + UTF-8                         done
+  M2  3 widget skeleton + dispatch + modal_lock        done
+  M3  Mac Resource Fork + CvPc + EARTH blit            done
+  M4-lite STR# + 14 文明 + 領袖肖像 + zh-TW           done
+  M4-full 完整 dialog framework + 多頁 wizard          下一步候選
+  M5  地圖 + 地形 + RGB-nearest LUT (修 palette stomp) 候選
+  M6  turn loop + AI + 存讀檔                          (spec 06+07)
+  M7  奇蹟 + 外交 + 勝利條件                            (spec 07)
+
+# 觀察
+
+Palette stomp (spec 03 §12 #3) 在 M4 demo 出現 -
+14 個領袖 CvPc palette 互相重疊, 換到第一個領袖 KING00 的 palette,
+小地圖 / 狀態 widget background 變色。M5 修。

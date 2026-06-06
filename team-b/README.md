@@ -50,7 +50,7 @@ cd build && ctest --output-on-failure
 | **M1** | palette framebuffer + CJK 字模 + 中文 text out | ✅ |
 | **M2** | 3 個 widget skeleton + dispatch table + modal lock | ✅ |
 | **M3** | Mac Resource Fork parser + CvPc decoder + EARTH 端到端 blit | ✅ |
-| M4 | 14 文明資料 + 新局精靈 dialog | ⏳ |
+| **M4-lite** | STR# loader + 14 文明 master table + 14 領袖肖像 + zh-TW catalog | ✅ |
 | M5 | 地圖視窗 paint terrain | ⏳ |
 | M6 | turn loop + AI + 存讀檔 | ⏳ |
 | M7 | 奇蹟 / 外交 / 勝利條件 | ⏳ |

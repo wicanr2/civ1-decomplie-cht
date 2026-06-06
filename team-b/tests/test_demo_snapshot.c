@@ -1,12 +1,16 @@
 /*
- * test_demo_snapshot.c — M1/M2/M3 視覺驗證
+ * test_demo_snapshot.c — M0..M4 視覺驗證
  *
- * Headless dummy driver；產出 m3_demo.ppm（M3：含 EARTH worldmap blit）
- * 或 m2_demo.ppm（CIV1_DATA_DIR 未設時的 widget-only layout）。
+ * Headless dummy driver；產出對應 milestone 的 PPM：
+ *   m4_demo.ppm — CIV1_DATA_DIR 設定時：14 文明 + 領袖肖像 + 中文名
+ *   m3_demo.ppm — EARTH worldmap blit（CIV1_DATA_DIR 設但無 STR#）
+ *   m2_demo.ppm — widget-only layout（無 CIV1_DATA_DIR）
  */
 #include "civ_game.h"
 #include "civ_widgets.h"
 
+#include "data/civs.h"
+#include "data/strings.h"
 #include "gfx/palette.h"
 #include "gfx/present.h"
 #include "gfx/primitive.h"
@@ -49,57 +53,126 @@ static void paint_background(struct civ_game *g)
     }
 }
 
-/* M3：若 CIV1_DATA_DIR 設了，把 EARTH worldmap blit 到主地圖區
- * 中央，作為 CvPc decoder 串到 widget render 的端到端驗證。 */
-static int try_blit_earth(struct civ_game *g)
+/* M4：載入 14 文明 master table + KING* 領袖肖像 + 中文名 ─────── */
+
+#define FOURCC_STR_HASH CIV_FOURCC('S','T','R','#')
+
+static int try_m4_civ_list(struct civ_game *g)
 {
     const char *dir = getenv("CIV1_DATA_DIR");
     if (!dir || !*dir) return 0;
 
+    /* 開 Civdata0.RSC 抽 STR# */
     char path[1024];
     snprintf(path, sizeof path, "%s/Civdata0.RSC", dir);
-    civ_rsrc_t *r = civ_rsrc_open(path);
-    if (!r) {
+    civ_rsrc_t *r0 = civ_rsrc_open(path);
+    if (!r0) {
         snprintf(path, sizeof path, "%s/CIVDATA0.RSC", dir);
-        r = civ_rsrc_open(path);
+        r0 = civ_rsrc_open(path);
     }
-    if (!r) return 0;
+    if (!r0) return 0;
 
-    civ_surface_t *earth = NULL;
-    civ_palette_t  earth_pal = {0};
-    civ_palette_default(&earth_pal);
-    int rc = civ_load_cvpc_by_id(r, 137, &earth, &earth_pal);
-    if (rc != 0 || !earth) { civ_rsrc_close(r); return 0; }
+    civ_strlist_t leaders = {0}, army_sing = {0}, army_plur = {0};
+    civ_strlist_t civ_sing = {0}, civ_plur = {0};
+    const civ_rsrc_entry_t *e;
+    if (!(e = civ_rsrc_find(r0, FOURCC_STR_HASH, CIV_STR_LEADERS))) goto fail;
+    civ_strlist_parse(e->data, e->len, CIV_STR_LEADERS, &leaders);
+    if (!(e = civ_rsrc_find(r0, FOURCC_STR_HASH, CIV_STR_ARMY_SING))) goto fail;
+    civ_strlist_parse(e->data, e->len, CIV_STR_ARMY_SING, &army_sing);
+    if (!(e = civ_rsrc_find(r0, FOURCC_STR_HASH, CIV_STR_ARMY_PLUR))) goto fail;
+    civ_strlist_parse(e->data, e->len, CIV_STR_ARMY_PLUR, &army_plur);
+    if (!(e = civ_rsrc_find(r0, FOURCC_STR_HASH, CIV_STR_LEADERS_CIV_SING))) goto fail;
+    civ_strlist_parse(e->data, e->len, CIV_STR_LEADERS_CIV_SING, &civ_sing);
+    if (!(e = civ_rsrc_find(r0, FOURCC_STR_HASH, CIV_STR_LEADERS_CIV_PLUR))) goto fail;
+    civ_strlist_parse(e->data, e->len, CIV_STR_LEADERS_CIV_PLUR, &civ_plur);
 
-    /* 用 EARTH 的 palette 取代 framebuffer palette
-     * （M5+ 會做正確 palette stomp 處理；M3 只證明 blit 通） */
-    g->palette = earth_pal;
+    civ_civ_entry_t civs[CIV_NUM_CIVS] = {0};
+    civ_civs_build(&leaders, &army_sing, &army_plur, &civ_sing, &civ_plur, civs);
 
-    /* 在主地圖中央 blit EARTH (320×200) */
-    int dx = (g->map_w->rect.w - earth->w) / 2 + g->map_w->rect.x;
-    int dy = (g->map_w->rect.h - earth->h) / 2 + g->map_w->rect.y;
-    civ_surface_blit(g->framebuffer, dx, dy, earth, NULL);
-    /* 框一條紅線標記 */
-    civ_frame_rect(g->framebuffer,
-                   (civ_rect_t){dx - 1, dy - 1, earth->w + 2, earth->h + 2},
-                   12);
-    /* 標題 */
-    if (g->font_body) {
-        civ_text_out(g->framebuffer, g->font_body,
-                     dx, dy - 4, "EARTH.GIF (Civdata0 #137, 320×200)",
-                     0, 15, CIV_TEXT_BK_TRANSPARENT);
+    /* 開 CIVDATA2.RSC 載 KING00..13 領袖肖像 */
+    snprintf(path, sizeof path, "%s/CIVDATA2.RSC", dir);
+    civ_rsrc_t *r2 = civ_rsrc_open(path);
+    if (!r2) {
+        snprintf(path, sizeof path, "%s/Civdata2.RSC", dir);
+        r2 = civ_rsrc_open(path);
     }
 
-    civ_surface_free(earth);
-    civ_rsrc_close(r);
+    /* layout：主地圖區內畫一個 7×2 grid，每格放領袖頭像 + 中文文明名 */
+    int gx0 = g->map_w->rect.x + 12;
+    int gy0 = g->map_w->rect.y + 12;
+    int cw  = (g->map_w->rect.w - 24) / 7;
+    int ch  = (g->map_w->rect.h - 24) / 2;
+
+    for (int i = 0; i < CIV_NUM_CIVS; i++) {
+        int col = i % 7;
+        int row = i / 7;
+        int cx  = gx0 + col * cw;
+        int cy  = gy0 + row * ch;
+
+        /* 載入肖像：CIVDATA2 #500..513 = KING00..13 */
+        civ_surface_t *king = NULL;
+        civ_palette_t  king_pal = {0};
+        civ_palette_default(&king_pal);
+        if (r2) {
+            int16_t king_id = (int16_t)(500 + civs[i].king_sprite_idx);
+            civ_load_cvpc_by_id(r2, king_id, &king, &king_pal);
+        }
+        /* 第一個成功的領袖把 palette 推進 framebuffer */
+        if (king && i == 0) g->palette = king_pal;
+
+        if (king) {
+            /* 縮放：取肖像左上 cw-4 × ch-32 區塊（簡單裁切，沒做縮小） */
+            civ_rect_t src = {0, 0,
+                              king->w < cw - 4   ? king->w : cw - 4,
+                              king->h < ch - 32  ? king->h : ch - 32};
+            civ_surface_blit(g->framebuffer, cx + 2, cy + 2, king, &src);
+            civ_surface_free(king);
+        } else {
+            civ_fill_rect(g->framebuffer,
+                          (civ_rect_t){cx + 2, cy + 2, cw - 4, ch - 32}, 8);
+        }
+
+        /* 框 */
+        civ_frame_rect(g->framebuffer, (civ_rect_t){cx, cy, cw, ch}, 0);
+
+        /* 標籤 */
+        if (g->font_body) {
+            const char *zh_leader   = civ_civs_zh(civs[i].slot, "leader");
+            const char *zh_civ_sing = civ_civs_zh(civs[i].slot, "civ_sing");
+            char buf[64];
+            if (zh_leader && zh_civ_sing) {
+                snprintf(buf, sizeof buf, "%s %s", zh_civ_sing, zh_leader);
+                civ_text_out(g->framebuffer, g->font_body,
+                             cx + 4, cy + ch - 14, buf,
+                             15, 0, CIV_TEXT_BK_TRANSPARENT);
+            }
+            /* 英文名小字 — 顯示原 STR# 內容 */
+            if (civs[i].leader_en) {
+                civ_text_out(g->framebuffer, g->font_body,
+                             cx + 4, cy + ch - 2,
+                             civs[i].leader_en,
+                             7, 0, CIV_TEXT_BK_TRANSPARENT);
+            }
+        }
+    }
+
+    civ_strlist_free(&leaders);
+    civ_strlist_free(&army_sing);
+    civ_strlist_free(&army_plur);
+    civ_strlist_free(&civ_sing);
+    civ_strlist_free(&civ_plur);
+    if (r2) civ_rsrc_close(r2);
+    civ_rsrc_close(r0);
     return 1;
-}
 
-static void simulate_user(struct civ_game *g)
-{
-    civ_map_state_t *ms = g->map_w->state;
-    ms->has_mouse = true;
-    ms->last_mouse_x = 240; ms->last_mouse_y = 250;
+fail:
+    civ_strlist_free(&leaders);
+    civ_strlist_free(&army_sing);
+    civ_strlist_free(&army_plur);
+    civ_strlist_free(&civ_sing);
+    civ_strlist_free(&civ_plur);
+    civ_rsrc_close(r0);
+    return 0;
 }
 
 static int write_ppm(const char *path,
@@ -135,7 +208,7 @@ int main(int argc, char **argv)
     civ_palette_default(&g.palette);
     if (file_exists(CIV_DEFAULT_FONT_PATH)) {
         g.font_title = civ_font_open(CIV_DEFAULT_FONT_PATH, 24);
-        g.font_body  = civ_font_open(CIV_DEFAULT_FONT_PATH, 16);
+        g.font_body  = civ_font_open(CIV_DEFAULT_FONT_PATH, 14);
     }
     g.tick_count = 12345;
 
@@ -144,18 +217,17 @@ int main(int argc, char **argv)
     }
 
     paint_background(&g);
-    simulate_user(&g);
     civ_widgets_render_all(&g);
-    int blitted = try_blit_earth(&g);
+    int m4 = try_m4_civ_list(&g);
 
     const char *out_path = (argc > 1) ? argv[1]
-                                       : (blitted ? "m3_demo.ppm" : "m2_demo.ppm");
+                                       : (m4 ? "m4_demo.ppm" : "m2_demo.ppm");
     if (write_ppm(out_path, g.framebuffer, &g.palette) < 0) {
         fprintf(stderr, "write %s failed\n", out_path);
         return 1;
     }
-    printf("PASS test_demo_snapshot → %s (%d×%d, EARTH blit=%s)\n",
-           out_path, FB_W, FB_H, blitted ? "yes" : "no");
+    printf("PASS test_demo_snapshot → %s (%d×%d, M4 civ list=%s)\n",
+           out_path, FB_W, FB_H, m4 ? "yes" : "no");
 
     civ_widgets_unregister(&g);
     if (g.font_title) civ_font_close(g.font_title);

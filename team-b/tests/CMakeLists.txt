@@ -41,3 +41,8 @@ add_executable(test_cvpc_decode test_cvpc_decode.c)
 target_link_libraries(test_cvpc_decode PRIVATE civ_core)
 add_test(NAME cvpc_decode COMMAND test_cvpc_decode)
 set_tests_properties(cvpc_decode PROPERTIES TIMEOUT 10)
+
+add_executable(test_strings test_strings.c)
+target_link_libraries(test_strings PRIVATE civ_core)
+add_test(NAME strings COMMAND test_strings)
+set_tests_properties(strings PROPERTIES TIMEOUT 10)
