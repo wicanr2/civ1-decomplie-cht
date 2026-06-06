@@ -23,3 +23,11 @@ set_tests_properties(demo_snapshot PROPERTIES
     ENVIRONMENT "SDL_VIDEODRIVER=dummy"
     TIMEOUT 30
 )
+
+add_executable(test_widget_dispatch test_widget_dispatch.c)
+target_link_libraries(test_widget_dispatch PRIVATE civ_core)
+add_test(NAME widget_dispatch COMMAND test_widget_dispatch)
+set_tests_properties(widget_dispatch PROPERTIES
+    ENVIRONMENT "SDL_VIDEODRIVER=dummy"
+    TIMEOUT 10
+)

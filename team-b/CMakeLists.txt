@@ -27,6 +27,8 @@ add_compile_definitions(CIV_DEFAULT_FONT_PATH="${CIV_DEFAULT_FONT_PATH}")
 # ---- core library ----------------------------------------------------------
 set(CIV_CORE_SOURCES
     src/civ_loop.c
+    src/civ_event.c
+    src/civ_widgets.c
     src/gfx/surface.c
     src/gfx/palette.c
     src/gfx/primitive.c
@@ -35,6 +37,10 @@ set(CIV_CORE_SOURCES
     src/text/utf8.c
     src/text/glyph_cache.c
     src/text/text_out.c
+    src/widgets/widget.c
+    src/widgets/map.c
+    src/widgets/minimap.c
+    src/widgets/status.c
 )
 
 add_library(civ_core STATIC ${CIV_CORE_SOURCES})

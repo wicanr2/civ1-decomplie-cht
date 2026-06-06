@@ -1,0 +1,84 @@
+M2: 3 widget skeleton + dispatch table + modal_lock + ctest 5/5 PASS
+
+UTF-8 確立為 Track C 全程唯一 in-process 編碼 (使用者指示)。SDL plan
+加「編碼總則」章節寫死；civ_big5_walk 仍存但只限 3 種特殊用途。
+
+# M2 交付
+
+  src/widgets/widget.{c,h}    civ_widget_t base + dispatch table 模型
+  src/widgets/map.{c,h}       主地圖 widget
+                               - 7-entry dispatch (MOUSE×4 + KEY×2
+                                 + TEXTINPUT, M3+ 補滿 22)
+                               - modal_lock short-circuit branch
+                                 (對應 spec 02 §2.2.6)
+                               - call_count + modal_short_circuits
+                                 + mouse/click state
+  src/widgets/minimap.{c,h}   小地圖 widget (1-entry dispatch +
+                               view marker state)
+  src/widgets/status.{c,h}    狀態面板 widget (paint-only +
+                               M0-M7 list + dynamic tick count)
+  src/civ_event.{c,h}         civ_dispatch_event 主分派器
+                               - mouse 走座標 hit-test
+                               - keyboard 走 focused_w
+                               - SDL_WINDOWEVENT 廣播到 3 widget
+  src/civ_widgets.{c,h}       register / unregister / render_all 包裝
+  src/civ_game.h              加 map_w/minimap_w/status_w/focused_w
+                               + modal_lock/modal_lock_id
+  src/civ_loop.c              non-quit event 走 civ_dispatch_event
+  src/main.c                  civ_widgets_register + civ_render bg
+  tests/test_widget_dispatch.c
+                              5 個 sub-test:
+                                1. MOTION (100,100) -> map only
+                                2. MOTION (550, 80) -> minimap only
+                                3. modal_lock=true + click ->
+                                   dispatch 進 (call_count++) 但
+                                   short-circuit (state 沒變,
+                                   modal_short_circuits++)
+                                4. modal_lock=false 後 click 恢復
+                                5. title bar (y<40) 越界沒誤觸發
+  tests/test_demo_snapshot.c  改跑 widget render, 產 m2_demo.ppm
+
+# 640x480 base canvas layout
+
+  +-----------------------------+ 0,0
+  | title bar (40)              |
+  +------------------+----------+ 0,40
+  |                  | minimap  |
+  |   主地圖 480     | 160x120  |
+  |   x440           +----------+ 480,160
+  |                  | status   |
+  |                  | 160x320  |
+  +------------------+----------+ 640,480
+
+# 驗證 (WSL Ubuntu 22.04 + GCC 11.4 + SDL2 2.0.20 + FreeType
+       24.1.18 + AR PL UMing TW)
+
+  cmake build      28/28 zero warning
+  ctest            5/5 PASS, 0.26 sec total
+    window_lifecycle  0.04 s
+    palette_blit      0.00 s  (9 sub-tests)
+    glyph_cache       0.03 s  (6 sub-tests)
+    demo_snapshot     0.13 s  -> m2_demo.ppm (widget render)
+    widget_dispatch   0.01 s  (5 sub-tests: 座標分區 + modal_lock)
+
+  docs/screenshots/m2_demo.png 4.8 KB
+    title bar 「文明帝國 視窗版 Civilization for Windows」(24px)
+    主地圖 (綠 + WDWMAPPROC 標籤 + hover + click marker)
+    小地圖 (藍 + WDWSMMAP 標籤)
+    狀態面板 (灰 + M0-M7 + tick=12345)
+
+# SDL plan 文件更新
+
+「編碼總則」新章節寫死 UTF-8 為唯一 in-process 編碼。§6 CJK 字模
+合成段內 Big5 -> glyph 改為 UTF-8 -> glyph (M1 已實作)。
+team-b/README milestone 進度表: M0/M1/M2 標 ✅。
+
+# 下一步 — M3 (依賴 spec 03 §9.1)
+
+3 個方向擇一:
+  (a) 解 CvPc LZW 變體 (跳過 Ghidra ref 問題, byte-pattern scan code
+      segment 或直接從已 evidence file dump 試多種 LZW variant)
+  (b) Mac Resource Fork parser (`res/rsrcfork.c`) 直接從 Civdata*.RSC
+      抽 type/id list 與 raw bytes, blit stub raw 入 surface
+  (c) 同時做 (a)(b) 在 spec 03 §9.1 解開前 ship 「rsrc fork 通、
+      CvPc decode 待」這個中間狀態

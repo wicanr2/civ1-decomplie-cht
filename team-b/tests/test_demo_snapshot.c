@@ -1,13 +1,14 @@
 /*
- * test_demo_snapshot.c — M1 視覺驗證：跑 demo_paint 後 dump framebuffer
- * 成 PPM 給 docs/ 留證。
+ * test_demo_snapshot.c — M1+M2 視覺驗證：跑 widget render 後 dump
+ * framebuffer 成 PPM 給 docs/ 留證。
  *
- * 用 dummy SDL driver 跑 headless；產出 m1_demo.ppm（RGB binary，
- * 任何看圖工具都能開）。執行不要求字型存在；若字型缺，仍會出灰底
- * + 矩形圖。
+ * Headless dummy driver；產出 m1_demo.ppm（M1 layout）與
+ * m2_demo.ppm（M2 widget layout）兩張，CLI 第一參數可 override 路徑
+ * （只產一張）。
  */
 #include "civ_game.h"
-#include "civ_loop.h"
+#include "civ_widgets.h"
+
 #include "gfx/palette.h"
 #include "gfx/present.h"
 #include "gfx/primitive.h"
@@ -15,6 +16,7 @@
 #include "text/big5.h"
 #include "text/glyph_cache.h"
 #include "text/text_out.h"
+#include "widgets/map.h"
 
 #include <SDL.h>
 #include <stdio.h>
@@ -24,6 +26,7 @@
 
 #define FB_W 640
 #define FB_H 480
+#define TITLE_H 40
 
 #ifndef CIV_DEFAULT_FONT_PATH
 #define CIV_DEFAULT_FONT_PATH "/usr/share/fonts/truetype/arphic/uming.ttc"
@@ -31,45 +34,29 @@
 
 static int file_exists(const char *p) { struct stat s; return stat(p,&s)==0; }
 
-/* 與 main.c 的 demo_paint 同步 — 改一處要兩邊改。 */
-static void demo_paint(civ_surface_t *fb,
-                       civ_font_t *font_title,
-                       civ_font_t *font_body)
+static void paint_background(struct civ_game *g)
 {
+    civ_surface_t *fb = g->framebuffer;
     civ_surface_clear(fb, 15);
-    civ_fill_rect(fb, (civ_rect_t){0, 0, FB_W, 56}, 9);
-    civ_hline(fb, 0, 56, FB_W, 0);
-    civ_frame_rect(fb, (civ_rect_t){32, 80, FB_W - 64, FB_H - 120}, 8);
-    civ_line(fb, 32, 80, FB_W - 32, FB_H - 40, 12);
-    civ_line(fb, FB_W - 32, 80, 32, FB_H - 40, 10);
-
-    if (font_title) {
+    civ_fill_rect(fb, (civ_rect_t){0, 0, FB_W, TITLE_H}, 9);
+    civ_hline(fb, 0, TITLE_H, FB_W, 0);
+    if (g->font_title) {
         const char *t = "文明帝國 視窗版 Civilization for Windows";
-        int w = civ_text_measure(font_title, t);
+        int w = civ_text_measure(g->font_title, t);
         int x = (FB_W - w) / 2;
-        civ_text_out(fb, font_title, x, 38, t,
-                     15, 9, CIV_TEXT_BK_TRANSPARENT);
+        civ_text_out(fb, g->font_title, x, 28, t, 15, 9,
+                     CIV_TEXT_BK_TRANSPARENT);
     }
-    if (font_body) {
-        const char *lines[] = {
-            "M0 SDL 視窗 + 主迴圈：完成",
-            "M1 palette framebuffer + CJK 字模：本次",
-            "M2 三個 widget + dispatch table",
-            "M3 載入 .RSC + CvPc decode + blit",
-            "M4 載入 14 文明 + 新局精靈",
-            "M5 地圖視窗 + 地形繪製 + 滾動",
-            "M6 turn loop + AI + 存讀檔",
-            "M7 奇蹟 + 外交 + 勝利條件",
-            "",
-            "ESC 或關閉視窗離開",
-        };
-        int y = 120;
-        for (size_t i = 0; i < sizeof lines/sizeof lines[0]; i++) {
-            civ_text_out(fb, font_body, 60, y, lines[i],
-                         0, 15, CIV_TEXT_BK_TRANSPARENT);
-            y += 24;
-        }
-    }
+}
+
+/* 把幾個 fake event 餵給 widget，讓 hover marker / click marker 出現 */
+static void simulate_user(struct civ_game *g)
+{
+    civ_map_state_t *ms = g->map_w->state;
+    ms->has_mouse = true;
+    ms->last_mouse_x = 240; ms->last_mouse_y = 250;
+    ms->has_click = true;
+    ms->last_click_x = 180; ms->last_click_y = 180;
 }
 
 static int write_ppm(const char *path,
@@ -99,32 +86,36 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    civ_surface_t *fb = civ_surface_new(FB_W, FB_H);
-    if (!fb) { fprintf(stderr, "surface_new failed\n"); return 1; }
-    civ_palette_t pal = {0};
-    civ_palette_default(&pal);
-
-    civ_font_t *ft = NULL, *fb_font = NULL;
+    struct civ_game g = {0};
+    g.framebuffer = civ_surface_new(FB_W, FB_H);
+    if (!g.framebuffer) { fprintf(stderr, "surface_new\n"); return 1; }
+    civ_palette_default(&g.palette);
     if (file_exists(CIV_DEFAULT_FONT_PATH)) {
-        ft       = civ_font_open(CIV_DEFAULT_FONT_PATH, 24);
-        fb_font  = civ_font_open(CIV_DEFAULT_FONT_PATH, 16);
-    } else {
-        printf("note: 字型 %s 不存在，demo 不畫文字\n", CIV_DEFAULT_FONT_PATH);
+        g.font_title = civ_font_open(CIV_DEFAULT_FONT_PATH, 24);
+        g.font_body  = civ_font_open(CIV_DEFAULT_FONT_PATH, 16);
+    }
+    g.tick_count = 12345;
+
+    if (civ_widgets_register(&g) != 0) {
+        fprintf(stderr, "widgets register failed\n"); return 1;
     }
 
-    demo_paint(fb, ft, fb_font);
+    paint_background(&g);
+    simulate_user(&g);
+    civ_widgets_render_all(&g);
 
-    const char *out_path = (argc > 1) ? argv[1] : "m1_demo.ppm";
-    if (write_ppm(out_path, fb, &pal) < 0) {
+    const char *out_path = (argc > 1) ? argv[1] : "m2_demo.ppm";
+    if (write_ppm(out_path, g.framebuffer, &g.palette) < 0) {
         fprintf(stderr, "write %s failed\n", out_path);
         return 1;
     }
     printf("PASS test_demo_snapshot → %s (%d×%d)\n", out_path, FB_W, FB_H);
 
-    if (ft)      civ_font_close(ft);
-    if (fb_font) civ_font_close(fb_font);
+    civ_widgets_unregister(&g);
+    if (g.font_title) civ_font_close(g.font_title);
+    if (g.font_body)  civ_font_close(g.font_body);
     civ_big5_cleanup();
-    civ_surface_free(fb);
+    civ_surface_free(g.framebuffer);
     SDL_Quit();
     return 0;
 }

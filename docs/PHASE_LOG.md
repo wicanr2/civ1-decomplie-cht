@@ -23,6 +23,47 @@
 - 寫第一份簽核 spec `team-a/specs/00_ne_structure.md`：binary 身分、記憶體模型、133 segments（約 69 code + 約 63 data + 1 autodata 在 segment 133）、6 個 Win16 import（KERNEL / USER / GDI / WIN87EM / MMSYSTEM / COMMDLG）、11 個導出 callback（`WDWMAPPROC`、`TIMERPROC`、`CIVDIALOGPROC`…）、resource directory（24 `RT_DIALOG`、1 `RT_MENU`、16 `RT_CURSOR`、1 `RT_ICON`、無 `RT_STRING`、無 `RT_RCDATA`、無 `RT_VERSION`）。
 - Spec 00 簽核待 Team A 與 Team B 各別覆核。
 
+## 2026-06-06 — M2：3 個 widget skeleton + dispatch table + modal lock
+
+### 編碼總則新增到 SDL plan
+依使用者指示，把 **UTF-8 作為 Track C 全程唯一 in-process 文字編碼** 寫進 SDL plan「編碼總則」新章節（§6 之前）。`civ_big5_walk` 仍保留，但只限三種用途：(a) Track A patched binary 偵錯 (b) 直讀原版 `.RSC` 內 STR# / TEXT（spec 03 §9 確認編碼後決定） (c) Big5 byte-pair unit test。
+
+### M2 交付
+- `team-b/src/widgets/widget.{c,h}` — `civ_widget_t` base、`civ_widget_msg_entry_t` dispatch table、`civ_widget_table_run` 通用走表 helper、`civ_rect_contains` point-in-rect helper
+- `team-b/src/widgets/map.{c,h}` — 主地圖 widget；7-entry dispatch table（MOUSEBUTTONDOWN/UP/MOTION/WHEEL、KEYDOWN/UP、TEXTINPUT，剩 15 個 entry 留給 M3+ 補）；**modal_lock short-circuit branch 對應 spec 02 §2.2.6**；`call_count` / `modal_short_circuits` / mouse hover / click state
+- `team-b/src/widgets/minimap.{c,h}` — 小地圖 widget；1-entry dispatch (MOUSEBUTTONDOWN)；view marker state
+- `team-b/src/widgets/status.{c,h}` — 狀態面板 widget；paint-only（M0–M7 列表 + dynamic tick count）
+- `team-b/src/civ_event.{c,h}` — `civ_dispatch_event` 主分派器；mouse event 走座標 hit-test、keyboard 走 focused_w、SDL_WINDOWEVENT 廣播
+- `team-b/src/civ_widgets.{c,h}` — 三個 widget 的 register / unregister / render_all 包裝
+- `team-b/src/civ_game.h` 擴：新增 `map_w / minimap_w / status_w / focused_w` 與 `modal_lock / modal_lock_id`
+- `team-b/src/civ_loop.c` 改：non-quit event 走 `civ_dispatch_event`；present 前 `civ_widgets_render_all`
+- `team-b/src/main.c` 改：`civ_widgets_register` + 在 `civ_render` 重畫 background + title bar
+- `team-b/tests/test_widget_dispatch.c` — 5 個 sub-test：
+  1. MOUSEMOTION (100,100) → 只 hit map.call_count == 1
+  2. MOUSEMOTION (550, 80) → 只 hit minimap
+  3. modal_lock=true + click → dispatch 仍進去（call_count++）但 short-circuit；`last_click_x/y` 沒變、`modal_short_circuits++`
+  4. modal_lock=false 後 click → 恢復正常處理
+  5. title bar (y < 40) 越界 → 沒有 widget 被呼叫
+- `team-b/tests/test_demo_snapshot.c` 改：跑 widget render 而非 inline draw 程式碼，dump `m2_demo.ppm`
+
+### Layout (640×480 base canvas)
+```
+┌─────────────────────────────┐ 0,0
+│  title bar (40)             │
+├──────────────────┬──────────┤ 0,40
+│                  │ minimap  │
+│   主地圖 480     │ 160×120  │
+│   ×440           ├──────────┤ 480,160
+│                  │ status   │
+│                  │ 160×320  │
+└──────────────────┴──────────┘ 640,480
+```
+
+### 驗證結果
+- WSL 28/28 zero warning build
+- ctest **5/5 PASS** 0.26 秒（widget_dispatch 0.01 s 含 5 個 sub-test）
+- [`docs/screenshots/m2_demo.png`](screenshots/m2_demo.png) 4.8 KB：三個 widget 視覺分區清楚（綠 / 藍 / 灰）、hover/click marker 顯示、CJK 標籤全正確
+
 ## 2026-06-06 — M1 完整可動（palette FB + CJK 字模 + 中文 demo 渲染）
 
 ### M1 交付

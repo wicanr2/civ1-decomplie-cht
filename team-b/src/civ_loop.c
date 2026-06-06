@@ -2,10 +2,13 @@
  * civ_loop.c — 主迴圈實作
  *
  * 對應 spec 02 §2.1.2 H 段 + SDL_IMPLEMENTATION_PLAN §3。
- * M1：用 civ_present_frame 把 palette framebuffer 上到視窗。
+ * M2：event 透過 civ_dispatch_event 分派到對的 widget；present 之前
+ * 重新 render 所有 visible widget（M3+ 改成 dirty-rect 漸進）。
  */
 #include "civ_loop.h"
+#include "civ_event.h"
 #include "civ_game.h"
+#include "civ_widgets.h"
 
 #include <SDL.h>
 
@@ -31,16 +34,18 @@ void civ_loop(struct civ_game *g)
                 g->quit = true;
                 break;
             }
-            continue;   /* 把佇列裡的 event 全吃完再 idle */
+            civ_dispatch_event(g, &ev);
+            continue;
         }
 
-        /* ── idle path ─────────────────────────────────────── */
+        /* idle path */
         g->tick_count++;
 
-        /* ── ~60 Hz present cap ────────────────────────────── */
+        /* ~60 Hz present cap */
         Uint64 now = SDL_GetTicks64();
         if (now - last_present >= 16) {
             if (g->framebuffer && g->renderer) {
+                civ_widgets_render_all(g);
                 civ_present_frame(&g->present, g->framebuffer, &g->palette);
                 SDL_RenderPresent(g->renderer);
             }

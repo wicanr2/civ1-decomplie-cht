@@ -340,6 +340,17 @@ Present 路徑（`gfx/present.c`）：
 2. `SDL_RenderSetLogicalSize(renderer, 640, 480)` + bicubic filter（`SDL_HINT_RENDER_SCALE_QUALITY=2`）+ `SDL_RenderCopy` 到任意視窗 size。
 3. 解析度切換（320×200 ↔ 640×480）只改 framebuffer 大小，不重建 renderer/window。
 
+## 編碼總則（M1 確立）
+
+**Track C 全程以 UTF-8 為唯一的 in-process 文字編碼。**
+
+- C source 內字面值（`"文明帝國"`）= UTF-8 — 現代 toolchain 預設、`gcc -finput-charset=UTF-8 -fexec-charset=UTF-8`。
+- JSON 翻譯 catalog = UTF-8（RFC 8259 預設）。
+- text_out 鏈走 `civ_utf8_walk`。
+- `civ_big5_walk` 仍存在 (`src/text/big5.c`)，**只用於以下三種場合**：(a) 對 Track A patched binary 內 inline 字串做偵錯 (b) 若未來決定直讀原版 `.RSC` 內 STR# / TEXT 段（spec 03 §3.1 確認該段是字串資源，編碼待 spec 03 §9 補完才決定） (c) 對 Big5 byte-pair 邏輯做 unit test。
+
+「不繼承原版 dfCharSet 0x88 Big5 byte-pair walking」是 Track C 的明確設計決策 — 那是 Win16 GDI 的事，clean-room SDL 重寫不該複製。Track A 之所以走 Big5 是因為它對 NE binary inline ASCII slot 做 byte-for-byte 替換、被原版 GDI 路徑強制走 Big5；Track C 自己畫字模、自己控 chokepoint，沒這個約束。
+
 ## 6. CJK 字模合成
 
 取代 `ADDFONTRESOURCE` + `CIVFONTS.FON` 與 GDI text out 路徑。**所有字模在 palette 層合成**，不交給 SDL2_ttf 跑 alpha blending。
@@ -367,10 +378,10 @@ struct civ_font {
 const struct civ_glyph *civ_glyph_get(struct civ_font *font, uint32_t codepoint);
 ```
 
-Big5 → glyph mapping：
+UTF-8 → glyph mapping（M1 確立的編碼總則）：
 
-1. 輸入字串視為 Big5（與翻譯 catalog 編碼一致；catalog 內譯文已是 CC BY-SA Track A `data/inline_translations.json` Big5 encode）。
-2. `text_out.c` 內 byte-pair walker：高 byte ∈ 0xA1..0xFE → 與下一 byte 組合查 Big5 → Unicode 表，餘下 ASCII 路徑（與原版 dfCharSet 0x88 byte-pair walking 行為一致）。
+1. 輸入字串視為 **UTF-8**（C source 字面值 + Track A `inline_translations.json` / `dialog_translations.json` 都是 UTF-8）。
+2. `text_out.c` 內 `civ_utf8_walk`：1-byte ASCII / 2-byte / 3-byte（涵蓋全部 BMP CJK）/ 4-byte 序列；非法 byte 回 0xFFFD 並前進 1 byte。
 3. `civ_glyph_get` 用 Unicode codepoint 透過 FreeType `FT_Load_Char` + `FT_LOAD_TARGET_MONO` 取 1-bit bitmap（**LESSONS_LEARNED 雷區 #6**：CJK 用 mono 不用灰階+門檻）。
 4. 合成到 palette FB：mask=1 寫 `port->text_color`，mask=0 視 `bk_mode`：`OPAQUE` → 寫 `bk_color`，`TRANSPARENT` → 跳過。
 5. `GETTEXTEXTENT` / `GETTEXTMETRICS` 透過 cache 累計 advance、回傳 16/24 高度。

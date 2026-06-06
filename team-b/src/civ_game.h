@@ -17,24 +17,38 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+struct civ_widget;
+
 struct civ_game {
     /* 主旗標 ------------------------------------------------------------ */
-    bool       quit;             /* 原 DAT_12d8_24ee：主迴圈 quit flag */
-    uint32_t   timer_counter;    /* 原 DAT_12d8_24f0：TIMERPROC sleep token */
+    bool       quit;             /* 原 DAT_12d8_24ee */
+    uint32_t   timer_counter;    /* 原 DAT_12d8_24f0 */
     uint64_t   tick_count;       /* idle step 計次 */
 
     /* SDL --------------------------------------------------------------- */
     SDL_Window   *window;
     SDL_Renderer *renderer;
 
-    /* M1：palette framebuffer + present ------------------------------- */
-    civ_surface_t *framebuffer;   /* 640×480 indexed 8bpp */
+    /* 繪圖層 ----------------------------------------------------------- */
+    civ_surface_t *framebuffer;
     civ_palette_t  palette;
     civ_present_t  present;
 
-    /* M1：CJK 字型 ------------------------------------------------------ */
-    civ_font_t *font_body;        /* 內文 16 px */
-    civ_font_t *font_title;       /* 標題 24 px */
+    /* 字型 ------------------------------------------------------------- */
+    civ_font_t *font_body;
+    civ_font_t *font_title;
+
+    /* M2：widget 樹 ---------------------------------------------------- */
+    struct civ_widget *map_w;
+    struct civ_widget *minimap_w;
+    struct civ_widget *status_w;
+    struct civ_widget *focused_w;
+
+    /* M2：modal lock — 對應 spec 02 §2.2.6 鎖定模式 (DAT_12b0_0000 /
+     * 12b0_0004)。開啟時 map widget 只接受 RESIZE / CLOSE event，其他
+     * widget 仍正常運作。 */
+    bool       modal_lock;
+    uint32_t   modal_lock_id;
 };
 
 #endif /* CIV_GAME_H */
