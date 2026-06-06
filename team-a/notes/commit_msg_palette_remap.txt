@@ -1,0 +1,55 @@
+M5-prep: palette stomp RGB-nearest LUT remap (spec 03 §12 #3 修)
+
+依使用者「1 > 2 > 3 依序」#2 任務。
+
+# 交付
+
+  src/gfx/palette.{c,h} 加 civ_palette_build_lut
+    - 對 src palette N entry, dst 256-entry palette, 建 256-byte LUT
+    - 每 src entry 找 dst 內 RGB squared-Euclidean 距離最近的 entry
+    - src_count < 256 時餘下 LUT slot 填 0
+
+  src/gfx/surface.{c,h} 加 civ_surface_blit_remap
+    - 同 civ_surface_blit 但每個 src pixel 透過 lut[256] 翻譯到 dst index
+    - clip 處理同 civ_surface_blit
+
+  tests/test_palette_remap.c
+    - 8 個顏色 LUT 對 VGA 16 + 漸層 + 6x6x6 cube base palette 的映射
+    - 黑色 -> base 0, 白色 -> base 15 等明顯映射驗證
+    - 越界 src 的 LUT slot = 0 驗證
+    - remap-blit 對小 surface 的端到端驗證
+
+  tests/test_demo_snapshot.c 升 M5
+    - 不再 g->palette = king_pal 蓋掉 base palette
+    - 改用 civ_palette_build_lut + civ_surface_blit_remap
+    - 每張 KING0X 肖像獨立 LUT, 翻譯像素到 g->palette (base default)
+
+# 驗證
+
+  cmake build       33/33 zero warning
+  ctest no data:    10/10 PASS (test_palette_remap 不需 data, 純驗算)
+  ctest with data:  10/10 PASS
+
+  docs/screenshots/m5_demo.png 對比 m4_demo:
+    m4 (palette stomp): 主地圖背景黑 / 小地圖粉紅 / status 深藍
+    m5 (LUT remap):     主地圖綠 / 小地圖藍 / status 灰
+    14 個 KING0X 肖像仍清楚可辨, 顏色經 nearest-color 映射
+    所有 widget background 保持原預期顏色
+
+# 對應 spec / 知識
+
+spec 03 §12 #3 (CityView palette stomp 雷, LESSONS_LEARNED 第 5 條):
+M5 必須做 RGB-nearest LUT 重映射, 否則 terrain CvPc + base CBACK +
+14 個文明橫幅各自 palette 互換時必然 visual 出問題。
+
+M4-lite 推出時 (commit 652e7a8) 看到的視覺問題就是此雷正面出現。
+本次 (M5-prep) 修好。
+
+接下來 M5 真正範圍 (地圖視窗 paint terrain + scroll + cursor) 可以
+在無 palette stomp 干擾的情況下動工。
+
+# 下一步 - #3 (M4-full)
+
+依「1 > 2 > 3 依序」, 接著做 #3:
+M4-full - 完整 dialog framework + 多頁 wizard
+  (Difficulty -> Civ -> Name 三頁串成新局精靈)

@@ -43,4 +43,12 @@ void civ_surface_clear(civ_surface_t *s, uint8_t index);
 void civ_surface_blit(civ_surface_t *dst, int dst_x, int dst_y,
                       const civ_surface_t *src, const civ_rect_t *src_rect);
 
+/* 同 civ_surface_blit 但每個 src pixel 透過 lut[256] 翻譯到 dst index。
+ * 對應 spec 03 §12 #3 palette stomp 解法 — 載入自帶 palette 的 CvPc
+ * 影像時用 LUT 把像素映到 base palette。 */
+void civ_surface_blit_remap(civ_surface_t *dst, int dst_x, int dst_y,
+                            const civ_surface_t *src,
+                            const civ_rect_t *src_rect,
+                            const uint8_t lut[256]);
+
 #endif /* CIV_GFX_SURFACE_H */

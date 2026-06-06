@@ -88,3 +88,25 @@ void civ_palette_animate(civ_palette_t *p, int start, int count, const civ_color
     memcpy(p->entries + start, src, (size_t)count * sizeof *src);
     p->generation++;
 }
+
+void civ_palette_build_lut(const civ_color_t *src, int src_count,
+                           const civ_palette_t *dst, uint8_t lut[256])
+{
+    if (src_count > 256) src_count = 256;
+    if (src_count < 0)   src_count = 0;
+
+    for (int i = 0; i < src_count; i++) {
+        int sr = src[i].r, sg = src[i].g, sb = src[i].b;
+        int best_idx = 0;
+        int best_d   = 256 * 256 * 4;   /* > 任何實際 d² */
+        for (int j = 0; j < 256; j++) {
+            int dr = sr - dst->entries[j].r;
+            int dg = sg - dst->entries[j].g;
+            int db = sb - dst->entries[j].b;
+            int d  = dr * dr + dg * dg + db * db;
+            if (d < best_d) { best_d = d; best_idx = j; }
+        }
+        lut[i] = (uint8_t)best_idx;
+    }
+    for (int i = src_count; i < 256; i++) lut[i] = 0;
+}

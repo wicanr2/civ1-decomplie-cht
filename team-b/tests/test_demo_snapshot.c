@@ -112,20 +112,22 @@ static int try_m4_civ_list(struct civ_game *g)
         /* 載入肖像：CIVDATA2 #500..513 = KING00..13 */
         civ_surface_t *king = NULL;
         civ_palette_t  king_pal = {0};
-        civ_palette_default(&king_pal);
         if (r2) {
             int16_t king_id = (int16_t)(500 + civs[i].king_sprite_idx);
             civ_load_cvpc_by_id(r2, king_id, &king, &king_pal);
         }
-        /* 第一個成功的領袖把 palette 推進 framebuffer */
-        if (king && i == 0) g->palette = king_pal;
 
         if (king) {
-            /* 縮放：取肖像左上 cw-4 × ch-32 區塊（簡單裁切，沒做縮小） */
+            /* M5：用 RGB-nearest LUT remap，**不蓋掉 g->palette** —
+             * widget background 顏色保持，肖像像素逐個翻譯到 base palette */
+            uint8_t lut[256];
+            civ_palette_build_lut(king_pal.entries, 256, &g->palette, lut);
+
             civ_rect_t src = {0, 0,
                               king->w < cw - 4   ? king->w : cw - 4,
                               king->h < ch - 32  ? king->h : ch - 32};
-            civ_surface_blit(g->framebuffer, cx + 2, cy + 2, king, &src);
+            civ_surface_blit_remap(g->framebuffer, cx + 2, cy + 2,
+                                   king, &src, lut);
             civ_surface_free(king);
         } else {
             civ_fill_rect(g->framebuffer,

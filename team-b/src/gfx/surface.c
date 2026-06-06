@@ -108,3 +108,40 @@ void civ_surface_blit(civ_surface_t *dst, int dst_x, int dst_y,
     }
     dst->dirty = true;
 }
+
+void civ_surface_blit_remap(civ_surface_t *dst, int dst_x, int dst_y,
+                            const civ_surface_t *src,
+                            const civ_rect_t *src_rect,
+                            const uint8_t lut[256])
+{
+    civ_rect_t r;
+    if (src_rect) {
+        r = *src_rect;
+    } else {
+        r.x = 0; r.y = 0; r.w = src->w; r.h = src->h;
+    }
+    if (r.x < 0)         { r.w += r.x; dst_x -= r.x; r.x = 0; }
+    if (r.y < 0)         { r.h += r.y; dst_y -= r.y; r.y = 0; }
+    if (r.x + r.w > src->w) r.w = src->w - r.x;
+    if (r.y + r.h > src->h) r.h = src->h - r.y;
+    if (r.w <= 0 || r.h <= 0) return;
+
+    int x1 = dst_x;
+    int y1 = dst_y;
+    int x2 = dst_x + r.w;
+    int y2 = dst_y + r.h;
+    if (x1 < dst->clip.x) { r.x += dst->clip.x - x1; r.w -= dst->clip.x - x1; x1 = dst->clip.x; }
+    if (y1 < dst->clip.y) { r.y += dst->clip.y - y1; r.h -= dst->clip.y - y1; y1 = dst->clip.y; }
+    if (x2 > dst->clip.x + dst->clip.w) r.w -= x2 - (dst->clip.x + dst->clip.w);
+    if (y2 > dst->clip.y + dst->clip.h) r.h -= y2 - (dst->clip.y + dst->clip.h);
+    if (r.w <= 0 || r.h <= 0) return;
+
+    for (int row = 0; row < r.h; row++) {
+        uint8_t       *drow = dst->pixels + (size_t)(y1 + row) * dst->pitch + x1;
+        const uint8_t *srow = src->pixels + (size_t)(r.y + row) * src->pitch + r.x;
+        for (int col = 0; col < r.w; col++) {
+            drow[col] = lut[srow[col]];
+        }
+    }
+    dst->dirty = true;
+}

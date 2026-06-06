@@ -51,3 +51,8 @@ add_executable(test_civ_dict test_civ_dict.c)
 target_link_libraries(test_civ_dict PRIVATE civ_core)
 add_test(NAME civ_dict COMMAND test_civ_dict)
 set_tests_properties(civ_dict PROPERTIES TIMEOUT 10)
+
+add_executable(test_palette_remap test_palette_remap.c)
+target_link_libraries(test_palette_remap PRIVATE civ_core)
+add_test(NAME palette_remap COMMAND test_palette_remap)
+set_tests_properties(palette_remap PROPERTIES TIMEOUT 10)
