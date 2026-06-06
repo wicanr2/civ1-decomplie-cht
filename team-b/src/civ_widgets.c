@@ -1,8 +1,10 @@
 #include "civ_widgets.h"
 #include "civ_game.h"
+#include "widgets/city_screen.h"
 #include "widgets/map.h"
 #include "widgets/minimap.h"
 #include "widgets/status.h"
+#include "widgets/tech_screen.h"
 
 /* R4 layout (2026-06-06): 對齊原版 1993 Civ Windows
  *   docs/screenshots/reference/civ1_win_civilopedia_dropdown.png
@@ -63,4 +65,10 @@ void civ_widgets_render_all(struct civ_game *g)
         g->minimap_w->vt->render(g->minimap_w, g->framebuffer);
     if (g->status_w && g->status_w->visible && g->status_w->vt->render)
         g->status_w->vt->render(g->status_w, g->framebuffer);
+
+    /* R6 + R16: modal overlays — 蓋在所有 widget 上 */
+    if (g->city_screen_open)
+        civ_city_screen_render(g, g->framebuffer);
+    if (g->tech_screen_open)
+        civ_tech_screen_render(g, g->framebuffer);
 }

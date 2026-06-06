@@ -4,6 +4,7 @@
 #include "../gfx/surface.h"
 #include "../text/text_out.h"
 #include "../world/sprite_sheet.h"
+#include "../world/tech.h"
 #include "../world/world.h"
 
 #include <stdio.h>
@@ -104,6 +105,12 @@ static civ_evt_result_t on_key_down(civ_widget_t *w, SDL_Event *ev)
             break;
         case SDLK_RETURN:
         case SDLK_KP_ENTER: {
+            /* R16: tech_screen 開啟時 Enter 關閉 */
+            if (w->game->tech_screen_open) {
+                w->game->tech_screen_open = false;
+                w->game->modal_lock       = false;
+                break;
+            }
             /* R6: cursor 上有 city → 打開 city screen */
             int cidx = civ_world_city_at(wd, wd->cursor_x, wd->cursor_y);
             if (cidx >= 0) {
@@ -113,8 +120,23 @@ static civ_evt_result_t on_key_down(civ_widget_t *w, SDL_Event *ev)
             }
             break;
         }
+        case SDLK_t: {
+            /* R16-6 demo: 按 T → BRONZE WORKING 研發完成 modal */
+            civ_tech_discovery_event_t *ev = &w->game->tech_screen_event;
+            memset(ev, 0, sizeof *ev);
+            ev->tech_id       = CIV_TECH_BRONZE_WORKING;
+            ev->source        = CIV_TECH_LEARN_SELF;
+            ev->from_civ_slot = 0;
+            civ_tech_discovery_fill_unlocked(ev);
+            w->game->tech_screen_open = true;
+            w->game->modal_lock       = true;
+            break;
+        }
         case SDLK_ESCAPE:
-            if (w->game->city_screen_open) {
+            if (w->game->tech_screen_open) {
+                w->game->tech_screen_open = false;
+                w->game->modal_lock       = false;
+            } else if (w->game->city_screen_open) {
                 w->game->city_screen_open = false;
                 w->game->modal_lock       = false;
             }

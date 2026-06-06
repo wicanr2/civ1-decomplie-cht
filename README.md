@@ -8,9 +8,11 @@
 
 輸出目標是一份單一的 C99 程式碼，透過 SDL2 跨平台編譯；內部維持 palette framebuffer（640×480 原生）；中文字模（內文 16×16、標題 24×24）由 FreeType MONO 在 palette 層合成。
 
-## 目前 ship 狀態 (2026-06-06)
+## 目前 ship 狀態 (2026-06-07)
 
-最後 ship: R15 city screen 真 ocean tile 背景 + TECH_DISCOVERY_SCREEN design 文件 + 2 張新 reference (BRONZE WORKING + ROME 完整 city)
+最後 ship: **R16 M-techscreen** — tech discovery modal 實作 ship (BRONZE WORKING demo). 花邊 frame + 大標題 (青銅器) + subtitle (文明進展) + source 短語 (取自XX/自家研發) + Allows 列表 (藍 tech / 紅 unit / 綠 wonder 各帶 16×16 mini sprite). 鍵盤 `T` 鍵 demo 觸發, ESC/Enter 關. 13 tech enum + 7 種 prereq DAG fill 已寫. 真 turn loop 整合留 R17.
+
+對應 [`docs/TECH_DISCOVERY_SCREEN.md`](docs/TECH_DISCOVERY_SCREEN.md) design (R15 ship 時撰寫) 7 sub-step 全完成.
 
 | Milestone | 範圍 | 狀態 | 證據 |
 |---|---|---|---|
@@ -36,11 +38,11 @@
 | **M8-portable** | Linux portable tarball: `tools/build_portable.sh` 一鍵生成 10.3 MB tar.gz (civ1 43KB stripped + uming.ttc 字型 + launcher script + README); Win64 cross-compile 留 v0.2 | ✅ Linux only | `dist/civ1-cht-linux-x64.tar.gz` (gitignored, GitHub Releases 發布) |
 | **M9-polish** | 設計師 P1 polish: minimap body 黃→黑, status body 灰→Win16 #C0C0C0, status text 全 palette_nearest 真色 (黑數據/藍政府/黃單位名), Rate bar 真三色 (紅/黃/青), terrain base+overlay 雙 layer 解 Mountain 露 palette-0 紅 | ✅ | `m9_terrain_overlay_polish.png` |
 | **M9-citytile** | city screen 背景升級: 外大底用 SPR32X32 真 ocean tile 重複貼 (`paint_tile_repeat`), 內 panel 仍 stipple (文字易讀). 對齊使用者新 reference 「背景有真 tile pattern 不是單色」 | ✅ | `m9_city_screen_ocean_tile.png` |
-| **M-techscreen** | tech discovery modal (BRONZE WORKING reference): 花邊 frame + 大標題 + Allows 列表 (科技/單位/奇蹟) — design 文件已寫 | 🟡 R16+ | `docs/TECH_DISCOVERY_SCREEN.md` design |
+| **M-techscreen** | tech discovery modal: 雙層花邊 frame (clean-room 自畫 8×8 pattern) + 大標題 (青銅器) + subtitle 文明進展 + (取自XX/自家研發) source 短語 + Allows 列表 (藍 後續 tech / 紅 unit / 綠 wonder/imp 各帶 16×16 mini sprite). 13 tech enum + 7 種 prereq DAG fill. 鍵盤 T 鍵 demo 觸發 BRONZE WORKING. ESC/Enter 關. | ✅ | `m9_tech_screen.png` |
 | **M6-full** | 真實戰鬥公式 (spec 07) + 城市生產 + RLL 存讀檔 | 🟡 阻 spec 06+07 | — |
 | **M7** | 奇蹟 + 外交 + 勝利條件 | ❌ | — |
 
-最後 ctest: 14/14 PASS，build 33/33 zero warning。
+最後 ctest: 18/18 PASS，build 39/39 zero warning。
 
 ## Clean-room 雙隊制度
 

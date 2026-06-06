@@ -41,6 +41,10 @@ user-provided-data/
 team-a/external/civdata4_extracted/
 team-a/external/Civilization/release/
 
+# team-a/external/OpenCiv1/ — codeberg.org/rhorvat/OpenCiv1 (MIT) Team A 研究材料
+# clean-room: Team B 不讀; specs 萃取後 IP chain 透過 spec 文件
+team-a/external/OpenCiv1/
+
 # R12 M8 portable build artifacts
 # build_portable.sh 產出: dist/civ1-cht-linux-x64/ + tar.gz
 # 真實 portable 透過 GitHub Releases 發布, 不入 git history

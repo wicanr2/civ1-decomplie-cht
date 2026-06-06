@@ -100,3 +100,8 @@ add_executable(test_city test_city.c)
 target_link_libraries(test_city PRIVATE civ_core)
 add_test(NAME city COMMAND test_city)
 set_tests_properties(city PROPERTIES TIMEOUT 10)
+
+add_executable(test_tech test_tech.c)
+target_link_libraries(test_tech PRIVATE civ_core)
+add_test(NAME tech COMMAND test_tech)
+set_tests_properties(tech PROPERTIES TIMEOUT 10)

@@ -46,6 +46,7 @@ set(CIV_CORE_SOURCES
     src/world/turn.c
     src/world/unit.c
     src/world/city.c
+    src/world/tech.c
     src/save/rle.c
     src/text/big5.c
     src/text/utf8.c
@@ -56,6 +57,7 @@ set(CIV_CORE_SOURCES
     src/widgets/minimap.c
     src/widgets/status.c
     src/widgets/city_screen.c
+    src/widgets/tech_screen.c
 )
 
 add_library(civ_core STATIC ${CIV_CORE_SOURCES})

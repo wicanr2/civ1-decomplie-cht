@@ -13,6 +13,7 @@
 #include "gfx/surface.h"
 #include "text/glyph_cache.h"
 #include "world/sprite_sheet.h"
+#include "world/tech.h"
 #include "world/world.h"
 
 #include <SDL.h>
@@ -65,6 +66,10 @@ struct civ_game {
     /* R6 M7-full: city screen modal ─────────────────── */
     bool       city_screen_open;          /* true 時 city_screen 蓋全螢幕 */
     int        city_screen_idx;           /* index into world.cities[] */
+
+    /* R16 M-techscreen: tech discovery modal ────────── */
+    bool                        tech_screen_open;   /* true 時 tech_screen 蓋全螢幕 */
+    civ_tech_discovery_event_t  tech_screen_event;  /* 當前顯示的 event payload */
 };
 
 #endif /* CIV_GAME_H */

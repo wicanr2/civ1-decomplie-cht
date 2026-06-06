@@ -16,6 +16,8 @@
 #include "text/glyph_cache.h"
 #include "text/text_out.h"
 #include "widgets/city_screen.h"
+#include "widgets/tech_screen.h"
+#include "world/tech.h"
 
 #include <SDL.h>
 #include <stdio.h>
@@ -183,9 +185,22 @@ int main(int argc, char **argv)
         }
     }
 
+    /* R16 demo: 若 argv 帶 "tech" 則打開 tech discovery modal — BRONZE WORKING */
+    if (argc > 2 && strcmp(argv[2], "tech") == 0) {
+        civ_tech_discovery_event_t *ev = &g.tech_screen_event;
+        memset(ev, 0, sizeof *ev);
+        ev->tech_id       = CIV_TECH_BRONZE_WORKING;
+        ev->source        = CIV_TECH_LEARN_DIPLOMAT;
+        ev->from_civ_slot = 4;  /* "埃及" */
+        civ_tech_discovery_fill_unlocked(ev);
+        g.tech_screen_open = true;
+        g.modal_lock       = true;
+    }
+
     paint_background(&g);
     civ_widgets_render_all(&g);
     civ_city_screen_render(&g, g.framebuffer);
+    civ_tech_screen_render(&g, g.framebuffer);
 
     const char *out_path = argc > 1 ? argv[1] : "m5_world.ppm";
     write_ppm(out_path, g.framebuffer, &g.palette);
