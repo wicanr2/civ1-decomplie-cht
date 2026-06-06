@@ -1,0 +1,103 @@
+Spec 05: Game master tables 真正位置 + STR#/TEXT 翻譯 catalog
+        (#2 #3 兩條依序執行合一)
+
+依使用者「1 > 2 > 3 依序」指示, #1 (spec 04 RT_DIALOG) 完成後接著
+做 #2 (spec 05 game data tables) 與 #3 (STR#/TEXT i18n catalog)。
+發現兩個任務的 data source 完全重疊, 自然合一寫成 spec 05。
+
+# #2 - WinMain E 段 7 個 FUN_*() 真實角色 CORRECTED
+
+team-a/tools/ghidra_extract_spec05.py decompile 結果 - 全部不是
+「載入遊戲資料」:
+
+  FUN_1008_059a (149B)  顯示模式探測 (GETDEVICECAPS x 4,
+                         設 16-color flag)
+  FUN_10b8_0000 (1244B) **16-color 圖檔轉換對話框觸發**
+                         呼出 MessageBox "CONVERT CIVILIZATION
+                         ARTWORK" + dialog #666 progress
+                         (連到 spec 04 #666 「轉換 Civilization 圖檔中」!)
+  FUN_1008_0b4a (117B)  讀 26 byte 偏好設定
+  FUN_1090_0488         TBD
+  FUN_11e8_0337 (461B)  8 player slot 初始化 (0..7 + 0xF8..0xFF 野蠻人)
+                         + 64000 byte (320x200) game-map framebuffer 配置
+  FUN_11e0_0000         TBD
+  FUN_10e8_2d46 (1124B) AI 策略表 init (FIRSTMOVE / PILLAGE /
+                         Climate matrix)
+
+# #3 - Civdata0.RSC 內 STR# / TEXT 全抽出
+
+team-a/tools/extract_strings.py (Mac Resource Manager 標準 STR#
+Pascal 陣列解析):
+
+Master tables single source of truth = Civdata0.RSC 內 33 STR#:
+
+  130 "Civ Advances"            72 entries  **完整科技樹**
+  131 "Improvements & Wonders"  46 entries  建築 + 7 wonders
+  132 "People"                  28 entries  完整單位 (Settlers /
+                                              Phalanx / Cavalry /
+                                              Battleship ...)
+  133 "Terrains"                24 entries  完整地形
+  135 "Cities"                  256 entries 14 文明 x ~18 城市名
+  137 "Credits"                 10 entries  **1993 Windows port 開發團隊**:
+                                              SID MEIER + BRUCE SHELLEY
+                                              + PAUL L. ROWAN + WILLIAM
+                                              F. DENMAN, JR.
+  139 "Story"                   44 entries  開場文字完整版
+                                              (匹配 Fandom CIV1_REFERENCE
+                                              §5)
+  140 "Leaders"                 16 entries  15 領袖 + NONE
+                                              (埃及實際是 **Ramesses** 不
+                                               是 Cleopatra)
+  141 "Governments"              6 entries  Anarchy / Despotism /
+                                              Monarchy / Communist /
+                                              Republic / Democratic
+  143/144 Army Sing/Plur          8/8       對應 FUN_11e8_0337 的 8
+                                              player slot
+  150 "Dock"                    10 entries  太空船零件 (Apollo Program)
+
+**所有 STR# 全英文**, Track A 沒翻譯這 433 條 - 是 Batch B-E 翻譯
+ground truth。
+
+$RPLC1 / $BUCKS0 / $THEM 是 sprintf-style runtime placeholder。
+
+399 個 TEXT resource = Civilopedia 條目散文描述
+(每條 200-500 byte, 從 id 3174 SPACE 起)。
+
+# 對 CIV.EXE grep 確認 master tables 不在 EXE
+
+team-a/tools/grep_civ_names.py 搜 14 文明 / 14 領袖 / 12 地形 /
+18 科技 候選的英文字串:
+  14 文明  -> **0 hit**
+  14 領袖  -> 1 hit (Cleopatra, 僅 message context)
+  12 地形  -> 0 hit
+  18 科技  -> 0 hit
+  6 政府   -> 4 hit (皆 message context, 非表 entry)
+
+證實 master tables 不在 CIV.EXE, 全在 Civdata0.RSC STR#。
+spec 03 §12 #11「Track A 誤判 .RSC 無文字」再次推翻。
+
+# 交付
+
+  team-a/tools/ghidra_extract_spec05.py
+  team-a/tools/extract_strings.py
+  team-a/tools/grep_civ_names.py
+  team-a/dumps/05a_data_civs.c              (149B function decompile)
+  team-a/dumps/05a_data_tech.c              (1244B + ARTWORK 對話框揭穿)
+  team-a/dumps/05a_data_govs.c              (117B 讀 26B 偏好)
+  team-a/dumps/05a_data_builds.c            (TBD function)
+  team-a/dumps/05a_data_units.c             (461B 8 slot + 64000B FB)
+  team-a/dumps/05a_data_map_init.c          (TBD function)
+  team-a/dumps/05a_data_advisors.c          (1124B AI 策略 matrix)
+  team-a/dumps/06a_civdata0_strings.txt     (人讀, 358 行)
+  team-a/dumps/06b_civdata0_strings.json    (Team B 機器讀, JSON)
+  team-a/specs/05_game_data_and_strings.md  (7 section)
+
+PHASE_LOG 對應紀錄。
+
+# 後續
+
+Spec 06 待寫:
+  stats 數值表 (attack/defense/cost/movement) 位置確認
+  推測 hardcoded const 陣列在 code segment, 需找 caller 反推
+  spec 04 §4.5 5 個 startup dialog ID 對應
+  256 個 city names 與 14 文明的對應規則

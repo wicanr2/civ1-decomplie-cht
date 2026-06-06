@@ -1,0 +1,358 @@
+=== STR# resources: 33 ===
+
+STR# id=  128  name='Tax Rates'  count=11
+    [ 0]  '    0% Tax, (100% Science)'
+    [ 1]  '  10% Tax, (  90% Science)'
+    [ 2]  '  20% Tax, (  80% Science)'
+    [ 3]  '  30% Tax, (  70% Science)'
+    [ 4]  '  40% Tax, (  60% Science)'
+    [ 5]  '  50% Tax, (  50% Science)'
+    ... 5 more
+
+STR# id=  129  name='Lux Rates'  count=6
+    [ 0]  '  0% Luxuries, (50% Science)'
+    [ 1]  '10% Luxuries, (40% Science)'
+    [ 2]  '20% Luxuries, (30% Science)'
+    [ 3]  '30% Luxuries, (20% Science)'
+    [ 4]  '40% Luxuries, (10% Science)'
+    [ 5]  '50% Luxuries, (  0% Science)'
+
+STR# id=  130  name='Civ Advances'  count=72
+    [ 0]  'Alphabet'
+    [ 1]  'Code of Laws'
+    [ 2]  'Currency'
+    [ 3]  'Atomic Theory'
+    [ 4]  'The Democracy'
+    [ 5]  'The Monarchy'
+    ... 66 more
+
+STR# id=  131  name='Improvements & Wonders'  count=46
+    [ 0]  'NONE'
+    [ 1]  'Palace'
+    [ 2]  'Barracks'
+    [ 3]  'Granary'
+    [ 4]  'Temple'
+    [ 5]  'MarketPlace'
+    ... 40 more
+
+STR# id=  132  name='People'  count=28
+    [ 0]  'Settlers'
+    [ 1]  'Militia'
+    [ 2]  'Phalanx'
+    [ 3]  'Legion'
+    [ 4]  'Musketeers'
+    [ 5]  'Riflemen'
+    ... 22 more
+
+STR# id=  133  name='Terrains'  count=24
+    [ 0]  'Desert'
+    [ 1]  'Plains'
+    [ 2]  'Grassland'
+    [ 3]  'Forest'
+    [ 4]  'Hills'
+    [ 5]  'Mountains'
+    ... 18 more
+
+STR# id=  134  name='Miscellaneous'  count=21
+    [ 0]  'Veteran Units'
+    [ 1]  'Fortify'
+    [ 2]  'Irrigation'
+    [ 3]  'Mining'
+    [ 4]  'Roads'
+    [ 5]  'RailRoads'
+    ... 15 more
+
+STR# id=  135  name='Cities'  count=256
+    [ 0]  'Rome'
+    [ 1]  'Caesarea'
+    [ 2]  'Carthage'
+    [ 3]  'Nicopolis'
+    [ 4]  'Byzantium'
+    [ 5]  'Brundisium'
+    ... 250 more
+
+STR# id=  136  name='Misc Prompts'  count=14
+    [ 0]  'Civ Preferences'
+    [ 1]  'Please name this game:'
+    [ 2]  'Saved Game 1'
+    [ 3]  'Show'
+    [ 4]  'Hide'
+    [ 5]  'Map'
+    ... 8 more
+
+STR# id=  137  name='Credits'  count=10
+    [ 0]  'A MicroProse Presentation'
+    [ 1]  'Designed by SID MEIER with BRUCE SHELLEY'
+    [ 2]  'Windows Version by'
+    [ 3]  'PAUL L. ROWAN'
+    [ 4]  'WILLIAM F. DENMAN, JR.'
+    [ 5]  'Computer Graphics by'
+    ... 4 more
+
+STR# id=  138  name='Report Titles'  count=7
+    [ 0]  'CITY STATUS'
+    [ 1]  'MILITARY STATUS'
+    [ 2]  'INTELLIGENCE REPORT'
+    [ 3]  'ATTITUDE SURVEY'
+    [ 4]  'TRADE REPORT'
+    [ 5]  'SCIENCE REPORT'
+    ... 1 more
+
+STR# id=  139  name='Story'  count=44
+    [ 0]  'In the beginning,'
+    [ 1]  'the Earth was without form,'
+    [ 2]  'and void.'
+    [ 3]  'But the Sun shone upon the sleeping Earth'
+    [ 4]  'and deep inside the brittle crust'
+    [ 5]  'massive forces waited to be unleashed.'
+    ... 38 more
+
+STR# id=  140  name='Leaders'  count=16
+    [ 0]  ''
+    [ 1]  'Caesar'
+    [ 2]  'Hammurabi'
+    [ 3]  'Frederick'
+    [ 4]  'Ramesses'
+    [ 5]  'Abe Lincoln'
+    ... 10 more
+
+STR# id=  141  name='Governments'  count=6
+    [ 0]  'Anarchy'
+    [ 1]  'Despotism'
+    [ 2]  'Monarchy'
+    [ 3]  'Communist'
+    [ 4]  'Republic'
+    [ 5]  'Democratic'
+
+STR# id=  142  name='Caravan Goods'  count=8
+    [ 0]  'Silk'
+    [ 1]  'Silver'
+    [ 2]  'Wine'
+    [ 3]  'Copper'
+    [ 4]  'Gems'
+    [ 5]  'Dye'
+    ... 2 more
+
+STR# id=  143  name='Army Singular'  count=8
+    [ 0]  'Barbarian'
+    [ 1]  'Roman'
+    [ 2]  'Babylonian'
+    [ 3]  'German'
+    [ 4]  'Egyptian'
+    [ 5]  'American'
+    ... 2 more
+
+STR# id=  144  name='Armies Plural'  count=8
+    [ 0]  'Barbarians'
+    [ 1]  'Romans'
+    [ 2]  'Babylonians'
+    [ 3]  'Germans'
+    [ 4]  'Egyptians'
+    [ 5]  'Americans'
+    ... 2 more
+
+STR# id=  145  name='King Text'  count=8
+    [ 0]  'Attila'
+    [ 1]  'Caesar'
+    [ 2]  'Shaka'
+    [ 3]  'Genghis Khan'
+    [ 4]  'Montezuma'
+    [ 5]  'Xerxes'
+    ... 2 more
+
+STR# id=  146  name='King Title'  count=13
+    [ 0]  'Mr.'
+    [ 1]  'Emperor'
+    [ 2]  'King'
+    [ 3]  'Comrade'
+    [ 4]  'President'
+    [ 5]  'President'
+    ... 7 more
+
+STR# id=  147  name='CivPedia Subtitle'  count=6
+    [ 0]  'Civilization Advance'
+    [ 1]  'City Improvement'
+    [ 2]  'Wonder of the World'
+    [ 3]  'Military Unit'
+    [ 4]  'Terrain Type'
+    [ 5]  'Game Concept'
+
+STR# id=  149  name='Leaders Civ Plural'  count=16
+    [ 0]  'NONE'
+    [ 1]  'Romans'
+    [ 2]  'Babylonians'
+    [ 3]  'Germans'
+    [ 4]  'Egyptians'
+    [ 5]  'Americans'
+    ... 10 more
+
+STR# id=  150  name='Dock'  count=10
+    [ 0]  'Structure1'
+    [ 1]  'Structure2'
+    [ 2]  'Structure3'
+    [ 3]  'Propulsion'
+    [ 4]  'Fuel'
+    [ 5]  'NONE'
+    ... 4 more
+
+STR# id=  151  name='Input Titles'  count=3
+    [ 0]  'City Name...'
+    [ 1]  'Your Name...'
+    [ 2]  'Name of your Tribe...'
+
+STR# id=  152  name='Orders menu'  count=19
+    [ 0]  'No Orders'
+    [ 1]  '&Add to City'
+    [ 2]  '&Found New City'
+    [ 3]  'Build &Road'
+    [ 4]  'Build &RailRoad'
+    [ 5]  'Build &Irrigation'
+    ... 13 more
+
+STR# id=  153  name='Customize World'  count=16
+    [ 0]  'Small'
+    [ 1]  'Normal'
+    [ 2]  'Large'
+    [ 3]  'LAND MASS'
+    [ 4]  'Cool'
+    [ 5]  'Temperate'
+    ... 10 more
+
+STR# id=  154  name='About Text'  count=31
+    [ 0] [big5] 'Sid Meier掇'
+    [ 1]  'CIVILIZATION'
+    [ 2]  'Windows Version'
+    [ 3]  'William F. Denman, Jr.'
+    [ 4]  'Paul L. Rowan'
+    [ 5] [latin1] 'Copyright © 1993 MicroProse, Inc.'
+    ... 25 more
+
+STR# id=  155  name='Space 1'  count=19
+    [ 0]  'In the year $RPLC1'
+    [ 1]  'voyagers from the planet Earth'
+    [ 2]  'set forth on a journey'
+    [ 3]  'of cosmic exploration.'
+    [ 4]  'A spaceship populated by'
+    [ 5]  '$BUCKS0,000 $THEM colonists'
+    ... 13 more
+
+STR# id=  156  name='Space 2'  count=19
+    [ 0]  'In the year $RPLC1'
+    [ 1]  'voyagers from the planet Earth'
+    [ 2]  'set forth on a journey'
+    [ 3]  'of cosmic exploration.'
+    [ 4]  'A spaceship populated by'
+    [ 5]  '$BUCKS0,000 $THEM colonists'
+    ... 13 more
+
+STR# id=  157  name='Archeologist'  count=11
+    [ 0]  'Centuries later,'
+    [ 1]  'archeologists discover the remains'
+    [ 2]  'of your ancient civilization.'
+    [ 3]  'Evidence of thriving towns,'
+    [ 4]  '$RPLC1, roads,'
+    [ 5]  'and a centralized government'
+    ... 5 more
+
+STR# id=  160  name='Civ File Names'  count=8
+    [ 0]  'Civ Data 1'
+    [ 1]  'Civ Data 2'
+    [ 2]  'Civ Data 3'
+    [ 3]  'Civ Data 4'
+    [ 4]  'Civ Data 5'
+    [ 5]  'Civ Data 6'
+    ... 2 more
+
+STR# id=  159  name='Civ Disk Names'  count=7
+    [ 0] [latin1] 'Civilizationª Disk 1'
+    [ 1] [latin1] 'Civilizationª Disk 2'
+    [ 2] [latin1] 'Civilizationª Disk 3'
+    [ 3] [latin1] 'Civilizationª Disk 4'
+    [ 4] [latin1] 'Civilizationª Disk 5'
+    [ 5] [latin1] 'Civilizationª Disk 6'
+    ... 1 more
+
+STR# id=  148  name='Leaders Civ Singular'  count=16
+    [ 0]  'NONE'
+    [ 1]  'Roman'
+    [ 2]  'Babylonian'
+    [ 3]  'German'
+    [ 4]  'Egyptian'
+    [ 5]  'American'
+    ... 10 more
+
+STR# id=  158  name='Alert Text'  count=10
+    [ 0]  'Game was not saved.'
+    [ 1]  'The selected disk is full.'
+    [ 2]  'The selected disk is locked.'
+    [ 3]  'An unexpected I/O error has occured.'
+    [ 4] [latin1] 'Civilizationª only supports 8-bit color (256 colors) and Black/White.'
+    [ 5]  'You are currently in 4-bit mode (16 colors). Assuming B/W.'
+    ... 4 more
+
+
+=== TEXT resources: 399 ===
+
+TEXT id= 3174  name='SPACE'  enc=ascii  len=451
+    'In the year $RPLC1 voyagers from the planet Earth set forth on a journey of cosm'
+TEXT id= 3175  name='KNG_SPACE2'  enc=ascii  len=454
+    'In the year $RPLC1 voyagers from the planet Earth set forth on a journey of cosm'
+TEXT id= 3176  name='KNG_ARCH'  enc=ascii  len=283
+    'Centuries later, archeologists discover the remains of your ancient civilization'
+TEXT id= 1000  name='NAVIGATION'  enc=ascii  len=574
+    'The sailors of antiquity studied the night sky. Reading the sky map, they could '
+TEXT id= 1001  name='CONSTRUCTION'  enc=ascii  len=504
+    'Advancing beyond the use of mud bricks and mortar to build homes and walls, anci'
+TEXT id= 1002  name='HORSEBACK RIDING'  enc=ascii  len=562
+    'Horses are believed to have been first domesticated in the great plains of north'
+TEXT id= 1003  name='CEREMONIAL BURIAL'  enc=ascii  len=574
+    'Groping for an explanation of the world around them, the earliest humans develop'
+TEXT id= 1004  name='POTTERY'  enc=ascii  len=475
+    'Concomitant and essential to the Agricultural Revolution was the invention of PO'
+TEXT id= 1005  name='ALPHABET'  enc=ascii  len=589
+    'An ALPHABET is a group of symbols that represents phonemes, sounds that humans c'
+TEXT id= 1006  name='ADVANCED FLIGHT'  enc=ascii  len=542
+    'The technology of FLIGHT advanced rapidly in the 20th Century, especially during'
+TEXT id= 1007  name='ASTRONOMY'  enc=ascii  len=590
+    'Perhaps the oldest of the sciences, ASTRONOMY originated by observing the regula'
+TEXT id= 1008  name='ATOMIC THEORY'  enc=ascii  len=537
+    'Greek philosophers first proposed that matter was composed of tiny, indivisible '
+TEXT id= 1009  name='AUTOMOBILE'  enc=ascii  len=618
+    'The first practical AUTOMOBILES were developed in the late 19th Century, althoug'
+TEXT id= 1010  name='BANKING'  enc=ascii  len=596
+    'Modern BANKING arose during the Renaissance among the merchant families of the I'
+TEXT id= 1011  name='BRIDGE BUILDING'  enc=ascii  len=572
+    'An important measure of the advancement of any civilization was the internal CON'
+TEXT id= 1012  name='BRONZE WORKING'  enc=ascii  len=614
+    'BRONZE is an alloy of copper and other metals, mainly tin. BRONZE WORKING techno'
+TEXT id= 1013  name='CHEMISTRY'  enc=ascii  len=440
+    'The basis for modern CHEMISTRY was laid by the pseudo-science of alchemy, which '
+TEXT id= 1014  name='CHIVALRY'  enc=ascii  len=609
+    'CHIVALRY was a system of ethical ideals that grew out of FEUDALISM. It establish'
+TEXT id= 1015  name='CODE OF LAWS'  enc=ascii  len=586
+    'As populations and cities grew, the need grew for the establishment of rules of '
+TEXT id= 1016  name='COMBUSTION'  enc=ascii  len=532
+    'The development of the internal COMBUSTION engine was a great advance of the Ind'
+TEXT id= 1017  name='COMMUNISM'  enc=ascii  len=645
+    'COMMUNISM developed as a system of social organization where the real property ('
+TEXT id= 1018  name='COMPUTERS'  enc=ascii  len=544
+    'A COMPUTER is a device capable of performing a series of arithmetic or logical o'
+TEXT id= 1019  name='CONSCRIPTION'  enc=ascii  len=453
+    'Compulsory enrollment in the armed forces, or CONSCRIPTION, was introduced in Fr'
+TEXT id= 1020  name='CURRENCY'  enc=ascii  len=546
+    'As cities grew, their internal economies became more complicated. People special'
+TEXT id= 1021  name='THE DEMOCRACY'  enc=ascii  len=603
+    'A system of government where all of the people share in directing the activities'
+TEXT id= 1022  name='ELECTRICITY'  enc=ascii  len=576
+    'The phenomenon of ELECTRICITY has been witnessed by humans since the dawn of tim'
+TEXT id= 1023  name='ELECTRONICS'  enc=ascii  len=426
+    'ELECTRONICS is the science of understanding and ENGINEERING the controlled flow '
+TEXT id= 1024  name='ENGINEERING'  enc=ascii  len=606
+    'The science of ENGINEERING originated with the civil engineers, who built bridge'
+TEXT id= 1025  name='EXPLOSIVES'  enc=ascii  len=633
+    'EXPLOSIVES were discovered during experiments with GUNPOWDER and CHEMISTRY in th'
+TEXT id= 1026  name='FEUDALISM'  enc=ascii  len=654
+    "In the unsettled times that followed the collapse of Charlemagne's Frankish empi"
+
+... 369 more TEXT entries (use --json for all)
+
