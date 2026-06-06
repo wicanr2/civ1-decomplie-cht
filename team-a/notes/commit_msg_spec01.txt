@@ -1,0 +1,68 @@
+Spec 01: Compiler ID, original .c source inventory, Win16 API surface
+
+Ran Ghidra auto-analysis on the Big5-patched CIV.EXE.
+Wrote team-a/tools/ghidra_extract_spec01.py, a Jython post-script
+that dumps four artifacts:
+
+  01a_functions.txt        1142 discovered functions
+  01b_imports_used.txt     157 Win16 APIs across 6 modules with
+                            per-API call-site counts (computed by
+                            following references to the segment-1608
+                            FAR JMP thunks, not the EXTERNAL pseudo
+                            symbols)
+  01c_entrypoint_walk.txt  disassembly walk from 1000:0000 through
+                            the Borland C runtime startup
+  01d_signature_strings.txt compiler-signature strings + recovered
+                            source-file/function-name pairs
+
+Key findings spec 01 captures:
+
+Compiler: Borland C++ 1991 (literal "Borland C++ - Copyright 1991
+Borland Intl." in segment 1420). Calling convention is Pascal for
+internal functions; the 11 exported callbacks are __pascal __far
+__export with HWND/UINT/WPARAM/LPARAM signatures (WindowProc-style).
+
+Original source organization recovered: Borland's assert() macro
+embeds a "FunctionName()  :  source.c" string at every call site.
+12+ .c files identified -
+
+  dialogs.c     dialog construction
+  godpal.c      256-color system palette manager
+  gr.c          graphics utility / runtime dialog templates
+  gr_pic.c      .pic file loader; PicDecompress = EDILZSS2 decoder
+  gr_port.c     graphics-port abstraction over GDI
+  init.c        application init
+  load.c        save/load with RLLDecode/RLLEncode
+  mac.c         Mac Memory Manager shim (NewPtr/DisposPtr/Handle)
+  resmgr.c      Mac Resource Manager shim (OpenResFile/NewResource)
+  shape.c       tile creation + PortTileBlt
+  wdwmap.c      main map window
+  wdwsmmap.c    minimap window
+  wdwstat.c     status window
+  windows.c     top-level / likely WinMain (MenuZ)
+
+Architectural finding: the 1993 Windows version is structurally a
+Mac port adapted to Win16. The presence of mac.c + resmgr.c means
+the game emulates Mac Memory and Resource Managers on top of Win16
+primitives, which explains why GLOBALLOCK/GLOBALUNLOCK dominate
+the import call counts (206 + 230 = 436 of 667 KERNEL calls). Team B's
+C99 reimplementation collapses both layers into one direct C99 layer.
+
+API call-site totals (SDL2 substitution work):
+
+  USER     970 calls  - SDL_Event + custom widget system
+  KERNEL   667 calls  - mostly GLOBAL* heap, collapses to malloc/free
+  GDI      552 calls  - palette framebuffer + custom drawing state
+  COMMDLG    4 calls  - custom save/load dialog
+  MMSYSTEM   4 calls  - SDL2_mixer
+  WIN87EM    0 calls  - linked-only, no replacement needed
+
+Per-API hot lists (e.g. SETRECT 238 / OFFSETRECT 111 / SELECTOBJECT
+116 / GLOBALUNLOCK 230 / GLOBALLOCK 206) are captured in spec 01.4.
+
+Companion artifacts:
+- team-a/specs/01_compiler_and_api_surface.md - the signed spec
+- team-a/tools/ghidra_extract_spec01.py        - the extraction script
+
+Spec 01 sign-off pending. Spec 02 will identify WinMain precisely
+and walk the three exported window procedures.

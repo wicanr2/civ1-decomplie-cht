@@ -17,6 +17,16 @@
 - After provisionally pinning the pristine binary as work-of-record and writing spec 00 against it, the user authorized using the Track A Big5-patched binary instead — spec 00, README, and `team-a/binary/CIV.EXE` updated accordingly. The patched binary is the work-of-record going forward because (a) the user's SFX portable build chain targets it, so visual-layout validation uses the same artifact, and (b) Big5 inline-string references in the disassembly directly populate Team B's translation catalog.
 - Ghidra was first run against the pristine binary as a sanity check (total analysis time 56 s; Ghidra auto-detected `New Executable (NE)` / `x86:LE:16:Protected Mode` and applied built-in Win16 export symbol tables for KERNEL/USER/GDI/WIN87EM/MMSYSTEM/COMMDLG). That project was deleted and re-imported against the Big5-patched binary.
 
+## 2026-06-06 — Spec 01: Compiler ID + API surface + original source structure
+
+- Ran Ghidra auto-analysis on the Big5-patched binary: 1142 functions discovered, all 11 Win16 callbacks named (`WDWMAPPROC` 1208:0054 / `CIVDIALOGPROC` 1098:1838 / `TIMERPROC` 1008:0d68 / etc.); 157 imported Win16 APIs identified across the six expected modules.
+- Wrote `team-a/tools/ghidra_extract_spec01.py` — Ghidra Jython post-script that dumps function list, per-API call-site counts via segment-1608 thunk references, entry-point walk, and compiler-signature strings into `team-a/dumps/01[a-d]_*.txt`.
+- Compiler identified: **Borland C++ 1991** (`'Borland C++ - Copyright 1991 Borland Intl.'` literal in segment 1420).
+- Original 1993 source-file structure recovered from `assert()`-macro-embedded `"func()  :  source.c"` strings: 12+ `.c` files including `dialogs.c`, `godpal.c`, `gr.c`, `gr_pic.c` (contains **`PicDecompress`** = EDILZSS2 decoder), `gr_port.c`, `init.c`, `load.c` (contains `RLLDecode`/`RLLEncode` for save files), `mac.c` (Mac Memory Manager shim), `resmgr.c` (Mac Resource Manager shim), `shape.c`, `wdwmap.c`/`wdwsmmap.c`/`wdwstat.c` (three windows), `windows.c` (likely `WinMain`/`MenuZ`).
+- Architectural finding: **the 1993 Windows version is structurally a Mac port adapted to Win16**, evidenced by `mac.c`'s `NewPtr` / `DisposPtr` / `HandToHand` / `DisposeHandle` (Mac Memory Manager API) and `resmgr.c`'s `OpenResFile` / `NewResource` / `AddType` / `RestoMem` (Mac Resource Manager API). The Win16 substrate is used to emulate the Mac primitives; this is why `KERNEL.GLOBALLOCK`/`GLOBALUNLOCK` (206/230 calls) dominate the import inventory — they back the Mac Handle/Pointer abstraction. Team B's C99 reimplementation collapses both layers (Mac shim + Win16 substrate) into a single direct C99 layer.
+- API call-site totals (work for Team B's SDL2 substitution): USER 970, KERNEL 667, GDI 552, COMMDLG 4, MMSYSTEM 4, WIN87EM 0 (unused at runtime — linked only for `c0w` runtime-presence check). Per-API hot-list captured in spec 01.
+- Wrote `team-a/specs/01_compiler_and_api_surface.md` covering compiler identification, original `.c` source file inventory, the Mac-port architectural finding, full per-module API call-site tables, and the entry-point startup walk.
+
 ## 2026-06-06 — Spec 00: NE structure
 
 - Wrote `team-a/tools/ne_dump.py`, a public-format NE-header / segment / import / resource dumper. Output captured in `team-a/dumps/00_ne_structure.txt`.

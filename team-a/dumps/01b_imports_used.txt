@@ -1,0 +1,180 @@
+# CIV.EXE — imported Win16 API call inventory
+# fields: module  name  call_sites  stub_addr
+
+
+## COMMDLG
+  COMMDLGEXTENDEDERROR                  2  1608:0270
+  GETOPENFILENAME                       1  1608:0268
+  GETSAVEFILENAME                       1  1608:026c
+
+## GDI
+  ADDFONTRESOURCE                       1  1608:022c
+  ANIMATEPALETTE                        4  1608:0250
+  BITBLT                               26  1608:01d0
+  CREATEBITMAP                          2  1608:01e0
+  CREATECOMPATIBLEDC                   13  1608:01e4
+  CREATEDIBITMAP                        1  1608:0258
+  CREATEFONT                            1  1608:01e8
+  CREATEFONTINDIRECT                    1  1608:01ec
+  CREATEPALETTE                         1  1608:0248
+  CREATEPATTERNBRUSH                    1  1608:01f0
+  CREATEPEN                            17  1608:01f4
+  CREATESOLIDBRUSH                     17  1608:01f8
+  DELETEDC                             13  1608:01fc
+  DELETEOBJECT                         72  1608:0200
+  ENUMFONTFAMILIES                      1  1608:0240
+  GETBITMAPBITS                         3  1608:0204
+  GETBITMAPDIMENSION                    1  1608:0238
+  GETBKCOLOR                            3  1608:0208
+  GETBKMODE                             3  1608:020c
+  GETDEVICECAPS                        39  1608:0210
+  GETPIXEL                              2  1608:0214
+  GETSTOCKOBJECT                       45  1608:0218
+  GETSYSTEMPALETTEENTRIES               0  1608:0254
+  GETTEXTCOLOR                          3  1608:021c
+  GETTEXTEXTENT                         6  1608:0220
+  GETTEXTMETRICS                        9  1608:0224
+  LINETO                               31  1608:01c0
+  MOVETO                               17  1608:01c4
+  POLYGON                               0  1608:01d4
+  POLYLINE                              0  1608:01d8
+  REMOVEFONTRESOURCE                    1  1608:0230
+  SELECTOBJECT                        116  1608:01dc
+  SETBITMAPBITS                         3  1608:0228
+  SETBITMAPDIMENSION                    1  1608:023c
+  SETBKCOLOR                           20  1608:01b0
+  SETBKMODE                            29  1608:01b4
+  SETPALETTEENTRIES                     1  1608:024c
+  SETPIXEL                              2  1608:01c8
+  SETPOLYFILLMODE                       0  1608:01b8
+  SETTEXTALIGN                          6  1608:0244
+  SETTEXTCOLOR                         24  1608:01bc
+  TEXTOUT                              15  1608:01cc
+  UNREALIZEOBJECT                       1  1608:0234
+
+## KERNEL
+  FINDRESOURCE                          1  1608:0030
+  FREEPROCINSTANCE                     16  1608:002c
+  FREERESOURCE                          1  1608:0038
+  GETDOSENVIRONMENT                     0  1608:0068
+  GETFREESPACE                          5  1608:0070
+  GETMODULEFILENAME                     0  1608:0024
+  GETWINFLAGS                           2  1608:006c
+  GLOBALALLOC                          63  1608:0000
+  GLOBALCOMPACT                         1  1608:001c
+  GLOBALFREE                           61  1608:0008
+  GLOBALHANDLE                          2  1608:0018
+  GLOBALLOCK                          206  1608:000c
+  GLOBALREALLOC                         1  1608:0004
+  GLOBALSIZE                            5  1608:0014
+  GLOBALUNLOCK                        230  1608:0010
+  HMEMCPY                              15  1608:0074
+  INITTASK                              1  1608:005c
+  LOADLIBRARY                           0  1608:0060
+  LOADRESOURCE                          1  1608:0034
+  LSTRCPY                               2  1608:0054
+  LSTRLEN                              10  1608:0058
+  MAKEPROCINSTANCE                     15  1608:0028
+  WAITEVENT                             1  1608:0020
+  _HREAD                                4  1608:0078
+  _HWRITE                               2  1608:007c
+  _LCLOSE                               8  1608:003c
+  _LCREAT                               2  1608:0044
+  _LLSEEK                               5  1608:0048
+  _LOPEN                                5  1608:004c
+  _LREAD                                1  1608:0040
+  _LWRITE                               1  1608:0050
+  __AHSHIFT                             0  1608:0064
+
+## MMSYSTEM
+  MCISENDCOMMAND                        2  1608:0264
+  SNDPLAYSOUND                          2  1608:0260
+
+## USER
+  BEGINPAINT                            8  1608:00c4
+  CHECKMENUITEM                         2  1608:015c
+  CREATEDIALOG                          1  1608:011c
+  CREATEDIALOGINDIRECT                  1  1608:0184
+  CREATEWINDOW                         10  1608:00cc
+  DEFDLGPROC                           10  1608:01a8
+  DEFWINDOWPROC                         7  1608:0130
+  DESTROYWINDOW                         5  1608:00dc
+  DISPATCHMESSAGE                      14  1608:0140
+  DRAWMENUBAR                           3  1608:0168
+  DRAWTEXT                              3  1608:0118
+  ENABLEMENUITEM                       25  1608:0160
+  ENABLEWINDOW                          5  1608:00b4
+  ENDPAINT                              8  1608:00c8
+  FILLRECT                             63  1608:0110
+  FRAMERECT                            24  1608:0114
+  GETCLIENTRECT                        35  1608:00b0
+  GETCURSORPOS                          1  1608:0098
+  GETDC                                11  1608:00f4
+  GETDESKTOPWINDOW                      2  1608:01a4
+  GETDIALOGBASEUNITS                    4  1608:0190
+  GETDLGCTRLID                          0  1608:0194
+  GETDLGITEM                           12  1608:0124
+  GETFREESYSTEMRESOURCES                8  1608:01a0
+  GETKEYBOARDSTATE                      2  1608:0188
+  GETMENU                               7  1608:0164
+  GETPARENT                             2  1608:00d4
+  GETSCROLLRANGE                        1  1608:00f0
+  GETSYSTEMMETRICS                      8  1608:0180
+  GETTICKCOUNT                          1  1608:0094
+  GETWINDOWRECT                        28  1608:00ac
+  GETWINDOWTEXT                         4  1608:00bc
+  GETWINDOWWORD                         5  1608:0150
+  INFLATERECT                          23  1608:010c
+  INITAPP                               1  1608:0084
+  INVALIDATERECT                        5  1608:0148
+  ISCHILD                               1  1608:00d8
+  ISDIALOGMESSAGE                       8  1608:0120
+  ISWINDOWENABLED                       0  1608:00b8
+  KILLTIMER                             3  1608:0090
+  LOADACCELERATORS                      1  1608:0178
+  LOADCURSOR                            2  1608:0170
+  LOADICON                              1  1608:0174
+  MESSAGEBEEP                          15  1608:012c
+  MESSAGEBOX                            9  1608:0080
+  MODIFYMENU                           12  1608:01ac
+  MOVEWINDOW                           17  1608:00e0
+  OFFSETRECT                          111  1608:0108
+  PEEKMESSAGE                          23  1608:0134
+  POSTQUITMESSAGE                       1  1608:0088
+  PTINRECT                              2  1608:0104
+  REALIZEPALETTE                        3  1608:019c
+  REGISTERCLASS                         8  1608:00e4
+  RELEASECAPTURE                        1  1608:00a0
+  RELEASEDC                             6  1608:00f8
+  SCREENTOCLIENT                        2  1608:00a8
+  SELECTPALETTE                         4  1608:0198
+  SENDDLGITEMMESSAGE                    1  1608:0128
+  SENDMESSAGE                          35  1608:0138
+  SETCAPTURE                            1  1608:009c
+  SETCURSOR                             1  1608:00fc
+  SETFOCUS                              5  1608:00a4
+  SETKEYBOARDSTATE                      2  1608:018c
+  SETRECT                             238  1608:0100
+  SETSCROLLPOS                          3  1608:00e8
+  SETSCROLLRANGE                        3  1608:00ec
+  SETTIMER                              4  1608:008c
+  SETWINDOWLONG                        22  1608:0158
+  SETWINDOWTEXT                         3  1608:00c0
+  SETWINDOWWORD                        18  1608:0154
+  SHOWWINDOW                           33  1608:00d0
+  TRANSLATEACCELERATOR                  2  1608:017c
+  TRANSLATEMESSAGE                     13  1608:013c
+  UPDATEWINDOW                          3  1608:0144
+  VALIDATERECT                          3  1608:014c
+  WINHELP                               1  1608:016c
+
+## WIN87EM
+  __FPMATH                              0  1608:025c
+
+## Totals
+  COMMDLG      4 call sites total
+  GDI          552 call sites total
+  KERNEL       667 call sites total
+  MMSYSTEM     4 call sites total
+  USER         970 call sites total
+  WIN87EM      0 call sites total
