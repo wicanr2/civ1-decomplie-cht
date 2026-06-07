@@ -134,20 +134,24 @@ static void paint_leader_portrait_clean_room(civ_surface_t *fb, struct civ_game 
     }
 }
 
-/* R21: build skip mask 對 palette 內 transparent pixel idx:
- *   - idx 0 (Civ1 sentinel pixel, spec 03 §3.5.1)
- *   - 任何 RGB 接近 magenta #FF00FF 的 entry (R≥E0 & G≤40 & B≥E0)
- * Civ1 PC GIF sprite 用 magenta 作 chroma key, 但 magenta 不一定在 idx 0.
- * 之前 R19/R20 只 skip idx 0 → 大量 magenta pixel 出現 (粉紅大方塊). */
+/* R25: 對 palette transparent pixel idx — 只 skip idx 0.
+ *
+ * 對齊 spec 03 §3.5.1 Civ1 sentinel pixel convention + OpenCivOne 邏輯
+ * (.NET 版 `Color.FromArgb(0, ...)` 對 palette[0] 設 alpha=0).
+ *
+ * R21 曾加 RGB scan magenta detection (R≥E0 && G≤40 && B≥E0) 是錯改動:
+ *   - 真實透明色 = sprite 自身 palette idx 0 (sentinel pixel)
+ *   - Elizabeth 紅華服深紅 (R≈B0, G≈10, B≈30) RGB 距離 magenta 不遠,
+ *     palette 內若有 (E8, 20, E0) 級 entry 會被誤殺成透明 → 紅華服缺角
+ *   - R21 之所以加 RGB scan 是因為 R20 前 g.palette 還沒切到 KING 自身 palette,
+ *     導致 idx 0 mapping 不對; R20 之後 palette 已正確安裝, RGB scan 變多餘
+ *
+ * R25 改回單純只 skip idx 0. */
 static void build_skip_mask(const civ_palette_t *pal, uint8_t skip[256])
 {
+    (void)pal;
     memset(skip, 0, 256);
     skip[0] = 1;
-    for (int i = 0; i < 256; i++) {
-        civ_color_t c = pal->entries[i];
-        if (c.r >= 0xE0 && c.g <= 0x40 && c.b >= 0xE0)
-            skip[i] = 1;
-    }
 }
 
 /* R19: scaled blit + remap + skip transparent. */

@@ -114,12 +114,10 @@ static void status_render(civ_widget_t *w, civ_surface_t *fb)
         uint8_t lut[256], skip[256];
         civ_palette_build_lut(w->game->leader_king_palettes[player_leader].entries,
                               256, pal, lut);
+        /* R25: 只 skip idx 0 (Civ1 sentinel pixel, spec 03 §3.5.1).
+         * 對齊 diplomat_screen.c build_skip_mask 同步修正. */
         memset(skip, 0, sizeof skip);
         skip[0] = 1;
-        for (int i = 0; i < 256; i++) {
-            civ_color_t cc = w->game->leader_king_palettes[player_leader].entries[i];
-            if (cc.r >= 0xE0 && cc.g <= 0x40 && cc.b >= 0xE0) skip[i] = 1;
-        }
         /* nearest-neighbor scale + skip transparent */
         int src_w = 85, src_h = 80;
         if (king->w < src_w) src_w = king->w;
