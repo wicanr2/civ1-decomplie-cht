@@ -17,6 +17,7 @@
 #include "text/text_out.h"
 #include "widgets/city_screen.h"
 #include "widgets/diplomat_screen.h"
+#include "widgets/menu_dropdown.h"
 #include "widgets/tech_screen.h"
 #include "world/diplomat.h"
 #include "world/tech.h"
@@ -134,6 +135,8 @@ int main(int argc, char **argv)
     struct civ_game g = {0};
     g.framebuffer = civ_surface_new(FB_W, FB_H);
     civ_palette_default(&g.palette);
+    g.menu_open_idx    = -1;   /* R29: 預設 menu 沒打開 */
+    g.menu_cursor_item = -1;
     if (file_exists(CIV_DEFAULT_FONT_PATH)) {
         g.font_title = civ_font_open(CIV_DEFAULT_FONT_PATH, 24);
         g.font_body  = civ_font_open(CIV_DEFAULT_FONT_PATH, 14);
@@ -323,6 +326,26 @@ int main(int argc, char **argv)
         birth_n = atoi(argv[2] + 6);
         if (birth_n < 1 || birth_n > 8) birth_n = 1;
     }
+
+    /* R29 (C1 gap): menu-NAME 模式 — 主畫面 + 打開指定 menu dropdown.
+     * NAME ∈ {file/edit/orders/advisors/world/civilopedia/city/help}.
+     * 對應 menu_open_idx 0..7. cursor_item 預設 0 (反白第一項). */
+    if (argc > 2 && strncmp(argv[2], "menu-", 5) == 0) {
+        const char *name = argv[2] + 5;
+        int idx = -1;
+        if      (strcmp(name, "file")        == 0) idx = 0;
+        else if (strcmp(name, "edit")        == 0) idx = 1;
+        else if (strcmp(name, "orders")      == 0) idx = 2;
+        else if (strcmp(name, "advisors")    == 0) idx = 3;
+        else if (strcmp(name, "world")       == 0) idx = 4;
+        else if (strcmp(name, "civilopedia") == 0) idx = 5;
+        else if (strcmp(name, "city")        == 0) idx = 6;
+        else if (strcmp(name, "help")        == 0) idx = 7;
+        if (idx >= 0) {
+            g.menu_open_idx    = idx;
+            g.menu_cursor_item = 0;   /* 反白第一項, 對齊 reference */
+        }
+    }
     if (is_splash || birth_n >= 1) {
         snprintf(path, sizeof path, "%s/CIVDATA1.RSC", data_dir);
         civ_rsrc_t *r1 = civ_rsrc_open(path);
@@ -378,6 +401,15 @@ int main(int argc, char **argv)
         civ_city_screen_render(&g, g.framebuffer);
         civ_tech_screen_render(&g, g.framebuffer);
         civ_diplomat_screen_render(&g, g.framebuffer);
+        /* R29 (C1): menu dropdown 在最上層 (蓋過 modal screens 都 OK,
+         * 因 menu 一打開, 其餘 widget 都靜止. 對齊 1993 Win16 行為). */
+        if (g.menu_open_idx >= 0) {
+            civ_menu_bar_highlight(g.framebuffer, &g, g.menu_open_idx);
+            int dd_x = civ_menu_bar_x(&g, g.menu_open_idx) - 4;
+            civ_menu_dropdown_render(g.framebuffer, &g,
+                                      g.menu_open_idx, g.menu_cursor_item,
+                                      dd_x, 32);
+        }
     }
 
     const char *out_path = argc > 1 ? argv[1] : "m5_world.ppm";

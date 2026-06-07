@@ -58,6 +58,7 @@ set(CIV_CORE_SOURCES
     src/text/text_out.c
     src/widgets/widget.c
     src/widgets/map.c
+    src/widgets/menu_dropdown.c
     src/widgets/minimap.c
     src/widgets/status.c
     src/widgets/city_screen.c

@@ -103,6 +103,12 @@ struct civ_game {
      * 是另一姿勢備用. tech_advisor[0] = discovr1, tech_advisor[1] = discovr2. */
     civ_surface_t              *tech_advisor[2];
     civ_palette_t               tech_advisor_palettes[2];
+
+    /* R29 (C1 gap): 主畫面 menu bar dropdown state.
+     *   menu_open_idx = -1 沒打開, 0..7 = 對應 menu (檔案..說明)
+     *   menu_cursor_item = 該 dropdown 內反白項 (-1 = 都不反白) */
+    int                         menu_open_idx;
+    int                         menu_cursor_item;
 };
 
 #endif /* CIV_GAME_H */
