@@ -6,6 +6,7 @@
 #include "../text/text_out.h"
 #include "../world/diplomat.h"
 #include "../world/government.h"
+#include "../world/score.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -177,6 +178,15 @@ static void status_render(civ_widget_t *w, civ_surface_t *fb)
         : "專制";
     civ_text_out(fb, font, x, y, gov_name, c_blue, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
     y += 18;
+
+    /* R27-A: 文明分數 — civ_score_total 套 spec 09 §9.3 公式 (manual P23).
+     * 顯示玩家當前分數, 玩家 civ slot 1..14. */
+    if (w->game->world_ready) {
+        int score = civ_score_total(w->game, w->game->world.player_civ_slot);
+        snprintf(buf, sizeof buf, "分數: %d", score);
+        civ_text_out(fb, font, x, y, buf, c_black, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
+        y += 18;
+    }
 
     /* 分隔線 — 灰底上的細黑線 */
     civ_hline(fb, w->rect.x + 4, y, w->rect.w - 8, c_grey_txt);

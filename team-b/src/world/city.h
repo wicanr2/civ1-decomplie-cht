@@ -25,6 +25,9 @@ typedef struct civ_city {
     int16_t  shield_stock;          /* 累積生產進度 */
     int16_t  food_stock;            /* 食物 storage */
     uint32_t buildings_bitmap;      /* 25-bit bitmap, bit N = built building N */
+    uint32_t wonders_bitmap;        /* R27-A: 22-bit bitmap (CIV_WONDER_PYRAMIDS=1..21
+                                       + 2 OpenCivOne SETI/Cure). bit N = 已建造
+                                       wonder enum N (對齊 world/wonder.h). */
     bool     alive;
 } civ_city_t;
 

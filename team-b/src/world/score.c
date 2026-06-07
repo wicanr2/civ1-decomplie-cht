@@ -34,13 +34,24 @@ static void count_citizens(const struct civ_game *g, int player_slot,
     *content = total_pop;    /* 全部視為 content */
 }
 
-/* v0.1: buildings_bitmap 25 bit 暫不區分「Wonder vs 一般 building」—
- * 對齊 spec 06 §6.2 待 wonder slot RE 完成後拆.
- * 暫回 0 (合 §9.3 保守). 之後接 player wonders bitmap. */
+/* R27-A: 接通 city.wonders_bitmap (22 bit 對齊 world/wonder.h).
+ * spec 09 §9.3 公式裡 wonders_owned 算 player 當前持有 wonder 數
+ * (即使被搶/搶來都算當前持有者). */
 static int count_wonders(const struct civ_game *g, int player_slot)
 {
-    (void)g; (void)player_slot;
-    return 0;
+    int count = 0;
+    const civ_world_t *w = &g->world;
+    for (int i = 0; i < w->cities_count; i++) {
+        const civ_city_t *c = &w->cities[i];
+        if (!c->alive) continue;
+        if (c->owner != (uint8_t)player_slot) continue;
+        uint32_t bm = c->wonders_bitmap;
+        while (bm) {
+            count += (bm & 1);
+            bm >>= 1;
+        }
+    }
+    return count;
 }
 
 void civ_score_compute(const struct civ_game *g, int player_slot,
@@ -61,7 +72,15 @@ void civ_score_compute(const struct civ_game *g, int player_slot,
      * 之後接 civ_world.war_with_bitmap 後改成「自上次戰鬥起 turns」. */
     out->turns_of_peace = (int)g->turn_number;
 
-    out->future_tech      = 0;   /* v0.1: 沒追蹤 tech_acquired set */
+    /* R27-A: 接通 world.tech_acquired bitmap (72 bit, tech.h enum).
+     * future_tech = popcount(CIV_TECH_FUTURE_1..4 bits 68..71). */
+    {
+        int ft = 0;
+        for (int i = 68; i < 72; i++) {
+            if (g->world.tech_acquired[i / 64] & (1ULL << (i % 64))) ft++;
+        }
+        out->future_tech = ft;
+    }
     out->polluted_squares = 0;   /* v0.1: 沒 pollution overlay */
     out->space_bonus      = 0;   /* v0.1: 沒太空船 */
     out->conquest_bonus   = 0;   /* v0.1: 沒征服 flag */

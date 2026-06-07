@@ -61,6 +61,11 @@ typedef struct civ_world {
      * 預設 1=Despotism (新文明開局). diplomat scene + status panel 顯示此值.
      * R25+ 接 government revolution flow. */
     int        player_government;
+
+    /* R27-A: 玩家已研發 tech bitmap. bit N (N=0..71) = CIV_TECH_NONE..FUTURE_5.
+     * 對齊 world/tech.h CIV_TECH_COUNT=72. spec 09 §9.3 future_tech 因子算
+     * tech_id >= CIV_TECH_FUTURE_1 (=68) 的 bit count. tech 0 = NONE 不算. */
+    uint64_t   tech_acquired[2];   /* 2×64 = 128 bit, 用 72 個; future-proof. */
 } civ_world_t;
 
 /* R24: 政府型態 → GOVT*M sheet idx (CIVDATA2 內只有 3 種 backdrop):

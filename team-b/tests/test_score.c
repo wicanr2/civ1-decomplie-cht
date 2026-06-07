@@ -123,6 +123,47 @@ int main(void)
         EXPECT(b.total > 0);
     }
 
-    printf("PASS test_score (7 sub-tests, spec 09 §9.3 v0.1)\n");
+    /* 8. R27-A: wonders bitmap 接通. 3 wonder in 2 cities (player slot 1)
+     * → wonders_owned = 3, +20*3 = 60 加到 base */
+    {
+        struct civ_game g = {0};
+        g.turn_number = 0;
+        seed_city(&g, 0, 0, 1, 1, "Rome");
+        seed_city(&g, 1, 1, 1, 1, "Pisa");
+        g.world.cities[0].wonders_bitmap = (1u << 1) | (1u << 3); /* Pyramids + Colossus */
+        g.world.cities[1].wonders_bitmap = (1u << 5);             /* Great Library */
+        civ_score_breakdown_t b;
+        civ_score_compute(&g, 1, &b);
+        EXPECT(b.wonders_owned == 3);
+        /* content = 1+1 = 2; peace = 0; wonders = 3; total = 2 + 60 = 62 */
+        EXPECT(b.total == 62);
+    }
+
+    /* 9. R27-A: future_tech bitmap 接通. 2 future tech 設成 acquired
+     * → future_tech = 2, +10*2 = 20 加到 base */
+    {
+        struct civ_game g = {0};
+        g.turn_number = 0;
+        /* set bits 68 (FUTURE_1) + 71 (FUTURE_4) */
+        g.world.tech_acquired[1] = (1ULL << (68 - 64)) | (1ULL << (71 - 64));
+        civ_score_breakdown_t b;
+        civ_score_compute(&g, 1, &b);
+        EXPECT(b.future_tech == 2);
+        EXPECT(b.total == 20);
+    }
+
+    /* 10. R27-A: 完整公式 — 2 city + 3 wonder + 1 future + turn 5
+     * = 2 content + 60 wonders + 10 future + 15 peace = 87 */
+    {
+        struct civ_game g = {0};
+        g.turn_number = 5;
+        seed_city(&g, 0, 0, 1, 1, "A");
+        seed_city(&g, 1, 1, 1, 1, "B");
+        g.world.cities[0].wonders_bitmap = (1u << 1) | (1u << 2) | (1u << 3);
+        g.world.tech_acquired[1] = 1ULL << (68 - 64);
+        EXPECT(civ_score_total(&g, 1) == 87);
+    }
+
+    printf("PASS test_score (10 sub-tests, spec 09 §9.3 v0.2 wonders+future tied)\n");
     return 0;
 }
