@@ -243,12 +243,20 @@ static void paint_leader_portrait(civ_surface_t *fb, struct civ_game *g,
                            lut, skip);
 }
 
-/* R23: blit one of 4 advisor figures from GOVT*M right half.
- * 右半 layout (從 _king_dump/govt_*.png 視覺辨識):
- *   - 上方 ~0..80 y: 8 個 expression 小頭像 (animation grid)
- *   - 下方 ~80..320 y: 4 個立姿 advisor sprite, 各 ~115×240
- *   - x 起始: 480, 595, 710, 825 (各佔約 115 wide)
- * R23 default 取 advisor 0 + advisor 3 兩端做左右側仕從. */
+/* R30 (C6 gap): blit one of 4 advisor figures from GOVT*M right half.
+ * 對齊 _govt0m_dump.png 重新分析的真實 layout:
+ *   - 上方 y=0..150: 8 個 expression mug-shot 動畫格 (talking advisor frames)
+ *     → 完全不取, 避免 R23 拍到的「4 個小臉疊在 advisor 上方」bug
+ *   - 下方 y=150..320: 4 個立姿 advisor (各約 100×170)
+ *     idx 0 = 軍人 (army green, 帽子)
+ *     idx 1 = 黑幫 (brown jacket, sunglasses)
+ *     idx 2 = 紅衣金髮女
+ *     idx 3 = 西裝戴墨鏡男
+ *   - x 起始: 480 / 600 / 720 / 840 (各約 115 wide, 不重疊)
+ *
+ * R30 default 取 advisor 0 (軍人) 為左仕從, advisor 1 (黑幫) 為右仕從.
+ * R23 原本左 0 右 3 跨度太大讓構圖右側多了不協調的「西裝男」, 改用 0+1
+ * 兩個比較像 1993 reference 的 advisor pair. */
 static void paint_govt_advisor(civ_surface_t *fb, struct civ_game *g,
                                 int govt_idx, int advisor_idx,
                                 int dst_x, int dst_y, int dst_w, int dst_h)
@@ -258,9 +266,10 @@ static void paint_govt_advisor(civ_surface_t *fb, struct civ_game *g,
     civ_surface_t *gb = g->govt_backdrops[govt_idx];
     if (!gb) return;
 
-    /* 右半 advisor 區 source coords (per 939×320 sheet): */
-    static const int ADV_X[4] = { 480, 595, 710, 825 };
-    civ_rect_t src = { ADV_X[advisor_idx], 80, 115, 240 };
+    /* R30: 4 advisor 在 GOVT*M 右半的 src coords (per 939×320 sheet).
+     * x 從 480 起每 120 一格, y 從 150 起避開 mug-shot grid. */
+    static const int ADV_X[4] = { 480, 600, 720, 840 };
+    civ_rect_t src = { ADV_X[advisor_idx], 150, 100, 170 };
     if (src.x + src.w > gb->w) src.w = gb->w - src.x;
     if (src.y + src.h > gb->h) src.h = gb->h - src.y;
 
@@ -461,9 +470,12 @@ void civ_diplomat_screen_render(struct civ_game *g, civ_surface_t *fb)
     }
     if (g->govt_backdrops[govt_idx]) {
         paint_govt_backdrop(fb, g, govt_idx);
-        /* R23: 兩側 advisor (原版 sprite) — 左 idx 0 / 右 idx 3 */
-        paint_govt_advisor(fb, g, govt_idx, 0, 10,  80, 110, 240);
-        paint_govt_advisor(fb, g, govt_idx, 3, 520, 80, 110, 240);
+        /* R30 (C6 gap): 兩側 advisor — 左 idx 0 (軍人) / 右 idx 1 (黑幫)
+         * 取代 R23 左 0 右 3 (跨度太大讓右側出現「西裝戴墨鏡男」與場景不符).
+         * dst 寬度從 110 縮到 100, 高度從 240 縮到 230, 位置往下移避開
+         * 山地 horizon, 整體比 R23 更接近 1993 原版 1 left + 1 right 比例. */
+        paint_govt_advisor(fb, g, govt_idx, 0,  20, 110, 100, 230);
+        paint_govt_advisor(fb, g, govt_idx, 1, 520, 110, 100, 230);
     } else {
         paint_sky_mountain(fb, g, 0, 0, DS_W, DS_DIALOG_Y);
         paint_advisor(fb, g, 90, 0x60, 0x60, 0x70);
