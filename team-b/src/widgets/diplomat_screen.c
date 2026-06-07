@@ -509,11 +509,14 @@ void civ_diplomat_screen_render(struct civ_game *g, civ_surface_t *fb)
         govt_idx = civ_government_to_govt_idx(g->world.player_government);
     }
     if (g->govt_backdrops[govt_idx]) {
+        /* R33: GOVT*A 左半已含完整 sky+mountain+banner+spears, 全幅 blit.
+         * 不需要 R31 clean-room banner overlay (該 hack 是 R23 用錯
+         * GOVT*M 時補的). */
         paint_govt_backdrop(fb, g, govt_idx);
-        /* R30 (C6 gap): 兩側 advisor — 左 idx 0 (軍人) / 右 idx 1 (黑幫)
-         * 取代 R23 左 0 右 3 (跨度太大讓右側出現「西裝戴墨鏡男」與場景不符).
-         * dst 寬度從 110 縮到 100, 高度從 240 縮到 230, 位置往下移避開
-         * 山地 horizon, 整體比 R23 更接近 1993 原版 1 left + 1 right 比例. */
+        /* R30 (C6 gap): GOVT*A 右半 4 個 advisor (對齊 OpenCivOne
+         * MeetWithKing.cs ScreenToBitmap 4 frame cache). 左 idx 0 / 右 idx 1
+         * = 兩個 Despotism 古代戰士 (Greek/Egyptian 風格), 比舊 GOVT*M
+         * 軍人+黑幫 配對更貼近 1993 reference. */
         paint_govt_advisor(fb, g, govt_idx, 0,  20, 110, 100, 230);
         paint_govt_advisor(fb, g, govt_idx, 1, 520, 110, 100, 230);
     } else {
@@ -521,20 +524,17 @@ void civ_diplomat_screen_render(struct civ_game *g, civ_surface_t *fb)
         paint_advisor(fb, g, 90, 0x60, 0x60, 0x70);
         paint_advisor(fb, g, 550, 0x90, 0x80, 0x70);
     }
-    /* R31 (C7 gap): 綠刺繡 banner 先畫於 backdrop 上 (覆蓋 yellow banana),
-     * 然後 leader portrait 再蓋上去 (其衣著大半位於 banner y 區域內,
-     * banner 只在左右 advisor 兩側 + 領袖以下 visible). */
-    paint_diplomat_banner(fb, g, DS_SPEAR_W, 200, DS_W - DS_SPEAR_W, DS_DIALOG_Y);
 
-    /* leader KING sprite 蓋在 backdrop 中央 (R19/R20) 或 fallback clean-room */
+    /* R33: leader KING 最後畫, 確保不被任何 overlay 覆蓋成透明.
+     * (R31 banner 之前在這上面, leader 透明區漏出綠色, 用者指 Elizabeth
+     * 變透明 — root cause 是 R23 走錯 sheet, 用 GOVT*A 已自然解決) */
     paint_leader_portrait(fb, g, ev->leader);
 
     /* === 下半 (y 360..480) 對話區 === */
-    /* 左 spear (x 0..44) — R31 從 y=200 起延伸覆蓋 banner 區 */
-    paint_spear(fb, g, 0, 200, DS_SPEAR_W, DS_H - 200);
-    /* 右 spear (x 596..640) — 同延伸 */
-    paint_spear(fb, g, DS_W - DS_SPEAR_W, 200,
-                DS_SPEAR_W, DS_H - 200);
+    /* R33: spear 回到原 y=360..480 (對話區). GOVT*A 左半已含上半部 spears. */
+    paint_spear(fb, g, 0, DS_DIALOG_Y, DS_SPEAR_W, DS_H - DS_DIALOG_Y);
+    paint_spear(fb, g, DS_W - DS_SPEAR_W, DS_DIALOG_Y,
+                DS_SPEAR_W, DS_H - DS_DIALOG_Y);
     /* 中央 parchment */
     const char *dialog = civ_diplomat_dialog_zh(ev);
     paint_parchment(fb, g, DS_SPEAR_W, DS_DIALOG_Y,

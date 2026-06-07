@@ -186,23 +186,43 @@ int main(int argc, char **argv)
         }
         printf("KING portraits loaded: %d/13\n", loaded);
 
-        /* R21: 載 3 GOVT*M backdrops (id 404/405/406) for diplomat scene */
+        civ_rsrc_close(r2);
+    } else {
+        fprintf(stderr, "warning: CIVDATA2.RSC 找不到, leader_portraits 全 fallback\n");
+    }
+
+    /* R33 (用者指正): 改載 GOVT*A from CIVDATA1 (id 400/401/402), 不是
+     * GOVT*M from CIVDATA2! 原 R21 完全錯了:
+     *   GOVT*M = animation atlas (mug-shot + advisor frames cache)
+     *   GOVT*A = 真實 backdrop 場景 (sky + mountain + banner + spears + 整合好的 advisor)
+     *
+     * 根據 OpenCivOne MeetWithKing.cs line 2579 確認: 原版載入
+     * "GOVT0A.PIC" 然後 Government 對應改 '0'/'1'/'2'/'3'. GOVT*A 左半
+     * = 完整場景, 右半 = advisor sprite cache (供動畫 talking 用).
+     *
+     * spec 03 line 120 也標 GOVT2A 在 CIVDATA1 (而非 CIVDATA2). */
+    snprintf(path, sizeof path, "%s/CIVDATA1.RSC", data_dir);
+    civ_rsrc_t *r1g = civ_rsrc_open(path);
+    if (!r1g) {
+        snprintf(path, sizeof path, "%s/Civdata1.RSC", data_dir);
+        r1g = civ_rsrc_open(path);
+    }
+    if (r1g) {
         int gloaded = 0;
         for (int gi = 0; gi < 3; gi++) {
             civ_surface_t *gb = NULL;
             civ_palette_t  gp = {0};
-            int16_t gid = (int16_t)(404 + gi);
-            if (civ_load_cvpc_by_id(r2, gid, &gb, &gp) == 0) {
+            int16_t gid = (int16_t)(400 + gi);   /* GOVT0A/1A/2A */
+            if (civ_load_cvpc_by_id(r1g, gid, &gb, &gp) == 0) {
                 g.govt_backdrops[gi] = gb;
                 g.govt_palettes[gi]  = gp;
                 gloaded++;
             }
         }
-        printf("GOVT backdrops loaded: %d/3\n", gloaded);
-
-        civ_rsrc_close(r2);
+        printf("GOVT*A backdrops loaded: %d/3\n", gloaded);
+        civ_rsrc_close(r1g);
     } else {
-        fprintf(stderr, "warning: CIVDATA2.RSC 找不到, leader_portraits 全 fallback\n");
+        fprintf(stderr, "warning: CIVDATA1.RSC 找不到, GOVT backdrops 全 fallback\n");
     }
 
     /* R28-2: 載 Civdata3 discovr1/discovr2 (id 142/143, 各 512×320) — 科技
@@ -310,9 +330,20 @@ int main(int argc, char **argv)
         g.diplomat_screen_open = true;
         g.modal_lock           = true;
 
-        /* R20: 安裝該領袖 KING palette 為 game palette → sprite 100% 顏色 */
-        if (g.leader_portraits[dev->leader]) {
-            g.palette = g.leader_king_palettes[dev->leader];
+        /* R33 (用者指正): 不再 install KING palette as g.palette (R20 做法).
+         * 改 install GOVT*A palette — 讓背景 + 仕從 + banner 100% 對齊原版,
+         * leader KING 透過 build_lut → GOVT palette nearest match (顏色略
+         * 失真但可接受). 解 user-reported Gandhi 仕從白框 + Elizabeth
+         * sky 偏紫 bug.
+         *
+         * 對齊 OpenCivOne MeetWithKing.cs LoadBitmapOrPalette flow:
+         * 先載 GOVT*A 設 palette, 再載 KING 但不換 palette (idx 0 標記 only). */
+        int govt_idx_init = 1;   /* default Monarchy if world 未 ready */
+        if (g.world_ready) {
+            govt_idx_init = civ_government_to_govt_idx(g.world.player_government);
+        }
+        if (g.govt_backdrops[govt_idx_init]) {
+            g.palette = g.govt_palettes[govt_idx_init];
         }
     }
 
