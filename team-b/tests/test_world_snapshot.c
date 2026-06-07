@@ -288,29 +288,62 @@ int main(int argc, char **argv)
     }
 
     /* R23: splash mode — 載 CIVDATA1 CIV.GIF (id 136, 502×145) 居中 blit.
-     * 對應 1991/1993 原版開機 title splash. 黑底, sprite 自身 palette identity. */
-    if (argc > 2 && strcmp(argv[2], "splash") == 0) {
+     * R24: birth-N mode (N=1..8) — 載 BIRTH0N (id 127+N) 縮放居中.
+     *      BIRTH01 = id 128 (1024×320), BIRTH2..8 = id 129..135 (512×320 each).
+     * 對應 1991/1993 原版開機 splash + intro sequence. */
+    int is_splash = (argc > 2 && strcmp(argv[2], "splash") == 0);
+    int birth_n = -1;
+    if (argc > 2 && strncmp(argv[2], "birth-", 6) == 0) {
+        birth_n = atoi(argv[2] + 6);
+        if (birth_n < 1 || birth_n > 8) birth_n = 1;
+    }
+    if (is_splash || birth_n >= 1) {
         snprintf(path, sizeof path, "%s/CIVDATA1.RSC", data_dir);
         civ_rsrc_t *r1 = civ_rsrc_open(path);
         if (!r1) {
             snprintf(path, sizeof path, "%s/Civdata1.RSC", data_dir);
             r1 = civ_rsrc_open(path);
         }
-        civ_surface_t *title = NULL;
-        civ_palette_t  tpal = {0};
-        if (r1 && civ_load_cvpc_by_id(r1, 136, &title, &tpal) == 0) {
-            g.palette = tpal;
-            /* 黑底 (idx 0 通常是黑或 magenta — 視 palette; 用 nearest) */
+        int16_t target_id = is_splash ? 136 : (int16_t)(127 + birth_n);
+        civ_surface_t *art = NULL;
+        civ_palette_t  apal = {0};
+        if (r1 && civ_load_cvpc_by_id(r1, target_id, &art, &apal) == 0) {
+            g.palette = apal;
             uint8_t c_black = civ_palette_nearest_rgb(&g.palette, 0, 0, 0);
             civ_fill_rect(g.framebuffer, (civ_rect_t){0, 0, FB_W, FB_H}, c_black);
-            int dx = (FB_W - title->w) / 2;
-            int dy = (FB_H - title->h) / 2;
-            civ_rect_t src = { 0, 0, title->w, title->h };
-            civ_surface_blit(g.framebuffer, dx, dy, title, &src);
-            civ_surface_free(title);
-            printf("splash CIV.GIF rendered (%dx%d)\n", FB_W, FB_H);
+            /* 居中 + 若過寬則 nearest-neighbor 縮 (BIRTH01 1024 太寬) */
+            int dst_w = art->w;
+            int dst_h = art->h;
+            if (dst_w > FB_W) {
+                dst_h = dst_h * FB_W / dst_w;
+                dst_w = FB_W;
+            }
+            int dx = (FB_W - dst_w) / 2;
+            int dy = (FB_H - dst_h) / 2;
+            if (dst_w == art->w && dst_h == art->h) {
+                civ_rect_t src = { 0, 0, art->w, art->h };
+                civ_surface_blit(g.framebuffer, dx, dy, art, &src);
+            } else {
+                /* 簡單 nearest scale */
+                for (int yy = 0; yy < dst_h; yy++) {
+                    int sy = yy * art->h / dst_h;
+                    for (int xx = 0; xx < dst_w; xx++) {
+                        int sx = xx * art->w / dst_w;
+                        if (sx < 0 || sx >= art->w || sy < 0 || sy >= art->h) continue;
+                        int px = dx + xx, py = dy + yy;
+                        if (px < 0 || px >= g.framebuffer->w ||
+                            py < 0 || py >= g.framebuffer->h) continue;
+                        g.framebuffer->pixels[py * g.framebuffer->pitch + px] =
+                            art->pixels[sy * art->pitch + sx];
+                    }
+                }
+            }
+            civ_surface_free(art);
+            printf("%s id=%d rendered (%dx%d → %dx%d)\n",
+                   is_splash ? "splash" : "birth",
+                   target_id, art ? 0 : 0, 0, dst_w, dst_h);
         } else {
-            fprintf(stderr, "splash: CIV.GIF load fail\n");
+            fprintf(stderr, "splash/birth: id=%d load fail\n", target_id);
         }
         if (r1) civ_rsrc_close(r1);
     } else {

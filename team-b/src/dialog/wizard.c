@@ -262,6 +262,10 @@ static civ_dlg_result_t handle_name(civ_dialog_t *d, SDL_Event *ev,
             /* 完成 — 把結果寫進 game state（M4-full：簡單寫到
              * timer_counter 暫存做測試標記，真實狀態欄位待 M6 補） */
             g->timer_counter = (uint32_t)(s->difficulty * 100 + s->civ_slot);
+            /* R24: 寫 player 選擇的文明 slot 進 world (取代 R23 hardcode = 1).
+             * status panel + diplomat scene 立即看到正確 player 領袖. */
+            if (s->civ_slot >= 1 && s->civ_slot <= 14)
+                g->world.player_civ_slot = s->civ_slot;
             s->page = PAGE_DONE;
             return CIV_DLG_CLOSE;
         case SDLK_ESCAPE:

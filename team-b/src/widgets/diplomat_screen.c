@@ -399,8 +399,11 @@ void civ_diplomat_screen_render(struct civ_game *g, civ_surface_t *fb)
      * R21: 若 GOVT*M backdrop cached, 用原版 scene (含 parchment + spear +
      * 宮殿/山地 backdrop). 否則 fallback clean-room sky+mountain+advisors.
      * R23: 加 2 個原版 advisor 從 GOVT*M 右半切片 (左 idx 0, 右 idx 3).
-     * GOVT idx 1 = Monarchy (對應 reference webp 兩位領袖時代). */
-    int govt_idx = 1;
+     * R24: govt_idx 改用 civ_government_to_govt_idx(player_government) 動態選. */
+    int govt_idx = 1;   /* fallback Monarchy if world 未 ready */
+    if (g->world_ready) {
+        govt_idx = civ_government_to_govt_idx(g->world.player_government);
+    }
     if (g->govt_backdrops[govt_idx]) {
         paint_govt_backdrop(fb, g, govt_idx);
         /* R23: 兩側 advisor (原版 sprite) — 左 idx 0 / 右 idx 3 */

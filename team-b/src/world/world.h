@@ -52,10 +52,23 @@ typedef struct civ_world {
     int        cities_count;
 
     /* R23: 玩家所屬文明 slot (1..14, 對齊 STR# 140 真實 slot).
-     * 用於 status panel 國家狀態縮圖 + 對外發言 / diplomat dialog. R23 hardcode
-     * = 1 (Caesar/Roman). R24+ 接 wizard 玩家選擇. */
+     * 用於 status panel 國家狀態縮圖 + 對外發言 / diplomat dialog.
+     * R24: wizard 完成寫此值 (取代 R23 hardcode = 1). */
     int        player_civ_slot;
+
+    /* R24: 玩家政府型態 (對齊 spec 06 §6.3 6 種 government).
+     *   1=Despotism, 2=Monarchy, 3=Communism, 4=Republic, 5=Democracy, 6=Anarchy
+     * 預設 1=Despotism (新文明開局). diplomat scene + status panel 顯示此值.
+     * R25+ 接 government revolution flow. */
+    int        player_government;
 } civ_world_t;
+
+/* R24: 政府型態 → GOVT*M sheet idx (CIVDATA2 內只有 3 種 backdrop):
+ *   Despotism/Monarchy/Anarchy → 0 (GOVT0M, 古代寶座)
+ *   Communism/Republic         → 1 (GOVT1M, 中世紀宮殿)
+ *   Democracy                  → 2 (GOVT2M, 現代議會)
+ * 對齊 1991/1993 原版選圖規則 (Despotism/Monarchy 共用古代 backdrop). */
+int civ_government_to_govt_idx(int government);
 
 /* 把 terrain enum 對應到 SPR32X32 內的 (col, row)。
  *

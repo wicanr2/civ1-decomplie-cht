@@ -22,6 +22,8 @@
 >
 > **R23 — R22 TODO 接力 (3 項 ship + 1 證偽)**: (1) **player_civ_slot 接通** — world.h 加欄位 (預設 1=Caesar/Roman), status.c 國家狀態縮圖 lookup 改用 player_civ_slot, 接通 R22 留下的 hardcode; (2) **CIV title splash mode** — test_world_snapshot 新 `splash` 模式載 CIVDATA1 id 136 (CIV.GIF, 502×145) 居中 blit, 對應原版開機 title; (3) **Advisor 切片** — `paint_govt_advisor()` 從 GOVT*M 右半 (各 ~115×240 @ x=480/595/710/825, y=80) 取 1991/1993 原版 advisor 立姿 sprite, 接進 diplomat 場景兩側 (左 idx 0 / 右 idx 3); (4) **MIDI 證偽** — probe_civdata2 對 14 個 BIRTH/CIV payload 掃 MThd/MTrk signature, **0 hit**. 結論: spec 03 §3 「CIVDATA1 payload 內含 MIDI」推測**錯誤**; 真實音樂可能在 CIV.EXE 嵌入 / 用 PC speaker / 或 1993 Win port 已移除. 真實 BIRTH 動畫 + 音訊實作留 R24+ (需先用 Ghidra trace `mmsystem.dll!MCISENDCOMMAND` 找音源).
 >
+> **R24 — R23 TODO 接力 (3 項 ship)**: (1) **政府型態 → govt_idx 動態 mapping** — `civ_government_to_govt_idx()` (6 政府 → 3 GOVT*M backdrop), diplomat scene 改用 `world.player_government` 動態選 backdrop (Despotism/Monarchy/Anarchy→GOVT0M, Communism/Republic→GOVT1M, Democracy→GOVT2M), 取代 R21 hardcode idx=1; (2) **Wizard 接通 player_civ_slot** — 新局精靈完成 (PAGE_NAME RETURN) 時把 wizard_state.civ_slot 寫進 `world.player_civ_slot`, 取代 R23 hardcode = 1, 玩家選的文明立即在 status panel 顯示; (3) **BIRTH-N splash mode** — test_world_snapshot 加 `birth-N` (N=1..8) 模式, 載 CIVDATA1 id 128..135 縮放居中 (BIRTH01 1024×320 → 640 寬, 其他 512×320 維持), 對應原版 intro splash sequence. 真實 BIRTH 動畫 timer loop + 音源 trace 留 R25+.
+>
 > 14 領袖 enum + 5 mood (Greeting/Demand Tribute/Offer Peace/Declare War/Propose Trade) + 客製對話文字 (「英格蘭女皇伊莉莎白一世向您致意……」/「我等至明智之德意志皇帝腓特烈大帝向您致意……」). 鍵盤 `D` 鍵 demo 觸發 Elizabeth GREETING.
 
 ## 專案目的

@@ -147,6 +147,7 @@ void civ_world_init_demo(civ_world_t *w)
     w->selected_unit = -1;
     w->last_combat_msg[0] = '\0';
     w->player_civ_slot = 1;       /* R23: 預設 player = Roman (slot 1, Caesar) */
+    w->player_government = 1;     /* R24: 預設 Despotism (新文明開局) */
 
     civ_world_spawn_unit(w, CIV_UNIT_SETTLERS, 1, 30, 15);
     civ_world_spawn_unit(w, CIV_UNIT_SETTLERS, 1, 31, 15);
@@ -335,4 +336,23 @@ void civ_world_move_cursor(civ_world_t *w, int dx, int dy,
     if (nx - w->view_x >= cols - margin && w->view_x + cols < CIV_MAP_W) w->view_x++;
     if (ny - w->view_y < margin && w->view_y > 0) w->view_y--;
     if (ny - w->view_y >= rows - margin && w->view_y + rows < CIV_MAP_H) w->view_y++;
+}
+
+/* R24: 政府型態 (1..6) → GOVT*M sheet idx (0..2).
+ * CIVDATA2 內只有 3 種 backdrop, 故 6 政府要 collapse 進 3 styles. */
+int civ_government_to_govt_idx(int government)
+{
+    switch (government) {
+        case 1: /* Despotism */
+        case 2: /* Monarchy  */
+        case 6: /* Anarchy   */
+            return 0;   /* GOVT0M — 古代寶座 */
+        case 3: /* Communism */
+        case 4: /* Republic  */
+            return 1;   /* GOVT1M — 中世紀 */
+        case 5: /* Democracy */
+            return 2;   /* GOVT2M — 現代議會 */
+        default:
+            return 1;   /* fallback monarchy */
+    }
 }
