@@ -24,6 +24,15 @@
 >
 > **R24 — R23 TODO 接力 (3 項 ship)**: (1) **政府型態 → govt_idx 動態 mapping** — `civ_government_to_govt_idx()` (6 政府 → 3 GOVT*M backdrop), diplomat scene 改用 `world.player_government` 動態選 backdrop (Despotism/Monarchy/Anarchy→GOVT0M, Communism/Republic→GOVT1M, Democracy→GOVT2M), 取代 R21 hardcode idx=1; (2) **Wizard 接通 player_civ_slot** — 新局精靈完成 (PAGE_NAME RETURN) 時把 wizard_state.civ_slot 寫進 `world.player_civ_slot`, 取代 R23 hardcode = 1, 玩家選的文明立即在 status panel 顯示; (3) **BIRTH-N splash mode** — test_world_snapshot 加 `birth-N` (N=1..8) 模式, 載 CIVDATA1 id 128..135 縮放居中 (BIRTH01 1024×320 → 640 寬, 其他 512×320 維持), 對應原版 intro splash sequence. 真實 BIRTH 動畫 timer loop + 音源 trace 留 R25+.
 >
+> **R25 — diplomat 透明度修正 (使用者指正)**: R21 的 magenta RGB scan 把 Elizabeth 紅裙的色 entry 也標 skip 造成肖像缺角. R25 改回 Civ1 sentinel 規則: `build_skip_mask()` 只 skip palette idx 0 (對齊 spec 03 §3.5.1 + OpenCivOne 標準). diplomat_screen.c + status.c 同步修正.
+>
+> **R26 — Tech / Wonder / Government / Score clean-room 模組擴 (4 段 ship)**:
+> - **R26-A Tech 47+5**: tech.h enum 13 → 72 (67 核心 + 5 future); tech.c 全 prereq DAG ground-truth (對齊 spec 06 §6.5.1) + zh-TW name lookup + `civ_tech_prereq(tech, &a, &b)` API; tech_screen 7 個新 icon 補繪 (哲/理/化/電/腦/核/太).
+> - **R26-B Wonder 22**: 新 world/wonder.{h,c} (22 enum + cost/prereq/obsolete) 對齊 spec 06 §6.2.4; tech.c `fill_unlocked_wonders` reverse-DAG 搜出某科技解鎖了哪些奇蹟.
+> - **R26-C Government 6 + Wizard 新頁**: 新 world/government.{h,c} (6 enum + zh-TW + 排除 Anarchy 開局判斷); status.c 改用 `civ_government_name_zh()` 取代 hardcoded 君主制; wizard.c 加 **PAGE_GOVERNMENT** (Despotism/Monarchy/Communism/Republic/Democracy 5 選 1), `world.player_government` 在新局完成時寫入.
+> - **R26-D Score 公式**: 新 world/score.{h,c} 對齊 manual P23 / spec 09 §9.3 完整公式 (`2*happy + 1*content + 20*wonders + 3*peace + 10*future - 10*pollution + space + conquest`), v0.1 接通 content/peace 兩因子, 其餘待結構擴; `civ_score_compute()` + `civ_score_total()` API + 7 sub-test 驗算.
+> - ctest: 19 → 20 PASS (新增 test_score). 對應 skill `civ1-clean-room-rewrite` (R18-R25 經驗 + R26 模組分層).
+>
 > 14 領袖 enum + 5 mood (Greeting/Demand Tribute/Offer Peace/Declare War/Propose Trade) + 客製對話文字 (「英格蘭女皇伊莉莎白一世向您致意……」/「我等至明智之德意志皇帝腓特烈大帝向您致意……」). 鍵盤 `D` 鍵 demo 觸發 Elizabeth GREETING.
 
 ## 專案目的
