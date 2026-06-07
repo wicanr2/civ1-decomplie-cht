@@ -1,10 +1,14 @@
 #include "status.h"
 #include "../civ_game.h"
+#include "../gfx/palette.h"
 #include "../gfx/primitive.h"
+#include "../gfx/surface.h"
 #include "../text/text_out.h"
+#include "../world/diplomat.h"
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 static const civ_widget_msg_entry_t STATUS_TABLE[] = {
     /* M2：暫無 handler — paint-only widget */
@@ -28,26 +32,30 @@ static void status_render(civ_widget_t *w, civ_surface_t *fb)
      * 真實的 player state hook (金庫, 稅率, 政府) 等 M6-full / M7 才會接.
      */
 
-    /* R17: status 重整 — 對齊使用者指正 (文字排版跑掉/雙層雙背景).
+    /* R22: status 重整 — 對齊使用者再次指正
+     *   "左邊中間對話框 是黑框灰底 顯示目前時間 ,
+     *    原版中間對話框的上面有一個小圖案 顯示目前國家的狀態"
      *
-     * Reference layout (civ1_win_civilopedia_dropdown.png 左下 Status panel):
+     * 新 layout (取消 R17 雙層青/灰, 改單一灰底+黑框):
      *   ┌────────────────┐
-     *   │   Status (青)  │  <- title bar
+     *   │   狀態 (深藍)  │  <- title bar
      *   ├────────────────┤
-     *   │ [青底矩形圖]   │  <- 上半: 城市人口/年代/金庫 (Cyan box)
-     *   │ 40,000人       │
-     *   │ 3420 BC        │
-     *   │ 25@ 0.5.5      │
-     *   ├────────────────┤
-     *   │ Indian (灰底)  │  <- 下半: 玩家/單位 info
-     *   │ Militia        │
-     *   │ Moves: 1       │
-     *   │ Delhi          │
-     *   │ (Grassland)    │
+     *   │  ┌──────────┐  │  <- 國家狀態小圖 (player KING sprite frame 0 ~64×64)
+     *   │  │ [KING]   │  │
+     *   │  └──────────┘  │
+     *   │  西元 0 年      │  <- 顯示目前時間
+     *   │  金庫: $0       │
+     *   │  稅60 樂20 科20 │
+     *   │  [tax bar]      │
+     *   │  君主制         │
+     *   │ ──────────────  │  <- 分隔線
+     *   │  選定單位       │  <- 單位 info
+     *   │  墾荒者         │
+     *   │   攻0 防1       │
+     *   │   移動 1/1      │
+     *   │   位置 (30,15)  │
+     *   │   生命 20       │
      *   └────────────────┘
-     *
-     * 我們的版本中文化:
-     *   標題: 狀態  ;  上半青底: 人口/年代/金庫;  下半灰底: 單位資訊/城市
      */
     if (!w->game) return;
     civ_font_t *font = w->game->font_body;
@@ -56,9 +64,8 @@ static void status_render(civ_widget_t *w, civ_surface_t *fb)
     civ_palette_t *pal = &w->game->palette;
     uint8_t c_title_bg = civ_palette_nearest_rgb(pal, 0x00, 0x00, 0x80);
     uint8_t c_title_fg = civ_palette_nearest_rgb(pal, 0xFF, 0xFF, 0xFF);
-    uint8_t c_top_bg   = civ_palette_nearest_rgb(pal, 0x40, 0xB0, 0xC0);  /* 青 */
     uint8_t c_body_bg  = civ_palette_nearest_rgb(pal, 0xC0, 0xC0, 0xC0);  /* Win16 灰 */
-    uint8_t c_border   = civ_palette_nearest_rgb(pal, 0x40, 0x40, 0x40);
+    uint8_t c_border   = civ_palette_nearest_rgb(pal, 0x00, 0x00, 0x00);  /* 黑框 */
     uint8_t c_black    = civ_palette_nearest_rgb(pal, 0, 0, 0);
     uint8_t c_yellow   = civ_palette_nearest_rgb(pal, 0xC0, 0x80, 0);
     uint8_t c_blue     = civ_palette_nearest_rgb(pal, 0, 0, 0x80);
@@ -78,33 +85,76 @@ static void status_render(civ_widget_t *w, civ_surface_t *fb)
                      c_title_fg, c_title_bg, CIV_TEXT_BK_TRANSPARENT);
     }
 
-    /* === 上半青底: 人口 / 年代 / 金庫 / 稅率 / 政府 ===
-     * top_h 預留 上半總高 (含小頭像 + 4 行文字) */
-    int top_y = w->rect.y + SUB_TITLE_H;
-    int top_h = 110;
-    civ_fill_rect(fb, (civ_rect_t){w->rect.x, top_y, w->rect.w, top_h}, c_top_bg);
-    civ_frame_rect(fb, (civ_rect_t){w->rect.x, top_y, w->rect.w, top_h}, c_border);
+    /* === R22: 單一灰底 + 黑框 (取代 R17 雙層) === */
+    int body_y = w->rect.y + SUB_TITLE_H;
+    int body_h = w->rect.h - SUB_TITLE_H;
+    civ_fill_rect(fb, (civ_rect_t){w->rect.x, body_y, w->rect.w, body_h}, c_body_bg);
+    civ_frame_rect(fb, (civ_rect_t){w->rect.x, body_y, w->rect.w, body_h}, c_border);
 
     int x = w->rect.x + 8;
-    int y = top_y + 16;
+    int y = body_y + 8;
     char buf[64];
 
-    /* 1. 年代 (Civ1 字串 e.g. "3420 BC") */
+    /* R22: 國家狀態小圖 — player 領袖 KING sprite frame 0 (~64×64).
+     * 預設 player_leader = CIV_LEADER_CAESAR (R23+ 接 player_civ_slot).
+     * sprite 是 5col×4row 動畫 frame grid, frame 0 = (0,0,85,80) → scaled 64×60. */
+    civ_leader_id_t player_leader = CIV_LEADER_CAESAR;
+    civ_surface_t *king = w->game->leader_portraits[player_leader];
+    int icon_h = 60;
+    int icon_w = 64;
+    int icon_x = w->rect.x + (w->rect.w - icon_w) / 2;
+    int icon_y = y;
+    if (king) {
+        /* in-place LUT king_pal → current g.palette */
+        uint8_t lut[256], skip[256];
+        civ_palette_build_lut(w->game->leader_king_palettes[player_leader].entries,
+                              256, pal, lut);
+        memset(skip, 0, sizeof skip);
+        skip[0] = 1;
+        for (int i = 0; i < 256; i++) {
+            civ_color_t cc = w->game->leader_king_palettes[player_leader].entries[i];
+            if (cc.r >= 0xE0 && cc.g <= 0x40 && cc.b >= 0xE0) skip[i] = 1;
+        }
+        /* nearest-neighbor scale + skip transparent */
+        int src_w = 85, src_h = 80;
+        if (king->w < src_w) src_w = king->w;
+        if (king->h < src_h) src_h = king->h;
+        for (int yy = 0; yy < icon_h; yy++) {
+            int sy = yy * src_h / icon_h;
+            for (int xx = 0; xx < icon_w; xx++) {
+                int sx = xx * src_w / icon_w;
+                if (sx < 0 || sx >= king->w || sy < 0 || sy >= king->h) continue;
+                int dx = icon_x + xx, dy = icon_y + yy;
+                if (dx < 0 || dx >= fb->w || dy < 0 || dy >= fb->h) continue;
+                uint8_t si = king->pixels[sy * king->pitch + sx];
+                if (skip[si]) continue;
+                fb->pixels[dy * fb->pitch + dx] = lut[si];
+            }
+        }
+    } else {
+        /* fallback 小框 + 文字占位 */
+        civ_fill_rect(fb, (civ_rect_t){icon_x, icon_y, icon_w, icon_h}, c_black);
+    }
+    civ_frame_rect(fb, (civ_rect_t){icon_x - 1, icon_y - 1, icon_w + 2, icon_h + 2},
+                   c_border);
+    y = icon_y + icon_h + 8;
+
+    /* 1. 年代 (顯示目前時間) */
     int year = w->game->civ_year;
     if (year < 0) snprintf(buf, sizeof buf, "西元前 %d 年", -year);
     else          snprintf(buf, sizeof buf, "西元 %d 年", year);
-    civ_text_out(fb, font, x, y, buf, c_black, c_top_bg, CIV_TEXT_BK_TRANSPARENT);
-    y += 20;
+    civ_text_out(fb, font, x, y, buf, c_black, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
+    y += 16;
 
-    /* 2. 金庫 (placeholder) */
+    /* 2. 金庫 */
     snprintf(buf, sizeof buf, "金庫: $0");
-    civ_text_out(fb, font, x, y, buf, c_black, c_top_bg, CIV_TEXT_BK_TRANSPARENT);
-    y += 20;
+    civ_text_out(fb, font, x, y, buf, c_black, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
+    y += 16;
 
-    /* 3. 稅率三色 bar — bar 上方 留 14 px 給 label 文字 */
+    /* 3. 稅率 label + 三色 bar */
     int tax_pct = 60, lux_pct = 20, sci_pct = 20;
     snprintf(buf, sizeof buf, "稅%d 樂%d 科%d", tax_pct, lux_pct, sci_pct);
-    civ_text_out(fb, font, x, y, buf, c_black, c_top_bg, CIV_TEXT_BK_TRANSPARENT);
+    civ_text_out(fb, font, x, y, buf, c_black, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
     y += 14;
     int bar_x = x, bar_y = y, bar_w = w->rect.w - 16, bar_h = 8;
     int tax_w = bar_w * tax_pct / 100;
@@ -117,15 +167,14 @@ static void status_render(civ_widget_t *w, civ_surface_t *fb)
     y += bar_h + 6;
 
     /* 4. 政府 */
-    civ_text_out(fb, font, x, y, "君主制", c_blue, c_top_bg, CIV_TEXT_BK_TRANSPARENT);
+    civ_text_out(fb, font, x, y, "君主制", c_blue, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
+    y += 18;
 
-    /* === 下半灰底: 單位 / 城市 info === */
-    int bot_y = top_y + top_h;
-    int bot_h = w->rect.h - SUB_TITLE_H - top_h;
-    civ_fill_rect(fb, (civ_rect_t){w->rect.x, bot_y, w->rect.w, bot_h}, c_body_bg);
-    civ_frame_rect(fb, (civ_rect_t){w->rect.x, bot_y, w->rect.w, bot_h}, c_border);
+    /* 分隔線 — 灰底上的細黑線 */
+    civ_hline(fb, w->rect.x + 4, y, w->rect.w - 8, c_grey_txt);
+    y += 6;
 
-    int yb = bot_y + 14;
+    int yb = y;
 
     /* 5. 選中單位 */
     civ_text_out(fb, font, x, yb, "選定單位:", c_black, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
