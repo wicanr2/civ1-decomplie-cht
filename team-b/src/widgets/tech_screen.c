@@ -113,6 +113,54 @@ static void wonder_sprite_coord(int wonder_id, int *col, int *row)
     *col = wonder_id & 0xF;
 }
 
+/* R28-2: 科技官員立像 — Civdata3 內 discovr1.gif (512×320). 1993 原版
+ * 科技發現畫面右側站個科學家介紹新科技. R16 之前完全沒接, 純文字+花邊
+ * frame. R28 對齊原版加上人物 sprite.
+ *
+ * 透明度: 採用 paint_leader_portrait 同套 top-row >50% dominant sampling
+ * 推導 sentinel idx (sprite 邊角是背景, 內部人物是實心), 不會誤殺臉色. */
+static void paint_tech_advisor(civ_surface_t *fb, struct civ_game *g,
+                                int dst_x, int dst_y, int dst_w, int dst_h)
+{
+    civ_surface_t *adv = g->tech_advisor[0];
+    if (!adv) return;
+
+    civ_rect_t src = { 0, 0, adv->w, adv->h };
+
+    uint8_t lut[256];
+    civ_palette_build_lut(g->tech_advisor_palettes[0].entries, 256,
+                          &g->palette, lut);
+
+    uint8_t skip[256];
+    memset(skip, 0, sizeof skip);
+    skip[0] = 1;
+    /* top-row dominant-pixel sample */
+    {
+        int hist[256] = {0};
+        for (int xx = 0; xx < src.w; xx++) {
+            hist[adv->pixels[0 * adv->pitch + xx]]++;
+        }
+        int half = src.w / 2;
+        for (int i = 0; i < 256; i++) {
+            if (hist[i] > half) { skip[i] = 1; break; }
+        }
+    }
+
+    for (int yy = 0; yy < dst_h; yy++) {
+        int sy = yy * src.h / dst_h;
+        if (sy < 0 || sy >= adv->h) continue;
+        for (int xx = 0; xx < dst_w; xx++) {
+            int sx = xx * src.w / dst_w;
+            if (sx < 0 || sx >= adv->w) continue;
+            int dx = dst_x + xx, dy = dst_y + yy;
+            if (dx < 0 || dx >= fb->w || dy < 0 || dy >= fb->h) continue;
+            uint8_t si = adv->pixels[sy * adv->pitch + sx];
+            if (skip[si]) continue;
+            fb->pixels[dy * fb->pitch + dx] = lut[si];
+        }
+    }
+}
+
 /* 取 civ 名稱 (R16-3 source phrase 用). slot 0 = barbarian, 1..7 = civ. */
 static const char *civ_short_name(int slot)
 {
@@ -178,6 +226,10 @@ void civ_tech_screen_render(struct civ_game *g, civ_surface_t *fb)
     paint_frame_border(fb, g, (civ_rect_t){8, 8, TS_W - 16, TS_H - 16}, 16);
     civ_frame_rect(fb, (civ_rect_t){24, 24, TS_W - 48, TS_H - 48}, c_black);
     civ_frame_rect(fb, (civ_rect_t){25, 25, TS_W - 50, TS_H - 50}, c_dgrey);
+
+    /* R28-2: 科技官員立像 (Civdata3 discovr1) — 對齊原版科技發現右側人物.
+     * src 512×320 → 右側 200×250 dst (x=410 y=80, 接到 inner frame 邊). */
+    paint_tech_advisor(fb, g, 410, 80, 200, 250);
 
     /* R17: 左上 tech illustration — 用 1 個代表性中文字 (大字) + 深褐底 */
     civ_rect_t pic_r = { 60, 80, 110, 110 };

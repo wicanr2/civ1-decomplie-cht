@@ -202,6 +202,32 @@ int main(int argc, char **argv)
         fprintf(stderr, "warning: CIVDATA2.RSC 找不到, leader_portraits 全 fallback\n");
     }
 
+    /* R28-2: 載 Civdata3 discovr1/discovr2 (id 142/143, 各 512×320) — 科技
+     * 發現畫面的「科技官員」立像. spec 03 §3 確認在 Civdata3. */
+    snprintf(path, sizeof path, "%s/Civdata3.rsc", data_dir);
+    civ_rsrc_t *r3 = civ_rsrc_open(path);
+    if (!r3) {
+        snprintf(path, sizeof path, "%s/CIVDATA3.RSC", data_dir);
+        r3 = civ_rsrc_open(path);
+    }
+    if (r3) {
+        int aloaded = 0;
+        for (int ai = 0; ai < 2; ai++) {
+            civ_surface_t *adv = NULL;
+            civ_palette_t  ap = {0};
+            int16_t aid = (int16_t)(142 + ai);
+            if (civ_load_cvpc_by_id(r3, aid, &adv, &ap) == 0) {
+                g.tech_advisor[ai] = adv;
+                g.tech_advisor_palettes[ai] = ap;
+                aloaded++;
+            }
+        }
+        printf("tech advisors loaded: %d/2\n", aloaded);
+        civ_rsrc_close(r3);
+    } else {
+        fprintf(stderr, "warning: Civdata3.rsc 找不到, tech_advisor fallback\n");
+    }
+
     /* M5 真落地 (2026-06-06 第二輪):
      *   舊版這裡是 debug 模式直接把整張 SPR32X32 sheet raw blit + grid 線
      *   做資產校驗,結果看起來像「sprite atlas 平鋪占位」不像真實 game world。
@@ -370,6 +396,13 @@ int main(int argc, char **argv)
         if (g.govt_backdrops[gi]) {
             civ_surface_free(g.govt_backdrops[gi]);
             g.govt_backdrops[gi] = NULL;
+        }
+    }
+    /* R28-2: 釋放 tech_advisor sprites */
+    for (int ai = 0; ai < 2; ai++) {
+        if (g.tech_advisor[ai]) {
+            civ_surface_free(g.tech_advisor[ai]);
+            g.tech_advisor[ai] = NULL;
         }
     }
 

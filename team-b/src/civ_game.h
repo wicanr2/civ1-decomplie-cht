@@ -96,6 +96,13 @@ struct civ_game {
      * sheet (8 expression frames + 4 standing figures). */
     civ_surface_t              *govt_backdrops[3];
     civ_palette_t               govt_palettes[3];
+
+    /* R28-2: Civdata3 內 discovr1.gif (id 142, 512×320) — 科技發現畫面的
+     * 「科技官員」立像. R16 tech_screen 原本只畫 clean-room 花邊 frame +
+     * 文字; 1993 原版實際在側邊有 advisor 大圖介紹新科技. discovr2 (id 143)
+     * 是另一姿勢備用. tech_advisor[0] = discovr1, tech_advisor[1] = discovr2. */
+    civ_surface_t              *tech_advisor[2];
+    civ_palette_t               tech_advisor_palettes[2];
 };
 
 #endif /* CIV_GAME_H */

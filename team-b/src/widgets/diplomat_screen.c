@@ -328,8 +328,13 @@ static void paint_govt_backdrop(civ_surface_t *fb, struct civ_game *g,
     civ_palette_build_lut(g->govt_palettes[govt_idx].entries, 256,
                           &g->palette, lut);
 
+    /* R28-1: 使用者指正 — diplomat 背景應該完全不透明.
+     * GOVT*M 左半 = full scene backdrop (sky/wall/throne/parchment), 沒有
+     * sentinel pixel; idx 0 在這 region 是真實顏色不是透明標記.
+     * 取消 skip mask, 每個 pixel 都 blit 過去 (idx 0 在 KING/advisor 才是
+     * sentinel). 解 R27-fix 後 gandhi 背景仍漏底色問題. */
     uint8_t skip[256];
-    build_skip_mask(&g->govt_palettes[govt_idx], skip);
+    memset(skip, 0, sizeof skip);
 
     blit_scaled_remap_skip(fb, 0, 0, dst_w, dst_h, gb, src, lut, skip);
 }
