@@ -11,6 +11,32 @@
 #include <string.h>
 
 /* R10: 用 palette_nearest 找 Win16 真色, 不用 sheet palette idx 直填 */
+/* R32 (C4/C5 gap): 5 種 16×16 城市資源圖示 — clean-room 自畫.
+ * 對齊 1993 reference civ1_win_city_screen.png CITY RESOURCES 區的
+ * 麥穗 / 盾 / 金幣 / 笑臉 / 怒臉 row. SPR16x16 我們沒載, 全部 hardcoded
+ * 8×8 pixel pattern + scale 2x. */
+typedef enum {
+    CIV_RES_ICON_WHEAT  = 0,   /* 食物 — 黃色麥穗 */
+    CIV_RES_ICON_SHIELD = 1,   /* 生產 — 灰盾形 */
+    CIV_RES_ICON_TRADE  = 2,   /* 貿易 — 金幣 */
+    CIV_RES_ICON_HAPPY  = 3,   /* 快樂 — 笑臉 (黃底黑點) */
+    CIV_RES_ICON_UNHAPPY= 4,   /* 不滿 — 怒臉 (紅底黑點) */
+} civ_res_icon_t;
+
+/* 5 × 8×8 bit pattern (1 = 主色, 0 = 透明) */
+static const uint8_t RES_ICON_PAT[5][8] = {
+    /* wheat — 麥穗 */
+    { 0x18, 0x3C, 0x7E, 0x7E, 0x3C, 0x18, 0x18, 0x18 },
+    /* shield — 盾 */
+    { 0x7E, 0xFF, 0xFF, 0xFF, 0xFF, 0x7E, 0x3C, 0x18 },
+    /* trade — 金幣 */
+    { 0x3C, 0x7E, 0xFF, 0xDB, 0xDB, 0xFF, 0x7E, 0x3C },
+    /* happy — 笑臉 */
+    { 0x3C, 0x42, 0xA5, 0x81, 0xA5, 0x99, 0x42, 0x3C },
+    /* unhappy — 怒臉 */
+    { 0x3C, 0x42, 0xA5, 0x81, 0x99, 0xA5, 0x42, 0x3C },
+};
+
 static uint8_t pn(struct civ_game *g, uint8_t r, uint8_t g_, uint8_t b)
 {
     return civ_palette_nearest_rgb(&g->palette, r, g_, b);
@@ -18,6 +44,49 @@ static uint8_t pn(struct civ_game *g, uint8_t r, uint8_t g_, uint8_t b)
 
 /* 藍色 stipple dither (2x2 checker) — 對齊原版 city screen 底色
  * 仍保留作 fallback (sprite sheet 未載入時用) */
+/* R32: 畫 1 個 16×16 城市資源圖示. (dx, dy) = dst 左上角.
+ * pattern 8×8 scale 2x → 16×16, fg = 圖示色, bg-transparent. */
+static void paint_resource_icon(civ_surface_t *fb, struct civ_game *g,
+                                 civ_res_icon_t icon, int dx, int dy)
+{
+    uint8_t fg;
+    switch (icon) {
+    case CIV_RES_ICON_WHEAT:   fg = pn(g, 0xE0, 0xC0, 0x40); break; /* 黃 */
+    case CIV_RES_ICON_SHIELD:  fg = pn(g, 0xA0, 0xA0, 0xA0); break; /* 灰 */
+    case CIV_RES_ICON_TRADE:   fg = pn(g, 0xE0, 0xC0, 0x20); break; /* 金 */
+    case CIV_RES_ICON_HAPPY:   fg = pn(g, 0xF0, 0xE0, 0x40); break; /* 黃笑 */
+    case CIV_RES_ICON_UNHAPPY: fg = pn(g, 0xE0, 0x40, 0x40); break; /* 紅怒 */
+    default: return;
+    }
+    const uint8_t *pat = RES_ICON_PAT[icon];
+    for (int py = 0; py < 8; py++) {
+        for (int px = 0; px < 8; px++) {
+            if (!((pat[py] >> (7 - px)) & 1)) continue;
+            /* 2x scale */
+            for (int sy = 0; sy < 2; sy++) {
+                for (int sx = 0; sx < 2; sx++) {
+                    int xx = dx + px * 2 + sx;
+                    int yy = dy + py * 2 + sy;
+                    if (xx < 0 || xx >= fb->w || yy < 0 || yy >= fb->h) continue;
+                    fb->pixels[yy * fb->pitch + xx] = fg;
+                }
+            }
+        }
+    }
+}
+
+/* R32: 一排 N 個圖示 (max 12 in 一行). 用於 CITY RESOURCES + FOOD STORAGE. */
+static void paint_icon_row(civ_surface_t *fb, struct civ_game *g,
+                            civ_res_icon_t icon, int n,
+                            int x, int y, int icon_w)
+{
+    if (n < 0) n = 0;
+    if (n > 12) n = 12;
+    for (int i = 0; i < n; i++) {
+        paint_resource_icon(fb, g, icon, x + i * icon_w, y);
+    }
+}
+
 static void paint_stipple(civ_surface_t *fb, civ_rect_t r,
                           uint8_t c_hi, uint8_t c_lo)
 {
@@ -147,24 +216,29 @@ void civ_city_screen_render(struct civ_game *g, civ_surface_t *fb)
     civ_fill_rect(fb, (civ_rect_t){8, 4, 22, 22}, c_blue);
     civ_frame_rect(fb, (civ_rect_t){8, 4, 22, 22}, c_white);
 
-    /* === CITY RESOURCES panel (左上) === */
+    /* === CITY RESOURCES panel (左上) — R32 (C5 gap): 改成 icon row + 數字 ===
+     * 對齊 1993 reference: 食物 / 生產 / 貿易 / 人民 各一排 16×16 icon. */
     draw_panel(fb, (civ_rect_t){8, 34, 184, 170}, g, "CITY RESOURCES");
-    if (g->font_body) {
-        int rx = 16, ry = 64;
-        char buf[64];
-        snprintf(buf, sizeof buf, "食物: %d", c->population * 2);
-        civ_text_out(fb, g->font_body, rx, ry, buf, c_white, c_bg_lo, CIV_TEXT_BK_TRANSPARENT);
-        ry += 16;
-        snprintf(buf, sizeof buf, "生產: %d 盾/turn", 2 + c->population);
-        civ_text_out(fb, g->font_body, rx, ry, buf, c_white, c_bg_lo, CIV_TEXT_BK_TRANSPARENT);
-        ry += 16;
-        snprintf(buf, sizeof buf, "貿易: %d", c->population);
-        civ_text_out(fb, g->font_body, rx, ry, buf, c_white, c_bg_lo, CIV_TEXT_BK_TRANSPARENT);
+    {
+        int food   = c->population * 2;
+        int shield = 2 + c->population;
+        int trade  = c->population;
+        int happy  = c->population;
+        int rx     = 16, ry = 60;
+        int icon_w = 18;   /* 16 icon + 2 spacing */
+        paint_icon_row(fb, g, CIV_RES_ICON_WHEAT,  food,   rx, ry, icon_w);
         ry += 22;
-        civ_text_out(fb, g->font_body, rx, ry, "人民:", c_yellow, c_bg_lo, CIV_TEXT_BK_TRANSPARENT);
-        ry += 16;
-        snprintf(buf, sizeof buf, "  快樂 %d / 不滿 0", c->population);
-        civ_text_out(fb, g->font_body, rx, ry, buf, c_white, c_bg_lo, CIV_TEXT_BK_TRANSPARENT);
+        paint_icon_row(fb, g, CIV_RES_ICON_SHIELD, shield, rx, ry, icon_w);
+        ry += 22;
+        paint_icon_row(fb, g, CIV_RES_ICON_TRADE,  trade,  rx, ry, icon_w);
+        ry += 22;
+        paint_icon_row(fb, g, CIV_RES_ICON_HAPPY,  happy,  rx, ry, icon_w);
+        if (g->font_body) {
+            char buf[32];
+            snprintf(buf, sizeof buf, "  %d", food);
+            civ_text_out(fb, g->font_body, rx + 12 * icon_w - 4, 60 + 12,
+                         buf, c_white, c_bg_lo, CIV_TEXT_BK_TRANSPARENT);
+        }
     }
 
     /* === Center small map (中上) - city 周圍 5x5 tiles 縮圖 === */
@@ -210,13 +284,30 @@ void civ_city_screen_render(struct civ_game *g, civ_surface_t *fb)
                      460, 104, "(主城)", c_yellow, c_bg_lo, CIV_TEXT_BK_TRANSPARENT);
     }
 
-    /* === FOOD STORAGE (左下) === */
+    /* === FOOD STORAGE (左下) — R32 (C4 gap): 加 wheat icon row 顯示存量 === */
     draw_panel(fb, (civ_rect_t){8, 210, 184, 200}, g, "FOOD STORAGE");
-    if (g->font_body) {
-        char buf[64];
-        snprintf(buf, sizeof buf, "%d / %d", c->food_stock,
-                 (c->population + 1) * 10);
-        civ_text_out(fb, g->font_body, 16, 244, buf, c_white, c_bg_lo, CIV_TEXT_BK_TRANSPARENT);
+    {
+        int cap = (c->population + 1) * 10;
+        int stock = c->food_stock;
+        if (stock < 0) stock = 0;
+        if (stock > cap) stock = cap;
+        /* 算 N icon = stock / 5 (max ~8 icons per row); 多 row 顯示 */
+        int icons = stock / 5;
+        if (icons < 0) icons = 0;
+        if (icons > 24) icons = 24;
+        int icon_w = 18;
+        for (int i = 0; i < icons; i++) {
+            int row = i / 8;
+            int col = i % 8;
+            paint_resource_icon(fb, g, CIV_RES_ICON_WHEAT,
+                                 16 + col * icon_w, 244 + row * 20);
+        }
+        if (g->font_body) {
+            char buf[64];
+            snprintf(buf, sizeof buf, "%d / %d", stock, cap);
+            civ_text_out(fb, g->font_body, 16, 320, buf,
+                         c_white, c_bg_lo, CIV_TEXT_BK_TRANSPARENT);
+        }
     }
 
     /* === Build panel (中下) — INFO/HAPPY/MAP/VIEW tabs + CHANGE/BUY === */
