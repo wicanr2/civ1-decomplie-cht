@@ -48,6 +48,7 @@ set(CIV_CORE_SOURCES
     src/world/city.c
     src/world/tech.c
     src/world/wonder.c
+    src/world/government.c
     src/world/diplomat.c
     src/save/rle.c
     src/text/big5.c

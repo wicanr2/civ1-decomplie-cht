@@ -5,6 +5,7 @@
 #include "../gfx/surface.h"
 #include "../text/text_out.h"
 #include "../world/diplomat.h"
+#include "../world/government.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -169,8 +170,12 @@ static void status_render(civ_widget_t *w, civ_surface_t *fb)
     civ_frame_rect(fb, (civ_rect_t){bar_x, bar_y, bar_w, bar_h}, c_black);
     y += bar_h + 6;
 
-    /* 4. 政府 */
-    civ_text_out(fb, font, x, y, "君主制", c_blue, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
+    /* 4. 政府 — R26-C: 改用 civ_government_name_zh(world.player_government).
+     * 取代 R22 hardcode 「君主制」. R24 加的 player_government field 終於接通. */
+    const char *gov_name = w->game->world_ready
+        ? civ_government_name_zh(w->game->world.player_government)
+        : "專制";
+    civ_text_out(fb, font, x, y, gov_name, c_blue, c_body_bg, CIV_TEXT_BK_TRANSPARENT);
     y += 18;
 
     /* 分隔線 — 灰底上的細黑線 */

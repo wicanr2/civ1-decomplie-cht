@@ -20,7 +20,8 @@ enum wizard_page {
     PAGE_DIFFICULTY = 0,
     PAGE_CIV        = 1,
     PAGE_NAME       = 2,
-    PAGE_DONE       = 3,
+    PAGE_GOVERNMENT = 3,   /* R26-C 新 */
+    PAGE_DONE       = 4,
 };
 
 #define NAME_MAX 16
@@ -31,6 +32,7 @@ typedef struct wizard_state {
     int      civ_slot;       /* 1..14（跳過 8 = NONE） */
     char     name[NAME_MAX + 1];
     int      name_len;
+    int      government;     /* R26-C: 1..5 (排除 Anarchy 開局), 預設 1=Despotism */
     int      cursor;         /* 目前 highlight 的選項 */
 } wizard_state_t;
 
@@ -77,6 +79,16 @@ static void render_title(civ_surface_t *fb, civ_font_t *font_title,
                      txt, 15, 9, CIV_TEXT_BK_TRANSPARENT);
     }
 }
+
+/* R26-C: 5 個可選政府 (排除 Anarchy idx 0) — 對齊 world/government.h
+ * idx 1..5 = Despotism / Monarchy / Communism / Republic / Democracy */
+static const char *GOV_ZH[5] = {
+    "專制 (Despotism)",
+    "君主制 (Monarchy)",
+    "共產 (Communism)",
+    "共和 (Republic)",
+    "民主 (Democracy)",
+};
 
 static void render_page_difficulty(const civ_dialog_t *d,
                                    civ_surface_t *fb,
@@ -194,7 +206,40 @@ static void render_page_name(const civ_dialog_t *d, civ_surface_t *fb,
     if (g->font_body) {
         civ_text_out(fb, g->font_body,
                      d->rect.x + 20, d->rect.y + d->rect.h - 14,
-                     "鍵入名稱　Enter 確認　ESC 回上一頁",
+                     "鍵入名稱　Enter 下一頁　ESC 回上一頁",
+                     0, 7, CIV_TEXT_BK_TRANSPARENT);
+    }
+}
+
+/* R26-C: PAGE_GOVERNMENT render — 對齊 difficulty page 排版.
+ * cursor = 1..5 (對應 government enum 1..5, 排除 Anarchy 0). */
+static void render_page_government(const civ_dialog_t *d,
+                                    civ_surface_t *fb,
+                                    struct civ_game *g)
+{
+    const wizard_state_t *s = d->state;
+    render_panel_bg(fb, d->rect);
+    render_title(fb, g->font_title, d->rect, "新局精靈：選擇政府");
+
+    for (int i = 0; i < 5; i++) {
+        int row_idx = i + 1;   /* 對應 government enum 值 */
+        int y = d->rect.y + 60 + i * 36;
+        civ_rect_t row = {d->rect.x + 20, y, d->rect.w - 40, 28};
+        uint8_t bg = (row_idx == s->cursor) ? 12 : 7;
+        civ_fill_rect(fb, row, bg);
+        civ_frame_rect(fb, row, 0);
+        if (g->font_body) {
+            civ_text_out(fb, g->font_body,
+                         row.x + 10, row.y + 19,
+                         GOV_ZH[i],
+                         (row_idx == s->cursor) ? 15 : 0, bg,
+                         CIV_TEXT_BK_TRANSPARENT);
+        }
+    }
+    if (g->font_body) {
+        civ_text_out(fb, g->font_body,
+                     d->rect.x + 20, d->rect.y + d->rect.h - 14,
+                     "↑↓ 選擇　Enter 開始遊戲　ESC 回上一頁",
                      0, 7, CIV_TEXT_BK_TRANSPARENT);
     }
 }
@@ -207,6 +252,7 @@ static void render(const civ_dialog_t *d, civ_surface_t *fb,
     case PAGE_DIFFICULTY: render_page_difficulty(d, fb, g); break;
     case PAGE_CIV:        render_page_civ(d, fb, g);        break;
     case PAGE_NAME:       render_page_name(d, fb, g);       break;
+    case PAGE_GOVERNMENT: render_page_government(d, fb, g); break;
     default: break;
     }
 }
@@ -259,15 +305,13 @@ static civ_dlg_result_t handle_name(civ_dialog_t *d, SDL_Event *ev,
     if (ev->type == SDL_KEYDOWN) {
         switch (ev->key.keysym.sym) {
         case SDLK_RETURN:
-            /* 完成 — 把結果寫進 game state（M4-full：簡單寫到
-             * timer_counter 暫存做測試標記，真實狀態欄位待 M6 補） */
-            g->timer_counter = (uint32_t)(s->difficulty * 100 + s->civ_slot);
-            /* R24: 寫 player 選擇的文明 slot 進 world (取代 R23 hardcode = 1).
-             * status panel + diplomat scene 立即看到正確 player 領袖. */
+            /* R24: 寫 player 選擇的文明 slot 進 world */
             if (s->civ_slot >= 1 && s->civ_slot <= 14)
                 g->world.player_civ_slot = s->civ_slot;
-            s->page = PAGE_DONE;
-            return CIV_DLG_CLOSE;
+            /* R26-C: 名字輸完去政府選擇 page (非 DONE) */
+            s->page = PAGE_GOVERNMENT;
+            s->cursor = s->government;   /* 預設 highlight = Despotism */
+            return CIV_DLG_NEXT;
         case SDLK_ESCAPE:
             s->page = PAGE_CIV;
             s->cursor = slot_to_linear(s->civ_slot);
@@ -296,6 +340,31 @@ static civ_dlg_result_t handle_name(civ_dialog_t *d, SDL_Event *ev,
     return CIV_DLG_CONTINUE;
 }
 
+/* R26-C: PAGE_GOVERNMENT handler. cursor = 1..5 對應 government enum.
+ * RETURN 寫 world.player_government → 關閉精靈進入 game. */
+static civ_dlg_result_t handle_government(civ_dialog_t *d, SDL_Event *ev,
+                                           struct civ_game *g)
+{
+    wizard_state_t *s = d->state;
+    if (ev->type != SDL_KEYDOWN) return CIV_DLG_CONTINUE;
+    switch (ev->key.keysym.sym) {
+    case SDLK_UP:    if (s->cursor > 1) s->cursor--; break;
+    case SDLK_DOWN:  if (s->cursor < 5) s->cursor++; break;
+    case SDLK_RETURN:
+        s->government = s->cursor;
+        if (s->government >= 1 && s->government <= 5)
+            g->world.player_government = s->government;
+        /* 簡單 sanity 標記：與 M4-full 同公式，方便 test_wizard 對位 */
+        g->timer_counter = (uint32_t)(s->difficulty * 100 + s->civ_slot);
+        s->page = PAGE_DONE;
+        return CIV_DLG_CLOSE;
+    case SDLK_ESCAPE:
+        s->page = PAGE_NAME;
+        return CIV_DLG_PREV;
+    }
+    return CIV_DLG_CONTINUE;
+}
+
 static civ_dlg_result_t event(civ_dialog_t *d, SDL_Event *ev,
                               struct civ_game *g)
 {
@@ -304,6 +373,7 @@ static civ_dlg_result_t event(civ_dialog_t *d, SDL_Event *ev,
     case PAGE_DIFFICULTY: return handle_difficulty(d, ev);
     case PAGE_CIV:        return handle_civ(d, ev);
     case PAGE_NAME:       return handle_name(d, ev, g);
+    case PAGE_GOVERNMENT: return handle_government(d, ev, g);
     default: return CIV_DLG_CLOSE;
     }
 }
@@ -324,6 +394,7 @@ void civ_wizard_open(civ_dialog_stack_t *stk, struct civ_game *g)
     st->page       = PAGE_DIFFICULTY;
     st->difficulty = CIV_DIFF_PRINCE;
     st->civ_slot   = 1;
+    st->government = 1;   /* R26-C: 1=Despotism, 真實 Civ1 新文明預設 */
     st->cursor     = CIV_DIFF_PRINCE;
 
     d->name    = "wizard";

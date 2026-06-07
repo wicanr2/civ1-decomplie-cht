@@ -53,7 +53,7 @@ int main(void)
     push_key(&stk, &g, SDLK_RETURN);
     EXPECT(stk.top != NULL);
 
-    /* Page 3 (Name)：輸入 "Alice" 然後 Enter */
+    /* Page 3 (Name)：輸入 "Alice" 然後 Enter → 切到 Government 頁 */
     const char *name = "Alice";
     for (size_t i = 0; i < strlen(name); i++) {
         SDL_Event ev;
@@ -63,6 +63,12 @@ int main(void)
         civ_dialog_handle_event(&stk, &ev, &g);
     }
     push_key(&stk, &g, SDLK_RETURN);
+    EXPECT(stk.top != NULL);   /* 切到 Government 頁，dialog 未關閉 */
+
+    /* Page 4 (Government, R26-C)：cursor 預設 = Despotism (1)
+     * 按 ↓ → Monarchy (2)，Enter 完成新局精靈 */
+    push_key(&stk, &g, SDLK_DOWN);
+    push_key(&stk, &g, SDLK_RETURN);
 
     /* dialog 應該關閉 */
     EXPECT(stk.top == NULL);
@@ -71,6 +77,11 @@ int main(void)
      * Difficulty = King (3) → 3 * 100 = 300
      * Civ = 印度 (slot 7) → +7 = 307 */
     EXPECT(g.timer_counter == 307);
+
+    /* R26-C: 政府 = Monarchy(2) 寫到 world */
+    EXPECT(g.world.player_government == 2);
+    /* R24: player_civ_slot 也寫到 world */
+    EXPECT(g.world.player_civ_slot == 7);
 
     /* 測試 ESC 取消 */
     civ_wizard_open(&stk, &g);
