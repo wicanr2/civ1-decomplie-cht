@@ -164,6 +164,51 @@ int main(void)
         EXPECT(civ_score_total(&g, 1) == 87);
     }
 
-    printf("PASS test_score (10 sub-tests, spec 09 §9.3 v0.2 wonders+future tied)\n");
+    /* 11. R27-C: civ_check_end YEAR_LIMIT — civ_year >= 2100 → YEAR_LIMIT */
+    {
+        struct civ_game g = {0};
+        g.civ_year = 2099;
+        EXPECT(civ_check_end(&g, 1) == CIV_END_NONE);
+        g.civ_year = 2100;
+        EXPECT(civ_check_end(&g, 1) == CIV_END_YEAR_LIMIT);
+        g.civ_year = 2500;   /* 越過上限仍 YEAR_LIMIT */
+        EXPECT(civ_check_end(&g, 1) == CIV_END_YEAR_LIMIT);
+    }
+
+    /* 12. R27-C: civ_check_end DESTROYED — 玩家 found 過城但全亡 */
+    {
+        struct civ_game g = {0};
+        g.civ_year = -3000;
+        /* 沒城 → NONE (新局尚未 found) */
+        EXPECT(civ_check_end(&g, 1) == CIV_END_NONE);
+        /* found 過 1 城, alive → NONE */
+        seed_city(&g, 0, 0, 1, 1, "Rome");
+        EXPECT(civ_check_end(&g, 1) == CIV_END_NONE);
+        /* 城被消滅 → DESTROYED */
+        g.world.cities[0].alive = false;
+        EXPECT(civ_check_end(&g, 1) == CIV_END_DESTROYED);
+        /* 但 player_slot 2 不是被消滅 (他根本沒城過) — 但因為 cities_count>0
+         * 跟 §9.7 v0.1 啟發, 我們會誤判. 標 v0.1 limitation, v0.2 加 ever_founded
+         * flag 解. 暫不 test player 2. */
+    }
+
+    /* 13. R27-C: civ_hof_rank — 公式 score×diff×comp/10 */
+    {
+        /* score 100, diff 3 (Prince), opponents 4
+         * comp10 = 13 → rank = 100 * 3 * 13 / 10 = 390 */
+        EXPECT(civ_hof_rank(100, 3, 4) == 390);
+        /* score 0 → 0 */
+        EXPECT(civ_hof_rank(0, 5, 6) == 0);
+        /* 負 score → 0 */
+        EXPECT(civ_hof_rank(-50, 3, 4) == 0);
+        /* diff/opponents out-of-range → clip */
+        EXPECT(civ_hof_rank(100, 99, 99) == civ_hof_rank(100, 5, 6));
+        /* min difficulty + min opponents: 100 * 1 * 10 / 10 = 100 */
+        EXPECT(civ_hof_rank(100, 1, 1) == 100);
+        /* max: 100 * 5 * 15 / 10 = 750 */
+        EXPECT(civ_hof_rank(100, 5, 6) == 750);
+    }
+
+    printf("PASS test_score (13 sub-tests, spec 09 §9.3-9.4 v0.2 + §9.7 v0.1)\n");
     return 0;
 }
