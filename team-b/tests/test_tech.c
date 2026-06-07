@@ -5,6 +5,7 @@
  */
 #include "world/tech.h"
 #include "world/unit.h"
+#include "world/wonder.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -65,8 +66,8 @@ static void test_fill_unlocked_bronze_working(void)
     assert(ev.unlocked_techs[1] == CIV_TECH_IRON_WORKING);
     /* 解鎖 Phalanx 單位 */
     assert(ev.unlocked_units[0] == CIV_UNIT_PHALANX);
-    /* 解鎖 Colossus wonder placeholder */
-    assert(ev.unlocked_wonder[0] == 1);
+    /* R26-B: Bronze Working 真正解鎖 wonder = Colossus (id 3, spec 06 §6.2.4) */
+    assert(ev.unlocked_wonder[0] == CIV_WONDER_COLOSSUS);
     printf("  test_fill_unlocked_bronze_working PASS\n");
 }
 
@@ -159,6 +160,48 @@ static void test_tech_name_zh_full(void)
     printf("  test_tech_name_zh_full PASS\n");
 }
 
+static void test_wonder_table(void)
+{
+    /* R26-B: 22 wonder 抽樣 (spec 06 §6.2.4 ground-truth) */
+    assert(strcmp(civ_wonder_name_zh(CIV_WONDER_PYRAMIDS),     "金字塔") == 0);
+    assert(strcmp(civ_wonder_name_zh(CIV_WONDER_GREAT_WALL),   "萬里長城") == 0);
+    assert(strcmp(civ_wonder_name_zh(CIV_WONDER_APOLLO_PROGRAM), "阿波羅計畫") == 0);
+
+    /* cost */
+    assert(civ_wonder_cost(CIV_WONDER_PYRAMIDS)         == 300);
+    assert(civ_wonder_cost(CIV_WONDER_COLOSSUS)         == 200);
+    assert(civ_wonder_cost(CIV_WONDER_HOOVER_DAM)       == 600);
+
+    /* prereq tech */
+    assert(civ_wonder_prereq_tech(CIV_WONDER_PYRAMIDS)  == CIV_TECH_MASONRY);
+    assert(civ_wonder_prereq_tech(CIV_WONDER_GREAT_WALL)== CIV_TECH_MASONRY);
+    assert(civ_wonder_prereq_tech(CIV_WONDER_APOLLO_PROGRAM) == CIV_TECH_SPACE_FLIGHT);
+
+    /* obsolete-by */
+    assert(civ_wonder_obsolete_by(CIV_WONDER_PYRAMIDS)  == CIV_TECH_COMMUNISM);
+    assert(civ_wonder_obsolete_by(CIV_WONDER_GREAT_WALL)== CIV_TECH_GUNPOWDER);
+    assert(civ_wonder_obsolete_by(CIV_WONDER_APOLLO_PROGRAM) == CIV_TECH_NONE);
+
+    /* 越界 */
+    assert(strcmp(civ_wonder_name_zh((civ_wonder_id_t)999), "") == 0);
+    assert(civ_wonder_cost((civ_wonder_id_t)999) == 0);
+    printf("  test_wonder_table PASS\n");
+}
+
+static void test_fill_unlocked_masonry_wonders(void)
+{
+    /* R26-B: Masonry 是 2 個 wonder 的 prereq:
+     *   Pyramids (1) + Great Wall (7) */
+    civ_tech_discovery_event_t ev = {0};
+    ev.tech_id = CIV_TECH_MASONRY;
+    civ_tech_discovery_fill_unlocked(&ev);
+    assert(ev.unlocked_wonder[0] == CIV_WONDER_PYRAMIDS);
+    assert(ev.unlocked_wonder[1] == CIV_WONDER_GREAT_WALL);
+    /* Masonry 還解 City Walls (R16 stub) */
+    assert(ev.unlocked_imp[0] == 8);
+    printf("  test_fill_unlocked_masonry_wonders PASS\n");
+}
+
 int main(void)
 {
     printf("test_tech\n");
@@ -171,6 +214,8 @@ int main(void)
     test_fill_unlocked_horseback();
     test_prereq_lookup();
     test_tech_name_zh_full();
+    test_wonder_table();
+    test_fill_unlocked_masonry_wonders();
     printf("ALL PASS\n");
     return 0;
 }

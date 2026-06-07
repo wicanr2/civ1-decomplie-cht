@@ -1,5 +1,6 @@
 #include "tech.h"
 #include "unit.h"
+#include "wonder.h"
 
 #include <stddef.h>
 #include <stdio.h>
@@ -224,15 +225,25 @@ static void fill_unlocked_techs(civ_tech_discovery_event_t *ev)
     }
 }
 
-/* R26: hardcoded unit/imp/wonder unlock 對齊 spec 06 (R16 stub, 待擴 R27+).
- * 暫時保留 R16 7 個 tech 的小範圍, 其他 tech 不填 unlocks_units/_imp/_wonder.
- * R27+ 接 spec 06 §6.1/6.2/6.4 全 prereq 反推. */
+/* R26-B: wonder reverse-DAG. iterate 22 wonder, 若 prereq_tech == ev->tech_id
+ * → 加進 unlocked_wonder[]. 4 slot 上限 (Civ1 1991 沒 tech 解 4+ wonder). */
+static void fill_unlocked_wonders(civ_tech_discovery_event_t *ev)
+{
+    int n = 0;
+    for (int w = 1; w < CIV_WONDER_COUNT && n < 4; w++) {
+        if (civ_wonder_prereq_tech((civ_wonder_id_t)w) == ev->tech_id) {
+            ev->unlocked_wonder[n++] = w;
+        }
+    }
+}
+
+/* R26: hardcoded unit/imp unlock — R16 stub 仍保留 (待 R27+ 接 spec 06
+ * §6.1 unit prereq + §6.2 improvement prereq 完整 reverse-DAG). */
 static void fill_unlocked_assets_r16(civ_tech_discovery_event_t *ev)
 {
     switch (ev->tech_id) {
         case CIV_TECH_BRONZE_WORKING:
             ev->unlocked_units[0] = CIV_UNIT_PHALANX;
-            ev->unlocked_wonder[0] = 1;    /* Colossus placeholder */
             break;
         case CIV_TECH_IRON_WORKING:
             ev->unlocked_units[0] = CIV_UNIT_LEGION;
@@ -245,7 +256,6 @@ static void fill_unlocked_assets_r16(civ_tech_discovery_event_t *ev)
             break;
         case CIV_TECH_MASONRY:
             ev->unlocked_imp[0] = 8;       /* City Walls */
-            ev->unlocked_wonder[0] = 2;    /* Pyramids placeholder */
             break;
         case CIV_TECH_POTTERY:
             ev->unlocked_imp[0] = 3;       /* Granary */
@@ -264,5 +274,6 @@ void civ_tech_discovery_fill_unlocked(civ_tech_discovery_event_t *ev)
     memset(ev->unlocked_wonder, 0, sizeof ev->unlocked_wonder);
 
     fill_unlocked_techs(ev);
+    fill_unlocked_wonders(ev);
     fill_unlocked_assets_r16(ev);
 }
