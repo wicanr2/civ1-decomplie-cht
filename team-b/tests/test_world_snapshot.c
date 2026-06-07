@@ -226,7 +226,8 @@ int main(int argc, char **argv)
     }
 
     /* R28-2: 載 Civdata3 discovr1/discovr2 (id 142/143, 各 512×320) — 科技
-     * 發現畫面的「科技官員」立像. spec 03 §3 確認在 Civdata3. */
+     * 發現畫面的「科技官員」立像. spec 03 §3 確認在 Civdata3.
+     * R34-R32: 同時載 WONDERS.GIF (id 3334) 22 個奇蹟 sprite sheet. */
     snprintf(path, sizeof path, "%s/Civdata3.rsc", data_dir);
     civ_rsrc_t *r3 = civ_rsrc_open(path);
     if (!r3) {
@@ -246,6 +247,15 @@ int main(int argc, char **argv)
             }
         }
         printf("tech advisors loaded: %d/2\n", aloaded);
+
+        /* R34-R32: WONDERS.GIF id 3334 (512×485) */
+        civ_surface_t *ws = NULL;
+        civ_palette_t  wp = {0};
+        if (civ_load_cvpc_by_id(r3, 3334, &ws, &wp) == 0) {
+            g.wonders_sheet = ws;
+            g.wonders_palette = wp;
+            printf("WONDERS.GIF loaded: %dx%d\n", ws->w, ws->h);
+        }
         civ_rsrc_close(r3);
     } else {
         fprintf(stderr, "warning: Civdata3.rsc 找不到, tech_advisor fallback\n");
@@ -351,7 +361,9 @@ int main(int argc, char **argv)
      * R24: birth-N mode (N=1..8) — 載 BIRTH0N (id 127+N) 縮放居中.
      *      BIRTH01 = id 128 (1024×320), BIRTH2..8 = id 129..135 (512×320 each).
      * 對應 1991/1993 原版開機 splash + intro sequence. */
-    int is_splash = (argc > 2 && strcmp(argv[2], "splash") == 0);
+    int is_splash      = (argc > 2 && strcmp(argv[2], "splash") == 0);
+    int is_splash_menu = (argc > 2 && strcmp(argv[2], "splash-menu") == 0);
+    if (is_splash_menu) is_splash = 1;
     int birth_n = -1;
     if (argc > 2 && strncmp(argv[2], "birth-", 6) == 0) {
         birth_n = atoi(argv[2] + 6);
@@ -426,6 +438,55 @@ int main(int argc, char **argv)
             fprintf(stderr, "splash/birth: id=%d load fail\n", target_id);
         }
         if (r1) civ_rsrc_close(r1);
+
+        /* R34-M1 (GAMETEST_GAP_LIST.md M1): Start a New Game 對話框.
+         * 對齊 docs/screenshots/gametest_2026-06-07/orig/civ1_win_main_menu.jpg
+         * 6 items + OK button. 灰底 panel + 黑邊 + 黑字 + 紅圓點選中.
+         * splash-menu mode only (純 splash mode 不疊). */
+        if (is_splash_menu && g.font_body) {
+            int p_x = 180, p_y = 280;
+            int p_w = 280, p_h = 170;
+            uint8_t c_grey  = civ_palette_nearest_rgb(&g.palette, 0xB0, 0xB0, 0xB0);
+            uint8_t c_black = civ_palette_nearest_rgb(&g.palette, 0x00, 0x00, 0x00);
+            uint8_t c_red   = civ_palette_nearest_rgb(&g.palette, 0xC0, 0x00, 0x00);
+            uint8_t c_white = civ_palette_nearest_rgb(&g.palette, 0xFF, 0xFF, 0xFF);
+
+            civ_fill_rect(g.framebuffer,
+                (civ_rect_t){p_x, p_y, p_w, p_h}, c_grey);
+            civ_frame_rect(g.framebuffer,
+                (civ_rect_t){p_x, p_y, p_w, p_h}, c_black);
+
+            const char *items_zh[6] = {
+                "開始新遊戲", "載入舊存檔", "在地球上玩",
+                "自訂世界", "查看名人堂", "結束遊戲",
+            };
+            int cursor = 0;   /* 預設選中第一項 */
+            for (int i = 0; i < 6; i++) {
+                int iy = p_y + 16 + i * 22;
+                /* 圓點 — selected = 實心紅, else = 空心 */
+                int cx = p_x + 24, cy = iy + 6;
+                civ_fill_rect(g.framebuffer,
+                    (civ_rect_t){cx - 4, cy - 4, 8, 8}, c_grey);
+                civ_frame_rect(g.framebuffer,
+                    (civ_rect_t){cx - 4, cy - 4, 8, 8}, c_black);
+                if (i == cursor) {
+                    civ_fill_rect(g.framebuffer,
+                        (civ_rect_t){cx - 2, cy - 2, 4, 4}, c_red);
+                }
+                civ_text_out(g.framebuffer, g.font_body, p_x + 38, iy + 14,
+                             items_zh[i], c_black, c_grey,
+                             CIV_TEXT_BK_TRANSPARENT);
+            }
+            /* OK button — right-bottom */
+            int ok_x = p_x + p_w - 50, ok_y = p_y + p_h - 28;
+            civ_fill_rect(g.framebuffer,
+                (civ_rect_t){ok_x, ok_y, 36, 20}, c_white);
+            civ_frame_rect(g.framebuffer,
+                (civ_rect_t){ok_x, ok_y, 36, 20}, c_black);
+            civ_text_out(g.framebuffer, g.font_body,
+                         ok_x + 8, ok_y + 14, "OK",
+                         c_black, c_white, CIV_TEXT_BK_TRANSPARENT);
+        }
     } else {
         paint_background(&g);
         civ_widgets_render_all(&g);
@@ -467,6 +528,11 @@ int main(int argc, char **argv)
             civ_surface_free(g.tech_advisor[ai]);
             g.tech_advisor[ai] = NULL;
         }
+    }
+    /* R34-R32: 釋放 wonders_sheet */
+    if (g.wonders_sheet) {
+        civ_surface_free(g.wonders_sheet);
+        g.wonders_sheet = NULL;
     }
 
     civ_sprite_sheet_free(&g.sprite_sheet);

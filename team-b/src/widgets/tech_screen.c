@@ -5,6 +5,7 @@
 #include "../text/text_out.h"
 #include "../world/tech.h"
 #include "../world/unit.h"
+#include "../world/wonder.h"
 #include "../world/sprite_sheet.h"
 #include "../world/city.h"
 
@@ -108,9 +109,74 @@ static void building_sprite_coord(int building_id, int *col, int *row)
 
 static void wonder_sprite_coord(int wonder_id, int *col, int *row)
 {
-    /* wonder icons 推測在 row 11 */
+    /* wonder icons 推測在 row 11 (R26-B 預設, R34-R32 改用 WONDERS.GIF) */
     *row = 11;
     *col = wonder_id & 0xF;
+}
+
+/* R34-R32: WONDERS.GIF 內 22 個奇蹟的 (x, y, w, h) — 從 _wonders_dump.png
+ * 視覺辨識. sheet 512×485, 大致 5×5 不均勻 grid. wonder_id 對齊 R26-B
+ * world/wonder.h enum (1..22, 0=None). 找不到 wonder slot 回 false. */
+static bool wonders_gif_slot(int wonder_id, civ_rect_t *out)
+{
+    if (wonder_id < 1 || wonder_id > 22) return false;
+    /* 5 col × 5 row 簡化, 每格約 102×97 (sheet 510×485). 視覺辨識的
+     * 大致順序 (左上 → 右下), v0.1 不保證完美對位. */
+    static const civ_rect_t SLOTS[22] = {
+        {  0,   0, 102,  96},   /* 1 PYRAMIDS (top-left structure) */
+        { 102,  0, 102,  96},   /* 2 HANGING_GARDENS */
+        { 204,  0, 102,  96},   /* 3 COLOSSUS */
+        { 306,  0, 102,  96},   /* 4 LIGHTHOUSE */
+        { 408,  0, 102,  96},   /* 5 GREAT_LIBRARY */
+        {   0, 96, 102,  96},   /* 6 ORACLE */
+        { 102, 96, 102,  96},   /* 7 GREAT_WALL */
+        { 204, 96, 102,  96},   /* 8 MARCO_POLO */
+        { 306, 96, 102,  96},   /* 9 MICHELANGELO */
+        { 408, 96, 102,  96},   /* 10 MAGELLAN */
+        {   0,192, 102,  96},   /* 11 SHAKESPEARE */
+        { 102,192, 102,  96},   /* 12 LEONARDO */
+        { 204,192, 102,  96},   /* 13 J_S_BACH */
+        { 306,192, 102,  96},   /* 14 ISAAC_NEWTON */
+        { 408,192, 102,  96},   /* 15 DARWIN */
+        {   0,288, 102,  96},   /* 16 STATUE_OF_LIBERTY */
+        { 102,288, 102,  96},   /* 17 EIFFEL */
+        { 204,288, 102,  96},   /* 18 HOOVER_DAM */
+        { 306,288, 102,  96},   /* 19 WOMEN_SUFFRAGE */
+        { 408,288, 102,  96},   /* 20 MANHATTAN */
+        {   0,384, 102,  96},   /* 21 CURE_FOR_CANCER */
+        { 102,384, 102,  96},   /* 22 SETI (OpenCivOne v0.3 extra) */
+    };
+    *out = SLOTS[wonder_id - 1];
+    return true;
+}
+
+/* R34-R32: blit WONDERS.GIF slot to dst rect (32×32 縮版用於 tech_screen
+ * 解鎖列表). 透明 sentinel = palette idx 0 (sheet 綠底). */
+static void blit_wonder_mini(civ_surface_t *fb, struct civ_game *g,
+                              int wonder_id, int dx, int dy, int dw, int dh)
+{
+    if (!g->wonders_sheet) return;
+    civ_rect_t src;
+    if (!wonders_gif_slot(wonder_id, &src)) return;
+    if (src.x + src.w > g->wonders_sheet->w) src.w = g->wonders_sheet->w - src.x;
+    if (src.y + src.h > g->wonders_sheet->h) src.h = g->wonders_sheet->h - src.y;
+
+    uint8_t lut[256];
+    civ_palette_build_lut(g->wonders_palette.entries, 256, &g->palette, lut);
+
+    for (int yy = 0; yy < dh; yy++) {
+        int sy = src.y + yy * src.h / dh;
+        if (sy < 0 || sy >= g->wonders_sheet->h) continue;
+        for (int xx = 0; xx < dw; xx++) {
+            int sx = src.x + xx * src.w / dw;
+            if (sx < 0 || sx >= g->wonders_sheet->w) continue;
+            int px = dx + xx, py = dy + yy;
+            if (px < 0 || px >= fb->w || py < 0 || py >= fb->h) continue;
+            uint8_t si = g->wonders_sheet->pixels[sy * g->wonders_sheet->pitch + sx];
+            if (si == 0) continue;   /* sentinel = transparent */
+            fb->pixels[py * fb->pitch + px] = lut[si];
+        }
+    }
 }
 
 /* R28-2: 科技官員立像 — Civdata3 內 discovr1.gif (512×320). 1993 原版
@@ -324,16 +390,22 @@ void civ_tech_screen_render(struct civ_game *g, civ_surface_t *fb)
             ay += 22;
         }
 
-        /* wonder (綠) + sprite */
+        /* wonder (綠) + sprite — R34-R32: 改用 WONDERS.GIF 真實奇蹟立體圖
+         * 取代 R26-B 在 SPR32X32 row 11 的占位. wonder_id 對齊 world/wonder.h. */
         for (int i = 0; i < 4 && ev->unlocked_wonder[i]; i++) {
-            int col = 0, row = 0;
-            wonder_sprite_coord(ev->unlocked_wonder[i], &col, &row);
-            blit_mini_sprite(fb, g, ax + 12, ay - 14, col, row);
-            const char *wname = "巨像 奇蹟";
-            if (ev->unlocked_wonder[i] == 2) wname = "金字塔 奇蹟";
-            civ_text_out(fb, g->font_body, ax + 32, ay, wname,
+            int wid = ev->unlocked_wonder[i];
+            if (g->wonders_sheet) {
+                /* 真實 WONDERS.GIF 縮成 24×24 */
+                blit_wonder_mini(fb, g, wid, ax + 6, ay - 16, 28, 24);
+            } else {
+                int col = 0, row = 0;
+                wonder_sprite_coord(wid, &col, &row);
+                blit_mini_sprite(fb, g, ax + 12, ay - 14, col, row);
+            }
+            civ_text_out(fb, g->font_body, ax + 38, ay,
+                         civ_wonder_name_zh(wid),
                          c_green, c_bg, CIV_TEXT_BK_TRANSPARENT);
-            ay += 22;
+            ay += 24;
         }
     }
 

@@ -366,6 +366,19 @@ static void map_render(civ_widget_t *w, civ_surface_t *fb)
             uint8_t col = OWNER_COLOR[u->owner < CIV_NUM_PLAYERS ? u->owner : 0];
             civ_frame_rect(fb, (civ_rect_t){dx,     dy,     tile_w,     tile_h}, col);
             civ_frame_rect(fb, (civ_rect_t){dx + 1, dy + 1, tile_w - 2, tile_h - 2}, col);
+
+            /* R34-C2 (GAMETEST_GAP_LIST.md C2): nation flag bar 上方 3px
+             * 實心條對齊 1993 reference 「印度民兵」橘色標示. moves_left
+             * 數字小寫在 right-top corner (white 字 over flag bar). */
+            civ_fill_rect(fb,
+                (civ_rect_t){dx + 2, dy + 2, tile_w - 4, 3}, col);
+            if (w->game->font_body && u->moves_left > 0) {
+                char num_buf[4];
+                snprintf(num_buf, sizeof num_buf, "%d", u->moves_left);
+                civ_text_out(fb, w->game->font_body,
+                             dx + tile_w - 8, dy + 14,
+                             num_buf, 15, col, CIV_TEXT_BK_TRANSPARENT);
+            }
         }
 
         /* cursor */

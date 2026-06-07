@@ -104,6 +104,11 @@ struct civ_game {
     civ_surface_t              *tech_advisor[2];
     civ_palette_t               tech_advisor_palettes[2];
 
+    /* R34-R32: Civdata3 WONDERS.GIF (id 3334, 512×485) — 22 個奇蹟立體圖
+     * 對齊 R26-B wonder enum. 用於 tech_screen 解鎖列表 + 城市畫面顯示. */
+    civ_surface_t              *wonders_sheet;
+    civ_palette_t               wonders_palette;
+
     /* R29 (C1 gap): 主畫面 menu bar dropdown state.
      *   menu_open_idx = -1 沒打開, 0..7 = 對應 menu (檔案..說明)
      *   menu_cursor_item = 該 dropdown 內反白項 (-1 = 都不反白) */
