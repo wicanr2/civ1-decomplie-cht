@@ -287,11 +287,39 @@ int main(int argc, char **argv)
         }
     }
 
-    paint_background(&g);
-    civ_widgets_render_all(&g);
-    civ_city_screen_render(&g, g.framebuffer);
-    civ_tech_screen_render(&g, g.framebuffer);
-    civ_diplomat_screen_render(&g, g.framebuffer);
+    /* R23: splash mode — 載 CIVDATA1 CIV.GIF (id 136, 502×145) 居中 blit.
+     * 對應 1991/1993 原版開機 title splash. 黑底, sprite 自身 palette identity. */
+    if (argc > 2 && strcmp(argv[2], "splash") == 0) {
+        snprintf(path, sizeof path, "%s/CIVDATA1.RSC", data_dir);
+        civ_rsrc_t *r1 = civ_rsrc_open(path);
+        if (!r1) {
+            snprintf(path, sizeof path, "%s/Civdata1.RSC", data_dir);
+            r1 = civ_rsrc_open(path);
+        }
+        civ_surface_t *title = NULL;
+        civ_palette_t  tpal = {0};
+        if (r1 && civ_load_cvpc_by_id(r1, 136, &title, &tpal) == 0) {
+            g.palette = tpal;
+            /* 黑底 (idx 0 通常是黑或 magenta — 視 palette; 用 nearest) */
+            uint8_t c_black = civ_palette_nearest_rgb(&g.palette, 0, 0, 0);
+            civ_fill_rect(g.framebuffer, (civ_rect_t){0, 0, FB_W, FB_H}, c_black);
+            int dx = (FB_W - title->w) / 2;
+            int dy = (FB_H - title->h) / 2;
+            civ_rect_t src = { 0, 0, title->w, title->h };
+            civ_surface_blit(g.framebuffer, dx, dy, title, &src);
+            civ_surface_free(title);
+            printf("splash CIV.GIF rendered (%dx%d)\n", FB_W, FB_H);
+        } else {
+            fprintf(stderr, "splash: CIV.GIF load fail\n");
+        }
+        if (r1) civ_rsrc_close(r1);
+    } else {
+        paint_background(&g);
+        civ_widgets_render_all(&g);
+        civ_city_screen_render(&g, g.framebuffer);
+        civ_tech_screen_render(&g, g.framebuffer);
+        civ_diplomat_screen_render(&g, g.framebuffer);
+    }
 
     const char *out_path = argc > 1 ? argv[1] : "m5_world.ppm";
     write_ppm(out_path, g.framebuffer, &g.palette);

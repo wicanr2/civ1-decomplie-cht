@@ -218,6 +218,36 @@ static void paint_leader_portrait(civ_surface_t *fb, struct civ_game *g,
                            lut, skip);
 }
 
+/* R23: blit one of 4 advisor figures from GOVT*M right half.
+ * 右半 layout (從 _king_dump/govt_*.png 視覺辨識):
+ *   - 上方 ~0..80 y: 8 個 expression 小頭像 (animation grid)
+ *   - 下方 ~80..320 y: 4 個立姿 advisor sprite, 各 ~115×240
+ *   - x 起始: 480, 595, 710, 825 (各佔約 115 wide)
+ * R23 default 取 advisor 0 + advisor 3 兩端做左右側仕從. */
+static void paint_govt_advisor(civ_surface_t *fb, struct civ_game *g,
+                                int govt_idx, int advisor_idx,
+                                int dst_x, int dst_y, int dst_w, int dst_h)
+{
+    if (govt_idx < 0 || govt_idx >= 3) govt_idx = 1;
+    if (advisor_idx < 0 || advisor_idx >= 4) advisor_idx = 0;
+    civ_surface_t *gb = g->govt_backdrops[govt_idx];
+    if (!gb) return;
+
+    /* 右半 advisor 區 source coords (per 939×320 sheet): */
+    static const int ADV_X[4] = { 480, 595, 710, 825 };
+    civ_rect_t src = { ADV_X[advisor_idx], 80, 115, 240 };
+    if (src.x + src.w > gb->w) src.w = gb->w - src.x;
+    if (src.y + src.h > gb->h) src.h = gb->h - src.y;
+
+    uint8_t lut[256];
+    civ_palette_build_lut(g->govt_palettes[govt_idx].entries, 256,
+                          &g->palette, lut);
+    uint8_t skip[256];
+    build_skip_mask(&g->govt_palettes[govt_idx], skip);
+
+    blit_scaled_remap_skip(fb, dst_x, dst_y, dst_w, dst_h, gb, src, lut, skip);
+}
+
 /* R21: blit GOVT*M backdrop left half (scene + parchment + spear)
  * scaled to full 640x360 upper. 對應 spec 03 §3.1 內 939x320 sheet 結構:
  *   - 左半 (~0..460) = scene backdrop (sky/wall + parchment + spear ornament)
@@ -368,10 +398,14 @@ void civ_diplomat_screen_render(struct civ_game *g, civ_surface_t *fb)
     /* === 上半 (y 0..360) ===
      * R21: 若 GOVT*M backdrop cached, 用原版 scene (含 parchment + spear +
      * 宮殿/山地 backdrop). 否則 fallback clean-room sky+mountain+advisors.
+     * R23: 加 2 個原版 advisor 從 GOVT*M 右半切片 (左 idx 0, 右 idx 3).
      * GOVT idx 1 = Monarchy (對應 reference webp 兩位領袖時代). */
     int govt_idx = 1;
     if (g->govt_backdrops[govt_idx]) {
         paint_govt_backdrop(fb, g, govt_idx);
+        /* R23: 兩側 advisor (原版 sprite) — 左 idx 0 / 右 idx 3 */
+        paint_govt_advisor(fb, g, govt_idx, 0, 10,  80, 110, 240);
+        paint_govt_advisor(fb, g, govt_idx, 3, 520, 80, 110, 240);
     } else {
         paint_sky_mountain(fb, g, 0, 0, DS_W, DS_DIALOG_Y);
         paint_advisor(fb, g, 90, 0x60, 0x60, 0x70);

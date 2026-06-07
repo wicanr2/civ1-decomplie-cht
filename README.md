@@ -20,6 +20,8 @@
 >
 > **R22 — 主畫面 status panel polish + 開場資產盤點**: (1) 使用者指正 status panel "黑框灰底 顯示目前時間, 中間對話框的上面有一個小圖案 顯示目前國家的狀態" → R17 雙層青/灰改單一灰底+黑框; 頂部加 player KING sprite frame 0 (64×60) 國家狀態縮圖 (預設 Caesar slot 1, 真實 player_civ_slot 留 R23+ hook); (2) CIVDATA1 probe — 14 CvPc 含 BIRTH01..08 (intro splash sequence, BIRTH01 1024×320, BIRTH2..8 512×320) + CIV title (502×145) + CUSTOM + 4 GOVT*A backdrops; MIDI 音樂 per spec 03 是 embedded 在 CvPc payload (MThd/MTrk signature), 非獨立 type; 真實 intro animation/MIDI 播放實作留 R23+; (3) minimap 已於 R14 改黑底, 確認 OK; (4) 4 個 m11 diplomat snapshot regen 對齊 R21 GOVT backdrop ship 結果.
 >
+> **R23 — R22 TODO 接力 (3 項 ship + 1 證偽)**: (1) **player_civ_slot 接通** — world.h 加欄位 (預設 1=Caesar/Roman), status.c 國家狀態縮圖 lookup 改用 player_civ_slot, 接通 R22 留下的 hardcode; (2) **CIV title splash mode** — test_world_snapshot 新 `splash` 模式載 CIVDATA1 id 136 (CIV.GIF, 502×145) 居中 blit, 對應原版開機 title; (3) **Advisor 切片** — `paint_govt_advisor()` 從 GOVT*M 右半 (各 ~115×240 @ x=480/595/710/825, y=80) 取 1991/1993 原版 advisor 立姿 sprite, 接進 diplomat 場景兩側 (左 idx 0 / 右 idx 3); (4) **MIDI 證偽** — probe_civdata2 對 14 個 BIRTH/CIV payload 掃 MThd/MTrk signature, **0 hit**. 結論: spec 03 §3 「CIVDATA1 payload 內含 MIDI」推測**錯誤**; 真實音樂可能在 CIV.EXE 嵌入 / 用 PC speaker / 或 1993 Win port 已移除. 真實 BIRTH 動畫 + 音訊實作留 R24+ (需先用 Ghidra trace `mmsystem.dll!MCISENDCOMMAND` 找音源).
+>
 > 14 領袖 enum + 5 mood (Greeting/Demand Tribute/Offer Peace/Declare War/Propose Trade) + 客製對話文字 (「英格蘭女皇伊莉莎白一世向您致意……」/「我等至明智之德意志皇帝腓特烈大帝向您致意……」). 鍵盤 `D` 鍵 demo 觸發 Elizabeth GREETING.
 
 ## 專案目的

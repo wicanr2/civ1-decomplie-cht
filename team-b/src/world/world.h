@@ -50,6 +50,11 @@ typedef struct civ_world {
     /* R5 M6-full city: city roster (spec 06 §6.2) -------- */
     civ_city_t cities[CIV_MAX_CITIES];
     int        cities_count;
+
+    /* R23: 玩家所屬文明 slot (1..14, 對齊 STR# 140 真實 slot).
+     * 用於 status panel 國家狀態縮圖 + 對外發言 / diplomat dialog. R23 hardcode
+     * = 1 (Caesar/Roman). R24+ 接 wizard 玩家選擇. */
+    int        player_civ_slot;
 } civ_world_t;
 
 /* 把 terrain enum 對應到 SPR32X32 內的 (col, row)。

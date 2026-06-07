@@ -146,6 +146,7 @@ void civ_world_init_demo(civ_world_t *w)
     w->units_count   = 0;
     w->selected_unit = -1;
     w->last_combat_msg[0] = '\0';
+    w->player_civ_slot = 1;       /* R23: 預設 player = Roman (slot 1, Caesar) */
 
     civ_world_spawn_unit(w, CIV_UNIT_SETTLERS, 1, 30, 15);
     civ_world_spawn_unit(w, CIV_UNIT_SETTLERS, 1, 31, 15);

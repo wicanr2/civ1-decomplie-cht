@@ -95,10 +95,15 @@ static void status_render(civ_widget_t *w, civ_surface_t *fb)
     int y = body_y + 8;
     char buf[64];
 
-    /* R22: 國家狀態小圖 — player 領袖 KING sprite frame 0 (~64×64).
-     * 預設 player_leader = CIV_LEADER_CAESAR (R23+ 接 player_civ_slot).
-     * sprite 是 5col×4row 動畫 frame grid, frame 0 = (0,0,85,80) → scaled 64×60. */
+    /* R22 + R23: 國家狀態小圖 — player 領袖 KING sprite frame 0 (~64×60).
+     * R23: hook 進 world.player_civ_slot (對齊 STR# 140 真實 slot).
+     * sprite frame 0 = (0,0,85,80) → scaled 64×60. */
     civ_leader_id_t player_leader = CIV_LEADER_CAESAR;
+    if (w->game->world_ready &&
+        w->game->world.player_civ_slot >= 1 &&
+        w->game->world.player_civ_slot <= CIV_LEADER_COUNT) {
+        player_leader = (civ_leader_id_t)w->game->world.player_civ_slot;
+    }
     civ_surface_t *king = w->game->leader_portraits[player_leader];
     int icon_h = 60;
     int icon_w = 64;

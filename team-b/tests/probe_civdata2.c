@@ -18,6 +18,18 @@ static const char *fourcc_str(uint32_t fc, char buf[5])
     return buf;
 }
 
+/* R23: scan payload bytes for 4-byte signature, report first offset. */
+static long find_signature(const uint8_t *data, size_t len, const char sig[4])
+{
+    for (size_t i = 0; i + 4 <= len; i++) {
+        if (data[i] == (uint8_t)sig[0] && data[i+1] == (uint8_t)sig[1] &&
+            data[i+2] == (uint8_t)sig[2] && data[i+3] == (uint8_t)sig[3]) {
+            return (long)i;
+        }
+    }
+    return -1;
+}
+
 static void list_type(const civ_rsrc_t *r, uint32_t type)
 {
     char fc[5];
@@ -34,6 +46,15 @@ static void list_type(const civ_rsrc_t *r, uint32_t type)
             int w = (e->data[0] << 8) | e->data[1];
             int h = (e->data[2] << 8) | e->data[3];
             printf("  %dx%d", w, h);
+
+            /* R23: 對 BIRTH/CIV payload 尋找 MIDI signature (MThd 在 SMF 起始) */
+            if (e->name && (strncmp(e->name, "BIRTH", 5) == 0 ||
+                            strncmp(e->name, "CIV", 3) == 0)) {
+                long m_off = find_signature(e->data, e->len, "MThd");
+                long t_off = find_signature(e->data, e->len, "MTrk");
+                if (m_off >= 0) printf("  MThd@%ld", m_off);
+                if (t_off >= 0) printf("  MTrk@%ld", t_off);
+            }
         }
         printf("\n");
     }
