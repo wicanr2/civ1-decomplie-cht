@@ -111,6 +111,11 @@ target_link_libraries(test_diplomat PRIVATE civ_core)
 add_test(NAME diplomat COMMAND test_diplomat)
 set_tests_properties(diplomat PROPERTIES TIMEOUT 10)
 
+add_executable(test_score test_score.c)
+target_link_libraries(test_score PRIVATE civ_core)
+add_test(NAME score COMMAND test_score)
+set_tests_properties(score PROPERTIES TIMEOUT 10)
+
 # R21 dev probe — not a test, just a CLI tool
 add_executable(probe_civdata2 probe_civdata2.c)
 target_link_libraries(probe_civdata2 PRIVATE civ_core)
