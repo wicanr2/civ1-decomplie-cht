@@ -116,14 +116,26 @@ static void status_render(civ_widget_t *w, civ_surface_t *fb)
         uint8_t lut[256], skip[256];
         civ_palette_build_lut(w->game->leader_king_palettes[player_leader].entries,
                               256, pal, lut);
-        /* R25: 只 skip idx 0 (Civ1 sentinel pixel, spec 03 §3.5.1).
-         * 對齊 diplomat_screen.c build_skip_mask 同步修正. */
+        /* R25: skip idx 0 (Civ1 sentinel pixel, spec 03 §3.5.1).
+         * R27-fix: KING sprite 實際背景 sentinel 不一定在 idx 0 (frame 0
+         * 角落為 cyan/magenta), 用 top-row >50% dominant 採樣加進 skip
+         * — 與 diplomat_screen.c paint_leader_portrait 同套修法. */
         memset(skip, 0, sizeof skip);
         skip[0] = 1;
-        /* nearest-neighbor scale + skip transparent */
         int src_w = 85, src_h = 80;
         if (king->w < src_w) src_w = king->w;
         if (king->h < src_h) src_h = king->h;
+        {
+            int hist[256] = {0};
+            for (int xx = 0; xx < src_w; xx++) {
+                hist[king->pixels[0 * king->pitch + xx]]++;
+            }
+            int half = src_w / 2;
+            for (int i = 0; i < 256; i++) {
+                if (hist[i] > half) { skip[i] = 1; break; }
+            }
+        }
+        /* nearest-neighbor scale + skip transparent */
         for (int yy = 0; yy < icon_h; yy++) {
             int sy = yy * src_h / icon_h;
             for (int xx = 0; xx < icon_w; xx++) {
