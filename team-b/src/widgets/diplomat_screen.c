@@ -214,9 +214,30 @@ static void paint_leader_portrait(civ_surface_t *fb, struct civ_game *g,
     civ_palette_build_lut(g->leader_king_palettes[leader].entries, 256,
                           &g->palette, lut);
 
-    /* R21: skip mask = idx 0 + magenta-ish RGB (解粉紅大方塊). */
+    /* R27-fix: KING sprite 的透明 sentinel 不在 idx 0 (R21 觀察到的大片粉紅
+     * 是 KING 自身 palette 的背景 magenta entry). 但 4 角同色採樣不適用於
+     * 領袖肖像 — 衣服往往延到 sprite 底部, 只有 top-left + top-right 是 bg.
+     *
+     * 改用 top-row 採樣: scan 整條 top row, 找最常出現 (>50%) 的 idx 認定為
+     * background sentinel. 紅裙在中段, 不會在 top row 出現 majority, 安全. */
     uint8_t skip[256];
     build_skip_mask(&g->leader_king_palettes[leader], skip);
+    {
+        int row_y = src.y;
+        if (row_y >= 0 && row_y < king->h) {
+            int hist[256] = {0};
+            int xstart = src.x < 0 ? 0 : src.x;
+            int xend   = src.x + src.w;
+            if (xend > king->w) xend = king->w;
+            for (int xx = xstart; xx < xend; xx++) {
+                hist[king->pixels[row_y * king->pitch + xx]]++;
+            }
+            int half = (xend - xstart) / 2;
+            for (int i = 0; i < 256; i++) {
+                if (hist[i] > half) { skip[i] = 1; break; }
+            }
+        }
+    }
 
     blit_scaled_remap_skip(fb, dst_x, dst_y, dst_w, dst_h, king, src,
                            lut, skip);
@@ -248,6 +269,31 @@ static void paint_govt_advisor(civ_surface_t *fb, struct civ_game *g,
                           &g->palette, lut);
     uint8_t skip[256];
     build_skip_mask(&g->govt_palettes[govt_idx], skip);
+
+    /* R27-fix: GOVT*M 右半 advisor 區的背景 sentinel 不是 palette idx 0
+     * (左半 backdrop 用 idx 0, 但右半 advisor 用 cyan-ish 背景).
+     * 採樣 source rect 4 角當該 region 的 background skip entry —
+     * 避免 R25 後 cyan 大片漏進 dst.
+     *
+     * 為了避免採樣到非背景的角落 (e.g. advisor 衣袖伸到頂部) 而誤殺色彩,
+     * 只當 4 角同色 (或至少 3 角同色) 時才認定為背景 sentinel. */
+    {
+        int cx0 = src.x, cx1 = src.x + src.w - 1;
+        int cy0 = src.y, cy1 = src.y + src.h - 1;
+        if (cx1 >= gb->w) cx1 = gb->w - 1;
+        if (cy1 >= gb->h) cy1 = gb->h - 1;
+        uint8_t corner[4] = {
+            gb->pixels[cy0 * gb->pitch + cx0],
+            gb->pixels[cy0 * gb->pitch + cx1],
+            gb->pixels[cy1 * gb->pitch + cx0],
+            gb->pixels[cy1 * gb->pitch + cx1],
+        };
+        for (int i = 0; i < 4; i++) {
+            int hits = 0;
+            for (int j = 0; j < 4; j++) if (corner[j] == corner[i]) hits++;
+            if (hits >= 3) skip[corner[i]] = 1;
+        }
+    }
 
     blit_scaled_remap_skip(fb, dst_x, dst_y, dst_w, dst_h, gb, src, lut, skip);
 }
