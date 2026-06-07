@@ -72,12 +72,16 @@ static void test_fill_unlocked_bronze_working(void)
 
 static void test_fill_unlocked_alphabet(void)
 {
+    /* R26: Alphabet unlocks 4 tech (spec 06 §6.5.1 DAG):
+     *   Code of Laws (8), Map Making (9), Writing (10), Mathematics (17)
+     * Iteration order = enum order, 故結果 = [8, 9, 10, 17] */
     civ_tech_discovery_event_t ev = {0};
     ev.tech_id = CIV_TECH_ALPHABET;
     civ_tech_discovery_fill_unlocked(&ev);
-    assert(ev.unlocked_techs[0] == CIV_TECH_WRITING);
+    assert(ev.unlocked_techs[0] == CIV_TECH_CODE_OF_LAWS);
     assert(ev.unlocked_techs[1] == CIV_TECH_MAP_MAKING);
-    assert(ev.unlocked_techs[2] == CIV_TECH_MATHEMATICS);
+    assert(ev.unlocked_techs[2] == CIV_TECH_WRITING);
+    assert(ev.unlocked_techs[3] == CIV_TECH_MATHEMATICS);
     /* alphabet 不解鎖 unit / improvement */
     assert(ev.unlocked_units[0] == 0);
     assert(ev.unlocked_imp[0]   == 0);
@@ -95,17 +99,64 @@ static void test_fill_unlocked_writing(void)
     printf("  test_fill_unlocked_writing PASS\n");
 }
 
-static void test_fill_unlocked_unknown_tech(void)
+static void test_fill_unlocked_horseback(void)
 {
-    /* 沒寫 prereq 的 tech, 解鎖陣列全 0 */
+    /* R26: Horseback Riding 解鎖 Chivalry (其 prereq = Feudalism + Horseback).
+     * unit/imp/wonder unlock 待 R27+ (R16 stub 只有 7 tech 有 asset unlock). */
     civ_tech_discovery_event_t ev = {0};
     ev.tech_id = CIV_TECH_HORSEBACK_RIDING;
     civ_tech_discovery_fill_unlocked(&ev);
-    assert(ev.unlocked_techs[0] == 0);
+    assert(ev.unlocked_techs[0] == CIV_TECH_CHIVALRY);
+    assert(ev.unlocked_techs[1] == CIV_TECH_NONE);  /* 只有 1 個後續 */
+    /* R26: asset unlock R16 stub 沒 cover Horseback */
     assert(ev.unlocked_units[0] == 0);
     assert(ev.unlocked_imp[0]   == 0);
     assert(ev.unlocked_wonder[0] == 0);
-    printf("  test_fill_unlocked_unknown_tech PASS\n");
+    printf("  test_fill_unlocked_horseback PASS\n");
+}
+
+static void test_prereq_lookup(void)
+{
+    /* R26: PREREQ 表抽樣驗證 (spec 06 §6.5.1 ground-truth) */
+    civ_tech_id_t a, b;
+
+    /* Alphabet: no prereq */
+    assert(civ_tech_prereq(CIV_TECH_ALPHABET, &a, &b));
+    assert(a == CIV_TECH_NONE && b == CIV_TECH_NONE);
+
+    /* Writing: 1 prereq (Alphabet) */
+    assert(civ_tech_prereq(CIV_TECH_WRITING, &a, &b));
+    assert(a == CIV_TECH_ALPHABET && b == CIV_TECH_NONE);
+
+    /* Mathematics: 2 prereq (Alphabet + Masonry) */
+    assert(civ_tech_prereq(CIV_TECH_MATHEMATICS, &a, &b));
+    assert(a == CIV_TECH_ALPHABET && b == CIV_TECH_MASONRY);
+
+    /* Space Flight: late game (Computers + Rocketry) */
+    assert(civ_tech_prereq(CIV_TECH_SPACE_FLIGHT, &a, &b));
+    assert(a == CIV_TECH_COMPUTERS && b == CIV_TECH_ROCKETRY);
+
+    /* Future_1: 1 prereq (Fusion Power) */
+    assert(civ_tech_prereq(CIV_TECH_FUTURE_1, &a, &b));
+    assert(a == CIV_TECH_FUSION_POWER && b == CIV_TECH_NONE);
+
+    /* 越界 → false */
+    assert(!civ_tech_prereq((civ_tech_id_t)999, &a, &b));
+    printf("  test_prereq_lookup PASS\n");
+}
+
+static void test_tech_name_zh_full(void)
+{
+    /* R26: 抽樣驗證 67 core + 5 future zh-TW name */
+    assert(strcmp(civ_tech_name_zh(CIV_TECH_ALPHABET),         "字母") == 0);
+    assert(strcmp(civ_tech_name_zh(CIV_TECH_THE_REPUBLIC),     "共和政體") == 0);
+    assert(strcmp(civ_tech_name_zh(CIV_TECH_FEUDALISM),        "封建制度") == 0);
+    assert(strcmp(civ_tech_name_zh(CIV_TECH_GUNPOWDER),        "火藥") == 0);
+    assert(strcmp(civ_tech_name_zh(CIV_TECH_INDUSTRIALIZATION),"工業化") == 0);
+    assert(strcmp(civ_tech_name_zh(CIV_TECH_COMPUTERS),        "電腦") == 0);
+    assert(strcmp(civ_tech_name_zh(CIV_TECH_FUSION_POWER),     "融合動力") == 0);
+    assert(strcmp(civ_tech_name_zh(CIV_TECH_FUTURE_1),         "未來科技 1") == 0);
+    printf("  test_tech_name_zh_full PASS\n");
 }
 
 int main(void)
@@ -117,7 +168,9 @@ int main(void)
     test_fill_unlocked_bronze_working();
     test_fill_unlocked_alphabet();
     test_fill_unlocked_writing();
-    test_fill_unlocked_unknown_tech();
+    test_fill_unlocked_horseback();
+    test_prereq_lookup();
+    test_tech_name_zh_full();
     printf("ALL PASS\n");
     return 0;
 }

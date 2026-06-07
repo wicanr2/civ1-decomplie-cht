@@ -1,12 +1,13 @@
 /*
- * world/tech.h — R16 M-techscreen 科技 + discovery event
+ * world/tech.h — R26 完整 67 core + 5 future tech + DAG
  *
- * 對齊 spec 06 §6.5 (47 tech) + spec 05 STR# 130 (tech name).
- * 1991 manual P49 "Science Advisor" 對應. 1993 Win 內 tech 進度
- * 推測佔 47-byte bitmap (對應 SAV §7.2 0x????). 真實 offset 待 spec 07 v0.3.
+ * 對齊 spec 06 §6.5.1 (OpenCivOne ground-truth) + civ_dict.c STR# 130.
+ * R16 stub 13 tech → R26 完整 72.
  *
- * R16 階段: 只實作前 13 個 tech (常用一階) + discovery event struct.
- * 後續 R17+ 補滿 47 + 5 future tech.
+ * Enum 排序: spec 06 DAG 順序 (no-prereq → 1-prereq → 2-prereq → future).
+ * 同一 prereq 級內依 spec 06 文件出現順序.
+ *
+ * 真實 SAV file 用 47-byte bitmap (`spec 07 §7.2`), 對應 R27+ tech-state field.
  */
 #ifndef CIV_WORLD_TECH_H
 #define CIV_WORLD_TECH_H
@@ -14,59 +15,125 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define CIV_TECH_COUNT   13  /* R16 階段; 真值 47 (spec 06 §6.5) */
+#define CIV_TECH_COUNT   72   /* 67 core + 5 future */
 
 typedef enum {
-    CIV_TECH_NONE             = 0,
-    CIV_TECH_ALPHABET         = 1,   /* 字母 — 無 prereq */
-    CIV_TECH_BRONZE_WORKING   = 2,   /* 青銅器 — 無 prereq */
-    CIV_TECH_HORSEBACK_RIDING = 3,   /* 騎術 — 無 prereq */
-    CIV_TECH_POTTERY          = 4,   /* 陶器 — 無 prereq */
-    CIV_TECH_CURRENCY         = 5,   /* 貨幣 — Bronze Working */
-    CIV_TECH_IRON_WORKING     = 6,   /* 鐵器 — Bronze Working + Warrior Code */
-    CIV_TECH_WRITING          = 7,   /* 文字 — Alphabet */
-    CIV_TECH_MAP_MAKING       = 8,   /* 地圖學 — Alphabet */
-    CIV_TECH_MASONRY          = 9,   /* 砌石 — 無 prereq */
-    CIV_TECH_POLYTHEISM       = 10,  /* 多神教 — Horseback Riding + Ceremonial Burial */
-    CIV_TECH_LITERACY         = 11,  /* 文藝 — Writing + Code of Laws */
-    CIV_TECH_MATHEMATICS      = 12,  /* 數學 — Alphabet + Masonry */
+    CIV_TECH_NONE                = 0,
+
+    /* === No-prereq tier (7) === */
+    CIV_TECH_ALPHABET            = 1,
+    CIV_TECH_BRONZE_WORKING      = 2,
+    CIV_TECH_CEREMONIAL_BURIAL   = 3,
+    CIV_TECH_HORSEBACK_RIDING    = 4,
+    CIV_TECH_MASONRY             = 5,
+    CIV_TECH_POTTERY             = 6,
+    CIV_TECH_THE_WHEEL           = 7,
+
+    /* === 1-prereq tier (6) === */
+    CIV_TECH_CODE_OF_LAWS        = 8,   /* Alphabet */
+    CIV_TECH_MAP_MAKING          = 9,   /* Alphabet */
+    CIV_TECH_WRITING             = 10,  /* Alphabet */
+    CIV_TECH_CURRENCY            = 11,  /* Bronze Working */
+    CIV_TECH_IRON_WORKING        = 12,  /* Bronze Working */
+    CIV_TECH_MYSTICISM           = 13,  /* Ceremonial Burial */
+
+    /* === 2-prereq tier (54), spec 06 §6.5.1 order === */
+    CIV_TECH_ASTRONOMY           = 14,  /* Mysticism + Mathematics */
+    CIV_TECH_MONARCHY            = 15,  /* Ceremonial Burial + Code of Laws */
+    CIV_TECH_ENGINEERING         = 16,  /* Wheel + Construction */
+    CIV_TECH_MATHEMATICS         = 17,  /* Alphabet + Masonry */
+    CIV_TECH_TRADE               = 18,  /* Currency + Code of Laws */
+    CIV_TECH_CONSTRUCTION        = 19,  /* Masonry + Currency */
+    CIV_TECH_LITERACY            = 20,  /* Writing + Code of Laws */
+    CIV_TECH_BRIDGE_BUILDING     = 21,  /* Iron Working + Construction */
+    CIV_TECH_BANKING             = 22,  /* Trade + The Republic */
+    CIV_TECH_THE_REPUBLIC        = 23,  /* Code of Laws + Literacy */
+    CIV_TECH_FEUDALISM           = 24,  /* Masonry + Monarchy */
+    CIV_TECH_PHILOSOPHY          = 25,  /* Mysticism + Literacy */
+    CIV_TECH_RELIGION            = 26,  /* Philosophy + Writing */
+    CIV_TECH_MEDICINE            = 27,  /* Philosophy + Trade */
+    CIV_TECH_NAVIGATION          = 28,  /* Map Making + Astronomy */
+    CIV_TECH_MAGNETISM           = 29,  /* Navigation + Physics */
+    CIV_TECH_CHIVALRY            = 30,  /* Feudalism + Horseback Riding */
+    CIV_TECH_UNIVERSITY          = 31,  /* Mathematics + Philosophy */
+    CIV_TECH_PHYSICS             = 32,  /* Mathematics + Navigation */
+    CIV_TECH_INVENTION           = 33,  /* Engineering + Literacy */
+    CIV_TECH_DEMOCRACY           = 34,  /* Philosophy + Literacy */
+    CIV_TECH_THEORY_OF_GRAVITY   = 35,  /* Astronomy + University */
+    CIV_TECH_CHEMISTRY           = 36,  /* University + Medicine */
+    CIV_TECH_GUNPOWDER           = 37,  /* Invention + Iron Working */
+    CIV_TECH_STEAM_ENGINE        = 38,  /* Physics + Invention */
+    CIV_TECH_RAILROAD            = 39,  /* Steam Engine + Bridge Building */
+    CIV_TECH_METALLURGY          = 40,  /* Gunpowder + University */
+    CIV_TECH_EXPLOSIVES          = 41,  /* Gunpowder + Chemistry */
+    CIV_TECH_INDUSTRIALIZATION   = 42,  /* Railroad + Banking */
+    CIV_TECH_COMMUNISM           = 43,  /* Philosophy + Industrialization */
+    CIV_TECH_CONSCRIPTION        = 44,  /* The Republic + Explosives */
+    CIV_TECH_ELECTRICITY         = 45,  /* Metallurgy + Magnetism */
+    CIV_TECH_ATOMIC_THEORY       = 46,  /* Theory of Gravity + Physics */
+    CIV_TECH_THE_CORPORATION     = 47,  /* Banking + Industrialization */
+    CIV_TECH_STEEL               = 48,  /* Metallurgy + Industrialization */
+    CIV_TECH_REFINING            = 49,  /* Chemistry + The Corporation */
+    CIV_TECH_COMBUSTION          = 50,  /* Refining + Explosives */
+    CIV_TECH_AUTOMOBILE          = 51,  /* Combustion + Steel */
+    CIV_TECH_MASS_PRODUCTION     = 52,  /* Automobile + The Corporation */
+    CIV_TECH_ELECTRONICS         = 53,  /* Engineering + Electricity */
+    CIV_TECH_FLIGHT              = 54,  /* Combustion + Physics */
+    CIV_TECH_LABOR_UNION         = 55,  /* Mass Production + Communism */
+    CIV_TECH_GENETIC_ENGINEERING = 56,  /* Medicine + The Corporation */
+    CIV_TECH_PLASTICS            = 57,  /* Refining + Space Flight */
+    CIV_TECH_RECYCLING           = 58,  /* Mass Production + Democracy */
+    CIV_TECH_NUCLEAR_FISSION     = 59,  /* Mass Production + Atomic Theory */
+    CIV_TECH_COMPUTERS           = 60,  /* Mathematics + Electronics */
+    CIV_TECH_ADVANCED_FLIGHT     = 61,  /* Flight + Electricity */
+    CIV_TECH_ROCKETRY            = 62,  /* Advanced Flight + Electronics */
+    CIV_TECH_NUCLEAR_POWER       = 63,  /* Nuclear Fission + Electronics */
+    CIV_TECH_SPACE_FLIGHT        = 64,  /* Computers + Rocketry */
+    CIV_TECH_ROBOTICS            = 65,  /* Plastics + Computers */
+    CIV_TECH_SUPERCONDUCTOR      = 66,  /* Plastics + Mass Production */
+    CIV_TECH_FUSION_POWER        = 67,  /* Nuclear Power + Superconductor */
+
+    /* === Future tier (5) === */
+    CIV_TECH_FUTURE_1            = 68,
+    CIV_TECH_FUTURE_2            = 69,
+    CIV_TECH_FUTURE_3            = 70,
+    CIV_TECH_FUTURE_4            = 71,
 } civ_tech_id_t;
 
 typedef enum {
-    CIV_TECH_LEARN_SELF       = 0,   /* 自家研發 */
-    CIV_TECH_LEARN_DIPLOMAT   = 1,   /* Diplomat 偷取 */
-    CIV_TECH_LEARN_TRADE      = 2,   /* 外交交易 */
-    CIV_TECH_LEARN_HUT        = 3,   /* 部落小屋 */
-    CIV_TECH_LEARN_LIBRARY    = 4,   /* Great Library Wonder */
+    CIV_TECH_LEARN_SELF       = 0,
+    CIV_TECH_LEARN_DIPLOMAT   = 1,
+    CIV_TECH_LEARN_TRADE      = 2,
+    CIV_TECH_LEARN_HUT        = 3,
+    CIV_TECH_LEARN_LIBRARY    = 4,
 } civ_tech_learn_source_t;
 
-/* discovery event payload. R16-1 起 widgets/tech_screen 顯示時讀此值. */
 typedef struct civ_tech_discovery_event {
     civ_tech_id_t           tech_id;
     civ_tech_learn_source_t source;
-    int                     from_civ_slot;   /* DIPLOMAT/TRADE 才有效, 0..7 */
-
-    /* 解鎖內容 (spec 06 §6.5 prereq DAG 反推, R16-4 填). 0 = 結束. */
+    int                     from_civ_slot;
     civ_tech_id_t           unlocked_techs[8];
-    int                     unlocked_units[4];   /* CIV_UNIT_* */
-    int                     unlocked_imp[4];     /* building idx, 對齊 city.c BUILDING_INFO */
-    int                     unlocked_wonder[4];  /* wonder idx, 待 R17 接 wonder 表 */
+    int                     unlocked_units[4];
+    int                     unlocked_imp[4];
+    int                     unlocked_wonder[4];
 } civ_tech_discovery_event_t;
 
 /* zh-TW 名稱 (對齊 spec 05 STR# 130 + civ_dict.c). */
 const char *civ_tech_name_zh(civ_tech_id_t t);
 
-/* "Civilization Advance" 對應 zh subtitle. */
 const char *civ_tech_subtitle_zh(void);
 
-/* "(取自法國)" / "(自家研發)" 等 source 對應 zh 短語. civ_name 在 source ==
- * DIPLOMAT/TRADE 才 dereferenced, 其餘可傳 NULL. 回靜態 buffer (非執行緒安全,
- * 用於單 frame render). */
 const char *civ_tech_source_phrase_zh(civ_tech_learn_source_t s,
                                        const char *civ_name);
 
-/* R16-4: 從 spec 06 prereq DAG 反推, 填 event->unlocked_*.
- * 不會修改 tech_id / source / from_civ_slot. */
+/* R26: 從完整 prereq DAG (spec 06 §6.5.1) 反推 — 找所有
+ * 「2 個 prereq 之一 = ev->tech_id」的 tech 進 unlocked_techs.
+ * 不會修 source / from_civ_slot. */
 void civ_tech_discovery_fill_unlocked(civ_tech_discovery_event_t *ev);
+
+/* R26: 取本 tech 的 2 個 prereq (寫進 out_a/out_b; 沒有 prereq 寫 NONE).
+ * 越界回 false. */
+bool civ_tech_prereq(civ_tech_id_t t,
+                      civ_tech_id_t *out_a, civ_tech_id_t *out_b);
 
 #endif /* CIV_WORLD_TECH_H */

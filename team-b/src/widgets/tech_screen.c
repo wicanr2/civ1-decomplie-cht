@@ -139,9 +139,16 @@ static const char *tech_icon_char_zh(civ_tech_id_t t)
         case CIV_TECH_WRITING:          return "書";
         case CIV_TECH_MAP_MAKING:       return "圖";
         case CIV_TECH_MASONRY:          return "石";
-        case CIV_TECH_POLYTHEISM:       return "神";
+        case CIV_TECH_RELIGION:         return "神";
         case CIV_TECH_LITERACY:         return "文";
         case CIV_TECH_MATHEMATICS:      return "算";
+        case CIV_TECH_PHILOSOPHY:       return "哲";
+        case CIV_TECH_PHYSICS:          return "理";
+        case CIV_TECH_CHEMISTRY:        return "化";
+        case CIV_TECH_ELECTRICITY:      return "電";
+        case CIV_TECH_COMPUTERS:        return "腦";
+        case CIV_TECH_NUCLEAR_FISSION:  return "核";
+        case CIV_TECH_SPACE_FLIGHT:     return "太";
         default:                        return "?";
     }
 }
