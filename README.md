@@ -16,6 +16,8 @@
 >
 > **R20 完整修復 — 100% 原版色彩 + 正確 sprite mapping**: (1) cache 完整 KING 自己 palette (取代預算 LUT 損失色); (2) 渲染時把該領袖 KING palette **安裝為 g.palette**, sprite blit 是 identity (1:1 完美). (3) 14 KING 視覺辨識 dump 出 SLOT_TO_KING_IDX lookup table — KING* sprite 順序 ≠ STR# 140 順序 (e.g. Elizabeth=KING00, Frederick=KING12, Mao=KING06, Gandhi=KING02). 解 R19 殘留的「服裝色變綠」+「載入錯誤 sprite」兩個 bug. 4 leader (Elizabeth/Frederick/Mao/Gandhi) 視覺驗證全正確.
 >
+> **R21 — 透明度修正 + GOVT*M backdrop hook**: 使用者再次指正 (1) 粉紅大方塊是 magenta transparent 沒被 skip; (2) advisor + parchment + spear 應該也用原版資產. R21 修法: (a) 新 `build_skip_mask()` — scan palette 找 RGB ≈ magenta entries 標 skip, 取代只 skip idx 0; (b) probe CIVDATA2 31 個 CvPc 全清單 (`probe_civdata2`), 確認 advisor/parchment/spear/scene-backdrop 全在 **GOVT0M/1M/2M (id 404/405/406, 各 939×320)** 大 sheet 內 (左半 = scene backdrop with parchment + spear ornament, 右半 = advisor sprite sheet); (c) civ_game.h 加 `govt_backdrops[3]` + `govt_palettes[3]` cache; test_world_snapshot 載 3 GOVT*M; (d) `paint_govt_backdrop()` blit 左半 460×320 scaled 到 640×360 上半 backdrop. R22 follow-up: advisor 右半剪取 + Ghidra trace 真實 sprite 座標.
+>
 > 14 領袖 enum + 5 mood (Greeting/Demand Tribute/Offer Peace/Declare War/Propose Trade) + 客製對話文字 (「英格蘭女皇伊莉莎白一世向您致意……」/「我等至明智之德意志皇帝腓特烈大帝向您致意……」). 鍵盤 `D` 鍵 demo 觸發 Elizabeth GREETING.
 
 ## 專案目的

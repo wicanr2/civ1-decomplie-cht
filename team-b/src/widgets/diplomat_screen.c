@@ -134,9 +134,23 @@ static void paint_leader_portrait_clean_room(civ_surface_t *fb, struct civ_game 
     }
 }
 
-/* R19: scaled blit + remap + skip transparent.
- * KING sprite layout: spec 03 §3.1 內 427×320 = 5col × 4row 動畫 frame +
- * 右下角 1 個大主肖像 (約 165×235 @ (260,80)). 對話畫面顯示大主肖像. */
+/* R21: build skip mask 對 palette 內 transparent pixel idx:
+ *   - idx 0 (Civ1 sentinel pixel, spec 03 §3.5.1)
+ *   - 任何 RGB 接近 magenta #FF00FF 的 entry (R≥E0 & G≤40 & B≥E0)
+ * Civ1 PC GIF sprite 用 magenta 作 chroma key, 但 magenta 不一定在 idx 0.
+ * 之前 R19/R20 只 skip idx 0 → 大量 magenta pixel 出現 (粉紅大方塊). */
+static void build_skip_mask(const civ_palette_t *pal, uint8_t skip[256])
+{
+    memset(skip, 0, 256);
+    skip[0] = 1;
+    for (int i = 0; i < 256; i++) {
+        civ_color_t c = pal->entries[i];
+        if (c.r >= 0xE0 && c.g <= 0x40 && c.b >= 0xE0)
+            skip[i] = 1;
+    }
+}
+
+/* R19: scaled blit + remap + skip transparent. */
 static void blit_scaled_remap_skip(civ_surface_t *fb, int dst_x, int dst_y,
                                     int dst_w, int dst_h,
                                     const civ_surface_t *src, civ_rect_t src_r,
@@ -191,21 +205,53 @@ static void paint_leader_portrait(civ_surface_t *fb, struct civ_game *g,
     int dst_x = (DS_W - dst_w) / 2;
     int dst_y = DS_DIALOG_Y - dst_h - 4;
 
-    /* R20: build LUT in-place (每次 render). king_pal → 當前 g.palette.
-     * 若 g.palette 已切換為 king palette (R20 diplomat showcase mode),
-     * LUT 為 identity (1:1). 若 g.palette 還是其他 (e.g. sprite_sheet 共用),
-     * LUT 是 nearest match (顏色會被 quantize 但結構保留). */
+    /* R20: build LUT in-place (每次 render). king_pal → 當前 g.palette. */
     uint8_t lut[256];
     civ_palette_build_lut(g->leader_king_palettes[leader].entries, 256,
                           &g->palette, lut);
 
-    /* skip mask: idx 0 是 Civ1 sentinel transparent (spec 03 §3.5.1) */
+    /* R21: skip mask = idx 0 + magenta-ish RGB (解粉紅大方塊). */
     uint8_t skip[256];
-    memset(skip, 0, sizeof skip);
-    skip[0] = 1;
+    build_skip_mask(&g->leader_king_palettes[leader], skip);
 
     blit_scaled_remap_skip(fb, dst_x, dst_y, dst_w, dst_h, king, src,
                            lut, skip);
+}
+
+/* R21: blit GOVT*M backdrop left half (scene + parchment + spear)
+ * scaled to full 640x360 upper. 對應 spec 03 §3.1 內 939x320 sheet 結構:
+ *   - 左半 (~0..460) = scene backdrop (sky/wall + parchment + spear ornament)
+ *   - 右半 (~460..939) = advisor sprite sheet (animation + 4 standing figures)
+ *
+ * 政府 idx 選擇: 0=Despotism, 1=Monarchy, 2=Republic (per spec 06 §6.3).
+ * R21 默認用 idx 1 (Monarchy) 因 reference webp Elizabeth/Frederick 兩位
+ * 都在 monarchy era. R22 可依 player government 動態選. */
+static void paint_govt_backdrop(civ_surface_t *fb, struct civ_game *g,
+                                 int govt_idx)
+{
+    if (govt_idx < 0 || govt_idx >= 3) govt_idx = 1;
+    civ_surface_t *gb = g->govt_backdrops[govt_idx];
+    if (!gb) return;   /* fallback handled by caller */
+
+    /* 左半 region: 約 0..460 × 0..320 (sheet 939×320, 左半=460 寬) */
+    civ_rect_t src = { 0, 0, 460, 320 };
+    if (src.w > gb->w) src.w = gb->w;
+    if (src.h > gb->h) src.h = gb->h;
+
+    /* Scale 到 640×360 upper area (DS_DIALOG_Y = 360) */
+    int dst_w = DS_W;
+    int dst_h = DS_DIALOG_Y;
+
+    /* LUT govt_pal → current g.palette (caller 安裝 king_pal as g.palette,
+     * 所以 govt 會 nearest-match to king_pal — 顏色稍有變化但結構正確) */
+    uint8_t lut[256];
+    civ_palette_build_lut(g->govt_palettes[govt_idx].entries, 256,
+                          &g->palette, lut);
+
+    uint8_t skip[256];
+    build_skip_mask(&g->govt_palettes[govt_idx], skip);
+
+    blit_scaled_remap_skip(fb, 0, 0, dst_w, dst_h, gb, src, lut, skip);
 }
 
 /* R18: 兩側 advisor 占位 — 較小頭像, 對齊 reference 圖左右兵士 */
@@ -319,11 +365,19 @@ void civ_diplomat_screen_render(struct civ_game *g, civ_surface_t *fb)
     if ((int)ev->leader >= 1 && (int)ev->leader <= CIV_LEADER_COUNT)
         king = g->leader_portraits[ev->leader];
 
-    /* === 上半 (y 0..360) sky + mountain horizon + 左右 advisor + leader === */
-    paint_sky_mountain(fb, g, 0, 0, DS_W, DS_DIALOG_Y);
-    paint_advisor(fb, g, 90, 0x60, 0x60, 0x70);
-    paint_advisor(fb, g, 550, 0x90, 0x80, 0x70);
-    /* leader 用真 KING sprite (R19) 或 fallback clean-room */
+    /* === 上半 (y 0..360) ===
+     * R21: 若 GOVT*M backdrop cached, 用原版 scene (含 parchment + spear +
+     * 宮殿/山地 backdrop). 否則 fallback clean-room sky+mountain+advisors.
+     * GOVT idx 1 = Monarchy (對應 reference webp 兩位領袖時代). */
+    int govt_idx = 1;
+    if (g->govt_backdrops[govt_idx]) {
+        paint_govt_backdrop(fb, g, govt_idx);
+    } else {
+        paint_sky_mountain(fb, g, 0, 0, DS_W, DS_DIALOG_Y);
+        paint_advisor(fb, g, 90, 0x60, 0x60, 0x70);
+        paint_advisor(fb, g, 550, 0x90, 0x80, 0x70);
+    }
+    /* leader KING sprite 蓋在 backdrop 中央 (R19/R20) 或 fallback clean-room */
     paint_leader_portrait(fb, g, ev->leader);
 
     /* === 下半 (y 360..480) 對話區 === */

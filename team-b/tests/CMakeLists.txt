@@ -110,3 +110,10 @@ add_executable(test_diplomat test_diplomat.c)
 target_link_libraries(test_diplomat PRIVATE civ_core)
 add_test(NAME diplomat COMMAND test_diplomat)
 set_tests_properties(diplomat PROPERTIES TIMEOUT 10)
+
+# R21 dev probe — not a test, just a CLI tool
+add_executable(probe_civdata2 probe_civdata2.c)
+target_link_libraries(probe_civdata2 PRIVATE civ_core)
+
+add_executable(dump_cvpc dump_cvpc.c)
+target_link_libraries(dump_cvpc PRIVATE civ_core)

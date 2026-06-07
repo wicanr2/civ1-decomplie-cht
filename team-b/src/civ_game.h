@@ -89,6 +89,13 @@ struct civ_game {
      * owner = civ_game, civ_widgets_unregister 時釋放 sprite (palette 是 value 不釋放). */
     civ_surface_t              *leader_portraits[CIV_LEADER_COUNT + 1];
     civ_palette_t               leader_king_palettes[CIV_LEADER_COUNT + 1];
+
+    /* R21: GOVT*M backdrop cache — CIVDATA2 id 404/405/406 (each 939×320).
+     * idx 0 = GOVT0M (Despotism era), 1 = GOVT1M (Monarchy era),
+     * 2 = GOVT2M (Republic era). 左半 ≈ scene backdrop, 右半 = advisor sprite
+     * sheet (8 expression frames + 4 standing figures). */
+    civ_surface_t              *govt_backdrops[3];
+    civ_palette_t               govt_palettes[3];
 };
 
 #endif /* CIV_GAME_H */

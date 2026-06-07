@@ -182,6 +182,21 @@ int main(int argc, char **argv)
             }
         }
         printf("KING portraits loaded: %d/13\n", loaded);
+
+        /* R21: 載 3 GOVT*M backdrops (id 404/405/406) for diplomat scene */
+        int gloaded = 0;
+        for (int gi = 0; gi < 3; gi++) {
+            civ_surface_t *gb = NULL;
+            civ_palette_t  gp = {0};
+            int16_t gid = (int16_t)(404 + gi);
+            if (civ_load_cvpc_by_id(r2, gid, &gb, &gp) == 0) {
+                g.govt_backdrops[gi] = gb;
+                g.govt_palettes[gi]  = gp;
+                gloaded++;
+            }
+        }
+        printf("GOVT backdrops loaded: %d/3\n", gloaded);
+
         civ_rsrc_close(r2);
     } else {
         fprintf(stderr, "warning: CIVDATA2.RSC 找不到, leader_portraits 全 fallback\n");
@@ -287,6 +302,13 @@ int main(int argc, char **argv)
         if (g.leader_portraits[l]) {
             civ_surface_free(g.leader_portraits[l]);
             g.leader_portraits[l] = NULL;
+        }
+    }
+    /* R21: 釋放 GOVT backdrops */
+    for (int gi = 0; gi < 3; gi++) {
+        if (g.govt_backdrops[gi]) {
+            civ_surface_free(g.govt_backdrops[gi]);
+            g.govt_backdrops[gi] = NULL;
         }
     }
 
