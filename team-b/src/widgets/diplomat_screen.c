@@ -348,6 +348,46 @@ static void paint_govt_backdrop(civ_surface_t *fb, struct civ_game *g,
     blit_scaled_remap_skip(fb, 0, 0, dst_w, dst_h, gb, src, lut, skip);
 }
 
+/* R31 (C7 gap): clean-room 綠色刺繡 banner — 覆蓋 GOVT*M 底部 yellow banana
+ * panel. 對齊 1993 reference webp: 領袖與對話框之間是綠地金 diamond 刺繡帶.
+ *
+ * pattern: 深綠底 + 中綠 diamond (8×8 重複) + 金 horizontal 邊條 + 隨意金點.
+ * 完全 clean-room (Civdata 內沒有對應 sprite, 推測是原版 hardcoded paint). */
+static void paint_diplomat_banner(civ_surface_t *fb, struct civ_game *g,
+                                   int x0, int y0, int x1, int y1)
+{
+    uint8_t c_grn_dark = pn(g, 0x10, 0x40, 0x10);
+    uint8_t c_grn_mid  = pn(g, 0x30, 0x70, 0x30);
+    uint8_t c_grn_lt   = pn(g, 0x60, 0x90, 0x40);
+    uint8_t c_gold     = pn(g, 0xE0, 0xC0, 0x40);
+
+    /* 深綠底 */
+    civ_fill_rect(fb, (civ_rect_t){x0, y0, x1 - x0, y1 - y0}, c_grn_dark);
+
+    /* 8×8 diamond grid pattern */
+    for (int yy = y0 + 4; yy < y1; yy += 8) {
+        for (int xx = x0 + 4; xx < x1; xx += 16) {
+            for (int dy = -3; dy <= 3; dy++) {
+                int yt = yy + dy;
+                if (yt < y0 || yt >= y1) continue;
+                int dx_range = 3 - (dy < 0 ? -dy : dy);
+                for (int dx = -dx_range; dx <= dx_range; dx++) {
+                    int xt = xx + dx;
+                    if (xt < x0 || xt >= x1) continue;
+                    fb->pixels[yt * fb->pitch + xt] =
+                        (dy == 0) ? c_grn_lt : c_grn_mid;
+                }
+            }
+        }
+    }
+
+    /* 金邊 — 上下各一條 */
+    civ_hline(fb, x0, y0,         x1 - x0, c_gold);
+    civ_hline(fb, x0, y0 + 1,     x1 - x0, c_gold);
+    civ_hline(fb, x0, y1 - 2,     x1 - x0, c_gold);
+    civ_hline(fb, x0, y1 - 1,     x1 - x0, c_gold);
+}
+
 /* R18: 兩側 advisor 占位 — 較小頭像, 對齊 reference 圖左右兵士 */
 static void paint_advisor(civ_surface_t *fb, struct civ_game *g,
                            int cx, uint8_t robe_r, uint8_t robe_g, uint8_t robe_b)
@@ -481,15 +521,20 @@ void civ_diplomat_screen_render(struct civ_game *g, civ_surface_t *fb)
         paint_advisor(fb, g, 90, 0x60, 0x60, 0x70);
         paint_advisor(fb, g, 550, 0x90, 0x80, 0x70);
     }
+    /* R31 (C7 gap): 綠刺繡 banner 先畫於 backdrop 上 (覆蓋 yellow banana),
+     * 然後 leader portrait 再蓋上去 (其衣著大半位於 banner y 區域內,
+     * banner 只在左右 advisor 兩側 + 領袖以下 visible). */
+    paint_diplomat_banner(fb, g, DS_SPEAR_W, 200, DS_W - DS_SPEAR_W, DS_DIALOG_Y);
+
     /* leader KING sprite 蓋在 backdrop 中央 (R19/R20) 或 fallback clean-room */
     paint_leader_portrait(fb, g, ev->leader);
 
     /* === 下半 (y 360..480) 對話區 === */
-    /* 左 spear (x 0..44) */
-    paint_spear(fb, g, 0, DS_DIALOG_Y, DS_SPEAR_W, DS_H - DS_DIALOG_Y);
-    /* 右 spear (x 596..640) */
-    paint_spear(fb, g, DS_W - DS_SPEAR_W, DS_DIALOG_Y,
-                DS_SPEAR_W, DS_H - DS_DIALOG_Y);
+    /* 左 spear (x 0..44) — R31 從 y=200 起延伸覆蓋 banner 區 */
+    paint_spear(fb, g, 0, 200, DS_SPEAR_W, DS_H - 200);
+    /* 右 spear (x 596..640) — 同延伸 */
+    paint_spear(fb, g, DS_W - DS_SPEAR_W, 200,
+                DS_SPEAR_W, DS_H - 200);
     /* 中央 parchment */
     const char *dialog = civ_diplomat_dialog_zh(ev);
     paint_parchment(fb, g, DS_SPEAR_W, DS_DIALOG_Y,
